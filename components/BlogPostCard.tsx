@@ -36,7 +36,6 @@ export function BlogPostCard({ post }: Props) {
         <h2 className="mt-2 font-display text-2xl font-semibold tracking-tightish text-ink transition-colors group-hover:text-accent">
           {frontmatter.title}
         </h2>
-        <p className="mt-3 text-ink-muted">{frontmatter.description}</p>
       </Link>
     </article>
   );

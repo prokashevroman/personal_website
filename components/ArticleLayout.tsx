@@ -28,9 +28,6 @@ export function ArticleLayout({ post, children }: Props) {
         <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.15] tracking-tightish text-ink sm:text-5xl">
           {frontmatter.title}
         </h1>
-        <p className="mt-5 text-lg leading-relaxed text-ink-muted">
-          {frontmatter.description}
-        </p>
       </header>
       <div className="prose prose-stone max-w-none">{children}</div>
       <p className="mt-12 border-t border-rule pt-6 text-sm italic leading-relaxed text-ink-muted">
