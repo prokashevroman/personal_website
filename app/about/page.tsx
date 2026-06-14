@@ -34,7 +34,7 @@ export default function AboutPage() {
       </section>
 
       <section aria-labelledby="what-i-build">
-        <p className="eyebrow">What I build</p>
+        <p className="eyebrow">Practice</p>
         <h2
           id="what-i-build"
           className="mt-3 font-display text-2xl font-semibold tracking-tightish text-ink"
