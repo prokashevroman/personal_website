@@ -1,0 +1,44 @@
+---
+title: "Google Tag Manager Events: Proper Usage"
+slug: "gtm-events-proper-usage"
+date: "2019-09-17"
+description: "When configuring Google Tag Manager triggers and tags, it’s crucial to understand when they will fire, so that all the necessary tracking will be tied with the right events."
+originalUrl: "https://lastclick.city/gtm-events-proper-usage.html"
+thumbnail: "/images/last-click-city/For_index_page_12.png"
+excerptLead: "When configuring Google Tag Manager triggers and tags,"
+excerpt: "it’s crucial to understand when they will fire, so that all the necessary tracking will be tied with the right events. Three main GTM events to which you can tie your trigger are:"
+---
+
+<strong>When configuring Google Tag Manager triggers and tags, </strong> it’s crucial to understand when they will fire, so that all the necessary tracking will be tied with the right events. Three main GTM events to which you can tie your trigger are:
+
+1\) Page View (gtm.js)
+
+2\) DOM Ready (gtm.dom)
+
+3\) Window Loaded (gtm.load)
+
+![Google Tag Manager events](/images/last-click-city/GTM_events/GTM_events.png)
+
+Their sequence is exactly the following: gtm.js -> gtm.dom -> gtm.load. Let’s take a look at them in more detail:
+
+<strong>Page View:</strong> This is the earliest event which is sent by Google Tag Manager. It fires at the precise moment when the Google Tag Manager container is loaded.
+
+<strong>When to Use:</strong> As stated in the [GTM help article](https://support.google.com/tagmanager/answer/7679319?hl=en):
+
+> Use this option if you only need data generated from page impressions.
+
+However, please keep in mind that “page impression”, in this case, only means that the Tag Manager container has loaded and can obtain basic information about the page (including the data layer variables, which are initialized above the container snippet).
+
+<strong>DOM Ready:</strong> This event means that the browser has constructed the full page and all necessary information can be parsed from the DOM.
+
+The DOM is an object-based representation of the source HTML document in the form of a so-called “node tree”. A great description of the DOM can be found [here](https://bitsofco.de/what-exactly-is-the-dom/):
+
+> It is so-called because it can be thought of as a tree with a single parent stem that branches out into several child branches, each which may have leaves. In this case, the parent "stem" is the root &lt;html> element, the child "branches" are the nested elements, and the "leaves" are the content within the elements.
+
+<strong>When to Use:</strong> Tags based on the gtm.dom event should be used when it’s necessary to obtain some important information rendered on the page. For example, if you need to scrap some information from the page, you will be able to do this only when it’s available. If you use a trigger which relies on the gtm.js, all the necessary information could remain invisible to the GTM.
+
+<strong>Window Loaded:</strong> This trigger will fire only after all elements of the page are fully loaded. Window Loaded is the latest event. The window object represents the browser’s window. As all global JavaScript objects, functions and variables are a part of the window object, Window Loaded means that all these things have already loaded.
+
+<strong>When to Use:</strong> A trigger of this type is useful when you want to fire specific triggers, but only when the page is already loaded. For example, it can be an option for screen recording/heatmap software. It can also be useful if you are planning to use some custom HTML tags and don’t want them to interrupt the page load process.
+
+Have fun!

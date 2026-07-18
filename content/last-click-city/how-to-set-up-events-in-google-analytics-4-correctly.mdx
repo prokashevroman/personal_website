@@ -1,0 +1,67 @@
+---
+title: "How to set up events in Google Analytics 4 (GA4) correctly."
+slug: "how-to-set-up-events-in-google-analytics-4-correctly"
+date: "2022-04-15"
+description: "Unnest key-value data relating to objects in different columns."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/how-to-set-up-events-in-google-analytics-4-correctly.html"
+thumbnail: "/images/last-click-city/For_index_page_38.png"
+excerptLead: "Starting from July 1 2023, Google has claimed that there will no longer be any Universal Analytics (UA)."
+excerpt: "Instead, you will have to use Google Analytics for Firebase or, shortly, GA4.If you are a newbie in web analytics or you are transferring events for UA to GA4, we recommend that you follow our simple instructions, considering the main restrictions of GA4."
+---
+
+<strong>Starting from July 1 2023, [Google has claimed](https://support.google.com/analytics/answer/11583528) that there will no longer be any Universal Analytics (UA). </strong>Instead, you will have to use Google Analytics for Firebase or, shortly, GA4.
+
+If you are a newbie in web analytics or you are transferring events for UA to GA4, we recommend that you follow our simple instructions, considering the main restrictions of GA4:
+
+1. you can only have [500](https://support.google.com/analytics/answer/9267744?hl=en&ref_topic=9756175) distinct unique event names.
+2. similarly for [custom dimensions](https://support.google.com/analytics/answer/10075209?hl=en#limits&zippy=%2Cin-this-article) - 50 custom, event-scoped parameters and 25 custom user-scoped properties - it is now more important than ever before.
+
+If you are sending a classical UA event, when your website visitor clicks on the website menu section, ‘Contacts’, on the main page, there are several ways in which this can be sent:
+
+| Event Properties | Var – 1 | Var – 2[[1]](#footnote-1) |
+| --- | --- | --- |
+| Event Category | Main Menu | Main |
+| Event Action | Click | Click |
+| Event Label | Contacts | Contacts |
+| Value | (Null) | (Null) |
+
+There are more ways of sending it; this usually depends on the event sending convention within your company, but from our point of view, Var-1 is the best of all, as the structure of the event is sufficiently complete for it be used as a standalone method for user analytics.
+
+However, it is no longer possible to send events like this to GA4, due to the first restriction. Using the naming conventions of GA4 (lower case, “_” instead of space), this event would be shown as “main_menu_contact_click” and it occupies one of 500 unique events for GA4 property.
+
+For this reason, you need to follow these recommendations:
+
+1. keep in mind that GA4 does not just comprise event-based analytics; first of all, <strong>it involves action-based analytics</strong>. This means that previously Event.Action was a property of Event.Category and now it is a Category that is a property/parameter of Action (we will show this later). In addition, all of the automatically collected events: click - pave_view, scroll etc. - are actions.
+2. try to use automatically collected [events](https://support.google.com/analytics/answer/9234069?hl=en&ref_topic=9756175) and [parameters](https://support.google.com/analytics/answer/11396839?hl=en) as much as possible: just think about the number of events after the years of business growth. There is a risk of imposing limits quickly if you do not consider the event’s architecture.
+3. if you wish to use custom events, you should firstly look at these [recommendations](https://support.google.com/analytics/answer/9267735?hl=en&ref_topic=9756175) from Google for sales, games, etc.
+4. a new event name must be <strong>an action</strong>, and this <strong>action should be very common</strong> (=often usage) within your business. Otherwise, try to use automatically collected events.
+5. event parameters, as well as user properties, should <strong>also be used regularly for different kinds of events</strong>. Otherwise, use automatically collected things or do not track it (if you need it solely for two to three events in your innumerous event-flow).
+
+Why do we say that GA4 is action-based analytics? Look at the automatically collected event names: click, page_view, submit, first_open. Action is now the most significant here.
+
+So, in order to collect our event regarding the Menu, we have to rewrite it, using an automatically collected event “click” and parameters:
+
+| Event Name | сlick |   |
+| --- | --- | --- |
+| Event Parameters | page_title | Main |
+| Content | Menu |   |
+| button_title[[2]](#footnote-2) | Contacts |   |
+
+Even if clicking on the Menu is something special for your business, the built-in ‘click’ action will be able to manage this.
+
+If you want an example of a special custom action that you may wish to track and highlight in the event flow, this can be “activate”, for example, when a user clicks on checkboxes within the cookie policy settings. We agree that it can be possible to track this via ‘activate' rather than by ‘click’[[3]](#footnote-3).
+
+And finally, to make it simpler for you:
+
+- [here](https://docs.google.com/spreadsheets/d/1XiX2Dmm9-t9AMnGWOl8v9-OZAjI-GPstHWvBFFbEFu0/edit#gid=2042573202) we present possible specifications for actions (with custom specifications) and parameters.
+- in addition, there is an [example](https://docs.google.com/spreadsheets/d/1XiX2Dmm9-t9AMnGWOl8v9-OZAjI-GPstHWvBFFbEFu0/edit#gid=0) for recording events that you track for your business.
+
+Feel free to contact us if you need a qualified consultation!
+
+[1] Using the page URL, you can understand where this event was.
+
+[2] Custom parameter; button_title is a type of useful custom dimension because Web and App have a large number of different buttons.
+
+[3] You can also use this event for email registration confirmation, etc., that makes it a universal event.

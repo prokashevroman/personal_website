@@ -1,0 +1,108 @@
+---
+title: "BigQuery: totals by day, totals by date range in one table."
+slug: "bigquery-totals-by-day-totals-by-data-range"
+date: "2019-06-22"
+description: "BigQuery: totals by day, totals by date range in one table."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/bigquery-totals-by-day-totals-by-data-range.html"
+thumbnail: "/images/last-click-city/For_index_page_8.png"
+excerptLead: "Let’s say that you want"
+excerpt: "to know the conversion amount in a specific date range for streaming in BigQuery: the total amount for each day and the total for all days as well. You could do this by making either two queries resulting in two tables, or one query resulting in one table."
+---
+
+<strong>Let’s say that you want </strong>to know the conversion amount in a specific date range for streaming in BigQuery: the total amount for each day and the total for all days as well. You could do this by making either two queries resulting in two tables, or one query resulting in one table. The first solution is not particularly user-friendly (you have to click from one tab to another etc.), but it is very quick to carry out. The second solution sounds pretty easy too, although it could involve a slight challenge; however, in terms of output, one table is produced.
+
+Our conversions include ‘Registrations’, thus our streaming table looks like this:
+
+| Date | Event |
+| --- | --- |
+| 2019-01-01 | Registration |
+| 2019-01-01 | Activation |
+| 2019-01-01 | Registration |
+| ... | ... |
+| 2019-01-02 | Registration |
+| ... | ... |
+
+And so on.
+
+Obtaining data only by day is really that easy:
+
+```sql
+SELECT
+  date,
+  COUNT(event) AS Conversions
+FROM
+  `your-project.your_dataset.table`
+WHERE
+  event = 'Registration'
+  AND date BETWEEN ‘2019-01-01’
+  AND ‘2019-01-05’
+GROUP BY
+  date
+```
+
+| Date | Conversions |
+| --- | --- |
+| 2019-01-01 | 10 |
+| 2019-01-02 | 5 |
+| 2019-01-03 | 6 |
+| 2019-01-04 | 1 |
+| 2019-01-05 | 2 |
+
+Then, for the grand total (10 + 5 + 6 + 1 + 2 = <strong>24</strong> in our case), you might think that it’s all about one line of query in SELECT, but it’s not. Using “Group By” will only count events by each day.
+
+To achieve your goal, you need to use “CROSS JOIN” with this query:
+
+```sql
+SELECT
+  COUNT(event) AS Total,
+FROM
+  `your-project.your_dataset.table`
+WHERE
+  event = 'Registration'
+  AND date BETWEEN ‘2019-01-01’
+  AND ‘2019-01-05’
+```
+
+So, the full query will be:
+
+```sql
+SELECT
+  t1.date AS Date,
+  t1.Conversions AS Conversions,
+  t2.Total AS Grand_Total
+FROM (
+  SELECT
+  date,
+  COUNT(event) AS Conversions
+FROM
+  `your-project.your_dataset.table`
+WHERE
+  event = 'Registration'
+  AND date BETWEEN ‘2019-01-01’
+  AND ‘2019-01-05’) AS t1
+CROSS JOIN (
+SELECT
+  COUNT(event) AS Total,
+FROM
+  `your-project.your_dataset.table`
+WHERE
+  event = 'Registration'
+  AND date BETWEEN ‘2019-01-01’
+  AND ‘2019-01-05’) AS t2
+ORDER BY
+  Date ASC
+```
+
+And the result will be as expected:
+
+| Date | Conversions | <strong>Grand_Total</strong> |
+| --- | --- | --- |
+| 2019-01-01 | 10 | <strong>24</strong> |
+| 2019-01-02 | 5 | <strong>24</strong> |
+| 2019-01-03 | 6 | <strong>24</strong> |
+| 2019-01-04 | 1 | <strong>24</strong> |
+| 2019-01-05 | 2 | <strong>24</strong> |
+
+Indeed, as a result, you will get a duplicate of the total in each row. However, the result clearer and more convenient, especially if it is used only in BigQuery’s interface.

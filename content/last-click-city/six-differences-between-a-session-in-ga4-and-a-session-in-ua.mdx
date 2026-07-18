@@ -1,0 +1,64 @@
+---
+title: "Six differences between a session in GA4 and a session in UA."
+slug: "six-differences-between-a-session-in-ga4-and-a-session-in-ua"
+date: "2022-04-18"
+description: "Every single reason why a Google Analytics session will start over."
+originalUrl: "https://lastclick.city/six-differences-between-a-session-in-ga4-and-a-session-in-ua.html"
+thumbnail: "/images/last-click-city/For_index_page_39.png"
+excerptLead: "The session has always been one of the keystones in Google Analytics,"
+excerpt: "and while it will also continue to be one of the essential concepts in GA4, the session has evolved. Let us take a closer look at these changes so that you can better understand GA4 metrics. Then, you will be able to adopt these metrics to evaluate your website and apps’ performance more effectively."
+---
+
+<strong>The session has always been one of the keystones in Google Analytics,</strong> and while it will also continue to be one of the essential concepts in GA4, the session has evolved. Let us take a closer look at these changes so that you can better understand GA4 metrics. Then, you will be able to adopt these metrics to evaluate your website and apps’ performance more effectively.
+
+<strong>How sessions are defined in UA and GA4.</strong>
+
+Firstly, let us review the definitions provided by Google in their [official documentation](https://support.google.com/analytics/answer/2731565#zippy=%2Cin-this-article). In UA, a session is as follows:
+
+> A session is a group of user interactions with your website that take place within a given time frame. For example a single session can contain multiple page views, events, social interactions, and ecommerce transactions.
+
+In GA4, the [definition](https://support.google.com/analytics/answer/9964640?hl=en#sessions&zippy=%2Cin-this-article) did not change. A session is still:
+
+> a group of user interactions with your website that take place within a given time frame.
+
+However, rather significant changes have taken place regarding the way in which sessions are calculated.
+
+<strong>1. GA4 sessions are essentially events.</strong>
+
+As previously mentioned, the role of events in GA4 is much more important compared to UA, and <strong>session count is tied to the events</strong>. Every GA4 session starts with one of the automatically collected events - `session_start`. The duration of a session is based on the time span between the first and last event in the session.
+
+<strong>2. `ga_session_id` parameter is not unique depending on the users.</strong>
+
+![GA4 session ID](/images/last-click-city/Sessions_in_GA_and_UA/ga_session_id.png)
+
+Like any other GA4 event, `session_start` has several parameters stored in a repeated record. `ga_session_id` is one of them. In contrast to the UA (in which a unique session identifier called `visitID`) `ga_session_id` in GA4 is not really unique. In fact, it is a timestamp and thus can be the same for many website visitors (how many depends on the traffic volume).
+
+Therefore to count unique sessions in the BigQuery export for GA4, you need to combine the `ga_session_id` with `user_pseudo_id`. like this:
+
+`concat(user_pseudo_id, (select value.int_value from unnest(event_params) where key =‘ga_session_id’)) as session_id`
+
+<strong>3. Sessions in GA4 are not subject to the limitations that exist in UA.</strong>
+
+Now, a session does not restart automatically when a campaign or traffic source has changed. This, in turn, leads to a <strong>rather curious phenomenon - one session from various traffic sources.</strong>
+
+One more characteristic, which is important to mention, is that in GA4, a session does not restart at midnight. As previously mentioned, session count is tied to the `session_start` events. Hence, combining these facts results in sessions with the `session_start` event missing. This can occur, for example, if a user visits your website late in the evening and continues to browse throughout the night (after 12a.m.) and you will pick the data for analysis only on the second day of the activity. In this case, `session_start` will be on the previous day (the day before the analyzed one).
+
+<strong>4. The bounce rate is deprecated in GA4. Engaged sessions have replaced it.</strong>
+
+GA4 lost a metric that is familiar to everyone, namely, bounce rate. Now Google suggests using the brand-new indicator, engaged sessions.
+
+> Engaged sessions: The number of sessions that lasted 10 seconds or longer, or had 1 or more conversion events or 2 or more page or screen views.
+
+![Engaged sessions](/images/last-click-city/Sessions_in_GA_and_UA/engaged_sessions.png)
+
+The engaged sessions metric is available in all main reports - acquisition, user, traffic, etc. It is important to note that the time for an engaged session can be adjusted.
+
+![Adjust session timeout in GA4](/images/last-click-city/Sessions_in_GA_and_UA/adjust_session_timeout.png)
+
+<strong>5. Sessions without page views.</strong>
+
+GA4 uses an automatically configured event, `page_view`, (which is triggered each time the page loads or the browser history state is changed by the active site). It is easy to imagine the following scenario: a user visits a website, gets distracted or just switches to another task, returns to the resource and continues to consume the content. In this case, the user may have a session with no `page_view` event, but containing some engagement event (scroll, for example).
+
+<strong>6. No session-scoped custom dimensions.</strong>
+
+Previously, there were session-scoped custom dimensions in UA, which is no longer the case in GA4. Now you can configure your custom dimensions to be either event-scoped or user-scoped. If you need an equivalent of the session-scoped dimension in Google Analytics, consider sending additional parameters on every event during the session.

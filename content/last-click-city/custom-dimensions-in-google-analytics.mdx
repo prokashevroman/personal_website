@@ -1,0 +1,90 @@
+---
+title: "Custom Dimensions in Google Analytics."
+slug: "custom-dimensions-in-google-analytics"
+date: "2020-02-22"
+description: "Custom Dimensions in Google Analytics. Everything you need to know to start with custom dimensions in GA."
+originalUrl: "https://lastclick.city/custom-dimensions-in-google-analytics.html"
+thumbnail: "/images/last-click-city/For_index_page_16.png"
+excerptLead: "Google Analytics provides us with a large number of useful dimensions that help us understand what is happening on the website."
+excerpt: "But to make full use of GA opportunities, you should definitely use custom dimensions. Only custom dimensions will allow you to get a lot of data that are not tracked automatically, e.g., you can export some information from your CRM or add some domain-specific dimensions."
+---
+
+<strong>Google Analytics provides us with a large number of useful dimensions that help us understand what is happening on the website.</strong> But to make full use of GA opportunities, you should definitely use custom dimensions. Only custom dimensions will allow you to get a lot of data that are not tracked automatically, e.g., you can export some information from your CRM or add some domain-specific dimensions.
+
+There are 20 indices available for different custom dimensions in each property, 360 accounts have 200 indices available for custom dimensions. Please note that it isn’t possible to delete custom dimensions, but you can disable them.
+
+Creating a custom dimension is a two-step process: first, you need to create a dimension in your Google Analytics property, after that you’ll need to configure the data collection. In this article we will consider three ways of collecting the data.
+
+First, let’s configure everything necessary in the Admin section of your property. To do that, go to the Admin section in Google Analytics and, in the Property settings, pick the custom definitions section. Here, chose custom dimensions and then click the “New” button. When creating a custom dimension, you need to specify its name and scope.
+
+![Creating a custom dimension in the Google Analytics interface](/images/last-click-city/Custom_dimensions/1.custom_dimension_setting.png)
+
+> Scope determines which hits will be associated with a particular custom dimension value. There are four levels of scope: product, hit, session, and user:
+>
+> Product – value is applied to the product for which it has been set (Enhanced Ecommerce only).
+>
+> Hit – value is applied to the single hit for which it has been set.
+>
+> Session – value is applied to all hits in a single session.
+>
+> User – value is applied to all hits in current and future sessions, until value changes or custom dimension is made inactive.
+
+More information about the scope is available in this [Google Analytics Help article](https://support.google.com/analytics/answer/2709828?hl=en&ref_topic=2709827#scope).
+
+When creating a scope for your custom dimension plan ahead of how often its value will change, this information will help you pick the right setting. The more often value changes, the more granular scope you will need.
+
+Let’s consider three examples of how you can send the data to the custom dimension:
+
+1\) Sending the data with tracking code
+
+Sending a custom dimension with the Google Analytics tracking code is quite simple. If you are using standard analytics.js just use the following code:
+
+```javascript
+ga('send', 'pageview', {
+  'dimension1':  'My Custom Dimension'
+});
+```
+
+If you are using gtag.js, you need to map your GA parameter with your custom dimension using the custom_map parameter.
+
+To send a custom dimension to Google Analytics, update the config for your property to set the custom_map parameter for the dimension and then use the custom parameter to send the value of the custom dimension:
+
+```javascript
+// Configures custom dimension <Index> to use the custom parameter
+// 'dimension_name' for 'GA_MEASUREMENT_ID', where <Index> is a number
+// representing the index of the custom dimension.
+gtag('config', 'GA_MEASUREMENT_ID', {
+  'custom_map': {'dimension<Index>': 'dimension_name'}
+});
+
+// Sends the custom dimension to Google Analytics.
+gtag('event', 'any_event_name', {'dimension_name': dimension_value});
+```
+
+2\) Sending the data with Google Tag Manager
+
+Google Tag Manager makes it extremely easy to send data to the custom dimension. Let’s consider the following example: on my blog I want to have an opportunity to mark the sessions with high engagement with my content. I want to distinguish these sessions and easily filter them in any Google Analytics report. To do that, I have created a “High engagement” custom dimension in my Google Analytics Account:
+
+![Creating a custom dimension in the Google Analytics interface](/images/last-click-city/Custom_dimensions/2.adding_custom_dimension.png)
+
+After that, I have created a Google Analytics Tag, which fires when a user has scrolled down 50% of the page and spends at least 30 seconds on the page. Please take a look at the tag settings – each time it fires, I also send the data to the “High engagement” custom dimension:
+
+![Custom dimension in the GTM tag](/images/last-click-city/Custom_dimensions/3.GA_tag.png)
+
+After the data are collected, this dimension becomes easily available from any Google Analytics report:
+
+![Custom dimension in the Google Analytics report](/images/last-click-city/Custom_dimensions/4.Custom_dimension_in_GA_report.png)
+
+In the example above the same value for each event is sent to Google Analytics, but with GTM you can pass any dynamic data layer variable as well:
+
+![Dynamic variable in custom dimension](/images/last-click-city/Custom_dimensions/5.dynamic_variable_in_custom_dimension.png)
+
+3\) Sending the data with Measurement Protocol
+
+The third way to send a custom dimension which we will consider today is sending it via Measurement Protocol. It can be useful if, for example, you send transactions to Google Analytics and would like to add some additional parameters to it. In its simplest form your measurement protocol hit may look like this:
+
+```javascript
+v=1&t=transaction&tid=...&cid=...&ti=T12345&pa=purchase&tr=79.99&cd2=new_customer
+```
+
+If you have any questions, please don’t hesitate to ask them in the comments!

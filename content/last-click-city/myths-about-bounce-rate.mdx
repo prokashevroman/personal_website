@@ -1,0 +1,45 @@
+---
+title: "Myths About Bounce Rate."
+slug: "myths-about-bounce-rate"
+date: "2020-06-30"
+description: "Myths About Bounce Rate."
+originalUrl: "https://lastclick.city/myths-about-bounce-rate.html"
+thumbnail: "/images/last-click-city/For_index_page_28.png"
+excerptLead: "Before evaluating your website efficiency with the bounce rate, define your website goals clearly."
+excerpt: "Does your goal involve multiple-page visits or events (in other words, multiple requests to the GA servers)? If it doesn’t, a high bounce rate will probably be acceptable."
+---
+
+<strong>Myth #1: A bounce rate shows the percentage of users who didn’t find anything useful.</strong>
+
+To deal with the first myth, let’s take a look at the bounce rate definition from the Google help center:
+
+> A bounce is a single-page session on your site. In Analytics, a bounce is calculated specifically as a session that triggers only a single request to the Analytics server, such as when a user opens a single page on your site and then exits without triggering any other requests to the Analytics server during that session.
+
+So, in fact, the bounce rate doesn’t say anything about the site efficiency. It only shows the number of sessions with a single request to the Google Analytics (GA) servers. This fact, in turn, leads to two critical thoughts:
+
+1\) Before evaluating your website efficiency with the bounce rate, define your website goals clearly. Does your goal involve multiple-page visits or events (in other words, multiple requests to the GA servers)? If it doesn’t, a high bounce rate will probably be acceptable. A single-page view can be the case for small blogs or content promotion when you want people to read something, but users aren’t expected to browse the website further.
+
+2\) If your website’s goal includes interactions during a single-page visit, check how your measurement and tracking are organized. If all valuable user actions happen on the same page and are tracked as events (or other types of hits), check that they aren’t sent as [non-interaction hits](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction) because only the interaction hits will influence the bounce rate. Otherwise they won't and you’ll still see a high bounce rate.
+
+![Bounce rate](/images/last-click-city/Bounce_rate/scheme.png)
+
+<strong>Myth #2: A low bounce rate is a mark of success.</strong>
+
+This myth is closely related to the first one. Again, before considering a low bounce rate as a success, define your website goals. Perhaps your objective is to provide users with a quick response, for example, if you are maintaining a help center where visitors get answers to their issues and leave (ideally, as soon as possible). In this case, a low bounce rate (when users have to flip through the pages) might be considered as something undesirable.
+
+<strong>Myth #3: А bounce rate is predefined in GA. </strong>
+
+The bounce rate isn’t something that is the same for everyone. As we discussed previously, the bounce is simply a session with one interaction hit. Therefore, it’s up to you to decide which hits you will send on your pages and which of them will be interactive. For example, with this blog, I do send scroll tracking events as interactive hits, so I know that bounces in my case aren’t merely one-page sessions but sessions when there was also no scrolling.
+
+![Interaction hit](/images/last-click-city/Bounce_rate/interaction_hit.png)
+
+<strong>Myth #4: There is no bounce rate in BigQuery.</strong>
+
+It’s true that the bounce rate isn’t part of a Standard BigQuery Export. However, it can easily be calculated. Please take a look at the query below, where we are exporting the bounce rate by custom dimension.
+
+```sql
+SELECT COUNT(totals.bounces)/COUNT(totals.visits) AS bounceRate
+FROM `pro-tracker-id.ga_sessions_`
+```
+
+Thanks for reading! Your comments are welcome!

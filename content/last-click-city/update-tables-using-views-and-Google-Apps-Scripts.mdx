@@ -1,0 +1,65 @@
+---
+title: "BigQuery: how to update tables using views and Google Apps Scripts."
+slug: "update-tables-using-views-and-Google-Apps-Scripts"
+date: "2019-06-21"
+description: "BigQuery: how to update tables using views and Google Apps Scripts."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/update-tables-using-views-and-Google-Apps-Scripts.html"
+thumbnail: "/images/last-click-city/For_index_page_7.png"
+excerptLead: "Let’s assume you have a big table"
+excerpt: "with raw data, for example, from Google Analytics. You make a query for data processing and obtain a more informative table. The question is how to update it on a daily basis and append new data from the main table."
+---
+
+<strong>Let’s assume you have a big table </strong>with raw data, for example, from Google Analytics. You make a query for data processing and obtain a more informative table. The question is how to update it on a daily basis and append new data from the main table. You can obviously schedule a query via the “Schedule Query” menu if you’re using Standard SQL, but what if you query is using Legacy SQL?
+
+First of all, save your query as a view. My advice is to name it the same as your table but adding “_SQL”: for example, table - “my_table”; view - “my_table_SQL”. This will order it near your table.
+
+Next, you need to query the view using Google Scripts. Here is a little piece of code that uses the BigQuery API:
+
+```javascript
+function UpdateMyTable() {
+
+//put name of your project, where is your table, here
+var projectId = 'you-project';
+
+//put name of dataset, where is your table, here
+var datasetId = 'you_dataset';
+
+//setting destination table name
+var tableId = 'you_table_name';
+var job = {
+configuration: {
+query: {
+//in parenthesis put your dataset name and view
+query: 'SELECT * FROM [you_dataset.you_table_name_SQL]',
+
+destinationTable: {
+    projectId: projectId,
+    datasetId: datasetId,
+    tableId: tableId
+    },
+writeDisposition: "WRITE_APPEND"
+    }
+  }
+};
+
+var queryResults = BigQuery.Jobs.insert(job, projectId);
+var jobId = queryResults.jobReference.jobId;
+
+}
+```
+
+Then just add the daily trigger to this function. Click “Current project’s triggers”:
+
+![Select the project's triggers](/images/last-click-city/Update_the_table/Select_triggers.jpg)
+
+Then click the “Add Triger” button:
+
+![Add the trigger](/images/last-click-city/Update_the_table/Add_trigger.jpg)
+
+And configure the trigger:
+
+![Configure the trigger](/images/last-click-city/Update_the_table/Trigger_configuration.jpg)
+
+Enjoy!

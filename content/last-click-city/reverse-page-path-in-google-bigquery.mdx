@@ -1,0 +1,105 @@
+---
+title: "Reverse Page Path in Google BigQuery."
+slug: "reverse-page-path-in-google-bigquery"
+date: "2020-05-07"
+description: "Reverse Page Path in Google BigQuery"
+originalUrl: "https://lastclick.city/reverse-page-path-in-google-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_23.png"
+excerptLead: "BigQuery export for Google Analytics is one of the most powerful tools,"
+excerpt: "which can show you up to three of the steps preceding goal completion. But, to my bewilderment, there isn’t an option to obtain a similar report which can show you the reverse top paths to a particular page. Such reports can undoubtedly be useful in many cases when a user’s journey to a specific page needs to be analyzed. Let’s try to build it using BigQuery."
+---
+
+<strong>BigQuery export for Google Analytics is one of the most powerful tools, </strong> which can show you up to three of the steps preceding goal completion. But, to my bewilderment, there isn’t an option to obtain a similar report which can show you the reverse top paths to a particular page. Such reports can undoubtedly be useful in many cases when a user’s journey to a specific page needs to be analyzed. Let’s try to build it using BigQuery.
+
+<strong>Step 1. Select all the hits to be grouped later.</strong>
+
+First, let’s select all the necessary hits. Please note that we are selecting only pageviews as we are going to perform a page-level analysis. All the hits are grouped by fullvisitorID and are sorted by the hit timestamp.
+
+```sql
+    SELECT
+      fullvisitorID,
+      FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64))) AS hit_timestamp,
+      hits.page.pagePath AS pagePath,
+    FROM
+      `pro-tracker-id.ga_sessions_*`,
+      UNNEST(hits) AS hits
+    WHERE
+      hits.type = "PAGE"
+    ORDER BY
+      fullvisitorID,
+      hit_timestamp
+```
+
+<strong>Step 2. Select second and third pageviews in the user’s journey.</strong>
+
+In the second query, we use the LEAD … OVER function to create new columns which will show the second and third pages visited. PARTITION BY fullvisitorID helps to insert “null” if there is no next page visit, and in this case, the following row will start with the next user’s journey. The rows are also sorted by hit_timestamp.
+
+```sql
+  SELECT
+    fullvisitorID,
+    hit_timestamp,
+    pagePath,
+    LEAD (pagePath, 1) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS second_pagePath,
+    LEAD (pagePath, 2) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS third_pagePath
+  FROM (
+    SELECT
+      fullvisitorID,
+      FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64))) AS hit_timestamp,
+      hits.page.pagePath AS pagePath,
+    FROM
+      `pro-tracker-id.ga_sessions_*`,
+      UNNEST(hits) AS hits
+    WHERE
+      hits.type = "PAGE"
+    ORDER BY
+      fullvisitorID,
+      hit_timestamp)
+  ORDER BY
+    fullvisitorID,
+    hit_timestamp
+```
+
+<strong>Step 3. Calculate the top paths to the target page.</strong>
+
+In the last step, we select the first, second and third pages visited and calculate the most popular paths to the analyzed page with the help of the COUNT function. The final query would be as follows:
+
+```sql
+SELECT
+  pagePath,
+  second_pagePath,
+  third_pagePath,
+  COUNT(*) AS count
+FROM (
+  SELECT
+    fullvisitorID,
+    hit_timestamp,
+    pagePath,
+    LEAD (pagePath, 1) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS second_pagePath,
+    LEAD (pagePath, 2) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS third_pagePath
+  FROM (
+    SELECT
+      fullvisitorID,
+      FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64))) AS hit_timestamp,
+      hits.page.pagePath AS pagePath,
+    FROM
+      `pro-tracker-id.ga_sessions_*`,
+      UNNEST(hits) AS hits
+    WHERE
+      hits.type = "PAGE"
+    ORDER BY
+      fullvisitorID,
+      hit_timestamp)
+  ORDER BY
+    fullvisitorID,
+    hit_timestamp)
+WHERE
+  third_pagePath = "/idea/"
+GROUP BY
+  pagePath,
+  second_pagePath,
+  third_pagePath
+ORDER BY
+  count DESC
+```
+
+I appreciate feedback, so if you have any comments regarding the suggested solution, please don’t hesitate to share them in the comments section.

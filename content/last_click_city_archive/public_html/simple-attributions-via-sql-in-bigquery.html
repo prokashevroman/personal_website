@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Mobirise v4.8.10, mobirise.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <link rel="shortcut icon" href="assets/images/logo-48x48.png" type="image/x-icon">
+  <meta name="description" content="Simple Attribution Models via SQL in BigQuery.">
+  <title>Last Click City :: Simple Attribution Models via SQL in BigQuery.</title>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5DK5ZKP');</script>
+  <!-- End Google Tag Manager -->
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <link rel="stylesheet" href="assets/web/assets/mobirise-icons/mobirise-icons.css">
+  <link rel="stylesheet" href="assets/tether/tether.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+  <script type="text/javascript" src="assets/theme/js/lang-sql.js"></script>
+  <link rel="stylesheet" type="text/css" href="prettify.css">
+  <link rel="stylesheet" href="assets/theme/css/rrssb.css" />
+
+  <meta property="og:title" content="Simple Attribution Models via SQL in BigQuery." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lastclick.city/simple-attributions-via-sql-in-bigquery.html" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content="Simple Attribution Models via SQL in BigQuery."/>
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@prokashev_roman">
+  <meta name="twitter:creator" content="@prokashev_roman">
+  <meta name="twitter:title" content="Simple Attribution Models via SQL in BigQuery.">
+  <meta name="twitter:description" content="Simple Attribution Models via SQL in BigQuery. | https://lastclick.city/simple-attributions-via-sql-in-bigquery.html">
+  <meta name="twitter:image" content="">
+
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5DK5ZKP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <section class="menu cid-rew4t9v9hr" once="menu" id="menu2-3">
+    <nav class="navbar navbar-expand beta-menu navbar-dropdown align-items-center navbar-fixed-top navbar-toggleable-sm">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="menu-logo">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="https://lastclick.city">
+                        <img src="assets/images/logo-122x244.png" alt="Mobirise" title="" style="height: 3.8rem;">
+                    </a>
+                </span>
+
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true"><li class="nav-item">
+                    <a class="nav-link link text-black display-4" href="https://lastclick.city">
+                        Last Click City</a>
+                </li></ul>
+
+        </div>
+    </nav>
+</section>
+
+
+<section class="mbr-section content6 cid-rew699umhM" id="content6-8">
+    <div class="container">
+        <div class="media-container-row">
+            <div class="col-12 col-md-10">
+                <div class="media-container-row">
+                    <div class="media-content">
+                      <div class="article">
+                        <div class="mbr-section-text">
+                            <p class="mbr-text mb-0 mbr-fonts-style display-7">
+                              <h2>Simple Attribution Models via SQL in BigQuery.</h2>
+                              <div class="article-font">
+                              <p>May 31, 2020</p>
+                              <ul class="rrssb-buttons">
+                                <li class="rrssb-facebook">
+                                  <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+                                  https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+                                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://lastclick.city/simple-attributions-via-sql-in-bigquery.html" class="popup">
+                                    <span class="rrssb-icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg>
+                                    </span>
+                                    <span class="rrssb-text"></span>
+                                  </a>
+                                </li>
+                                <li class="rrssb-twitter">
+                                  <!-- Replace href with your Meta and URL information  -->
+                                  <a href="https://twitter.com/intent/tweet?text=https://lastclick.city/simple-attributions-via-sql-in-bigquery.html"
+                                  class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                              <li class="rrssb-linkedin">
+                                <!-- Replace href with your meta and URL information -->
+                                <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://simple-attributions-via-sql-in-bigquery.html&amp;title=simple%20attributions%20via%20sql%20in%20bigquery&amp;summary=simple%20attributions%20via%20sql%20in%20bigquery" class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                            </ul>
+                            <br>
+                            <p></p><p><i>An article by <a href="https://www.linkedin.com/in/sergey-matrosov/"><i>Sergey Matrosov</i></a></i></p>
+                              <br>
+                              <p><strong>You know, one of the main reasons why this blog is named like the old-fashioned attribution “Last Click” </strong>is that I and my co-host started our marketing careers when this attribution – like other classical ones such as “First Click” – was the only one we could use. So the naming is a kind of tribute to those old school days.</p>
+                              <p>But not all old-fashioned methods can be used nowadays. These attributions are like broken glasses: it’s hard to use them, but sometimes you have to. This may be because channels are specific for your business or you are willing to look at your marketing efforts from different points of view. But today, many marketers work in BigQuery so if your goal is to build reports there using classic attributions, this may be the moment you get stuck. So, let’s deal with it!</p>
+                              <p>But before we start, remember, we don’t use the lookback window here. If you need it, for example, at last click (touch) and it is equal to 7 days, you must add the following to CASE-WHEN functions: date of the First Touch - date of conversion < 7 days in seconds (604800).</p>
+                              <p>Ok, I guess we can start now. Full SQL query can be found <a href="https://github.com/SergeyMatrosov/Simple_Attributions_via_SQL_in_BigQuery">here</a></p>
+                              <p>1.	Our first step is to make a table with event streaming by user</p>
+                              <img style='height: 80%; width: 80%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Table.png" alt="Table">
+                              <pre class="prettyprint"><code class="language-sql">WITH
+  WebsiteUserStreaming AS (
+  SELECT "11111" AS userid, "2020-01-01" AS time, "blog" AS source, "zero" AS event UNION ALL
+  SELECT "11111", "2020-01-02", "organic", "CONVERSION" UNION ALL
+  SELECT "22222", "2020-01-01", "ppc", "zero" UNION ALL
+  SELECT "22222", "2020-01-02", "blog", "zero" UNION ALL
+  SELECT "22222", "2020-01-03", "organic", "zero" UNION ALL
+  SELECT "22222", "2020-01-04", "ppc", "zero" UNION ALL
+  SELECT "22222", "2020-01-05", "organic", "zero" UNION ALL
+  SELECT "22222", "2020-01-06", "direct", "zero" UNION ALL
+  SELECT "22222", "2020-01-07", "direct", "CONVERSION" UNION ALL
+  SELECT "66666", "2020-01-01", "ppc", "CONVERSION" UNION ALL
+  SELECT "66666", "2020-01-02", "blog", "zero" UNION ALL
+  SELECT "66666", "2020-01-03", "ppc", "zero"),
+</code></pre>
+                              <p>2.	Then we need to format our query:</p>
+                              <pre class="prettyprint"><code class="language-sql">FormatedStreaming AS (
+  SELECT
+    userid,
+    UNIX_SECONDS(TIMESTAMP(time)) AS date_in_sec,
+    source,
+    CASE
+      WHEN event = 'zero' THEN 0
+      WHEN event = 'CONVERSION' THEN 1
+  END
+    AS event
+  FROM
+    WebsiteUserStreaming)</code></pre>
+                              <p>3.	Then, we need to check it:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 80%; width: 80%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Table2.png" alt="Table">
+                              <p><ul>
+                                <li>Usually, data of events by user are unsorted. However, as we use WINDOW functions, there is no need for sorting. Even if you do, it’s not a big deal: you can use the operator ORDER BY userid, date_in_sec.</li>
+                                <li>Users can visit your site more than once in a day. This is why tables of user’s events often contain dates in TIMESTAMP format and why we transform dates into seconds: to understand the order of a user’s event flow in a day, for example:</li>
+                                <ol>
+                                  <li>10 PM - user finds our website organically</li>
+                                  <li>3 PM - the same user reaches the website through display ads</li>
+                                  <li>8 PM - the same user reaches the website from an email</li>
+                              <ol></ul></p>
+                              <p>4.	Finally, we can write our queries.</p>
+                              <p>First of all, let’s make the Last Touch attribution. Just to avoid any misunderstandings, remember that it is the attribution itself, the rule or set of rules, that determines how conversions are assigned to touchpoints on the path to conversion. Last Touch gives all credit to the last point.</p>
+                              <pre class="prettyprint"><code class="language-sql">--LAST_TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN event > 0 AND date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS last_touch_attribution,
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Last_touch.png" alt="Last touch">
+                              <p></p>
+                              <p>Last Non-Direct Touch gives all credit to the Last Touch point too, but if the last one is “direct”, it gives all credit to channel before “direct”.</p>
+                              <pre class="prettyprint"><code class="language-sql">--LAST_TOUCH_NON_DIRECT
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event = 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN 'null'
+    WHEN event = 0 AND LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN 'null'
+    WHEN SUM(event) OVER (PARTITION BY userid) > 0 AND date_in_sec < LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+    AND LEAD(source) OVER (PARTITION BY userid ORDER BY date_in_sec) = 'direct' AND source != 'direct' THEN '1'
+    WHEN event > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AND source != 'direct' THEN '1'
+  ELSE
+  'null'
+END
+  AS last_non_direct,
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Last_non_direct.png" alt="Last non direct">
+                              <p></p>
+                              <p>But wait, what about userid ‘66666’? Why does ‘ppc’ have credit? Yes, it is not the last in the path of the user, but it is the last in the conversion path. Just look at our first table above!</p>
+                              <p>First Touch is rather simple too: all credit is given to the first channel.</p>
+                              <pre class="prettyprint"><code class="language-sql">--FIRST_TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS first_touch_attribution
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/First_touch.png" alt="Last non direct">
+                              <p></p>
+                              <p>Any touch is a rare thing, but sometimes you may need to use it to measure a channel from the mix or to measure the mix itself, without knowing its exact impact, but knowing that it is crucial for your conversion path. For example, if your buying cycle is rather long, say around 90 days, and your customers read your blog posts from day 1 to day 90, you give a 100% credit to each interaction with the blog. Yes, all other channels in the example below will have 100% credit too, but in report via filters, you can choose only a blog to view its impact. I feel that I need to clarify: the attribution model is not about measuring conversions, it is about evaluating marketing efforts. That is why you could see x10 or x100 “conversions'' in any touch report, but it is not conversions, it is credit. </p>
+                              <pre class="prettyprint"><code class="language-sql">--ANY TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 THEN '1'
+  ELSE
+  'null'
+END
+  AS any_touch_attribution
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Any_touch.png" alt="Any touch">
+                              <p></p>
+                              <p>If your goal is only to give credit to every touch with the blog, if there is a conversion, just change rules in CASE WHEN:</p>
+                              <pre class="prettyprint"><code class="language-sql">--ALL CREDIT TO BLOG ONLY
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND source = 'blog' THEN '1'
+  ELSE
+  'null'
+END
+  AS blog_only
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/All_credit_to_blog.png" alt="All credit to blog">
+                              <p></p>
+                              <p>Also, you can combine a set of rules: Last Touch + credit to blog each time if it was in the conversion’s path.</p>
+                              <pre class="prettyprint"><code class="language-sql">--BLOG + LAST TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND source = 'blog' THEN '1'
+    WHEN event > 0 AND date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS blog_and_last
+FROM
+  FormatedStreaming</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Blog_and_last.png" alt="Blog and last touch">
+                              <p></p>
+                              <p>Now for the time decay attribution. This is one of the attributions that can be called as multitouch. The core of it is that it gives a percentage of the credit to all the channels on the conversion path: the amount of credit for each channel is less (decaying) the further back in time the channel was interacted with. For example, consider a scenario where your customer interacted with the blog, then with “organic” and then with “ppc” before conversion. Channel “ppc” was the last one and will have the most credit (percent), ‘organic’ will have less and blog will have the lowest value.</p>
+                              <pre class="prettyprint"><code class="language-sql">--TIME_DECAY
+SELECT
+userid,
+date_in_sec,
+source,
+ROUND(IF(SAFE_CAST(weights AS FLOAT64)=0 OR SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)=0, 0, SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)), 2) AS time_decay,
+FROM
+(SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(1.1-ROW_NUMBER() OVER (PARTITION BY userid) AS STRING)
+    WHEN date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROUND(1.1-1/ROW_NUMBER() OVER (PARTITION BY userid), 2) AS STRING)
+  ELSE
+  'null'
+END
+  AS weights
+FROM
+  FormatedStreaming)</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Time_decay.png" alt="Time decay">
+                              <p></p>
+                              <p>However, if you need the reversed version, the first channel takes the most credit and others have lower values the later on in time they are. Here is the code:</p>
+                              <pre class="prettyprint"><code class="language-sql">--TIME_DECAY_REVERSED
+SELECT
+userid,
+date_in_sec,
+source,
+ROUND(IF(SAFE_CAST(weights AS FLOAT64)=0 OR SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)=0, 0, SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)), 2) AS time_decay_reversed,
+FROM
+(SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROW_NUMBER() OVER (PARTITION BY userid) AS STRING)
+    WHEN date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROUND(1/ROW_NUMBER() OVER (PARTITION BY userid), 2) AS STRING)
+  ELSE
+  'null'
+END
+  AS weights
+FROM
+  FormatedStreaming)</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Time_decay_reversed.png" alt="Time decay">
+                              <p></p>
+                              <p>The last one is position-based. Like time decay, it is sort of multitouch attribution. It gives a percentage of credit, based on when the touch occurred (first, last, in-between). In our example, first and last take 40% each (=80% of the credit), and in-between shares take the remaining 20%. To have accurate data, we use a ROUND function with two decimal places, but if your channel's path to conversion is usually long, use more decimal places. Otherwise, summing up all credits within the user journey from channel to channel could result in a sum > 1.</p>
+                              <pre class="prettyprint"><code class="language-sql">--POSITION BASED
+SELECT
+userid,
+date_in_sec,
+source,
+CASE
+WHEN SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid) > 1 THEN SAFE_CAST(ROUND(SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid), 2) AS STRING)
+ELSE weights
+END AS position_based
+FROM
+(
+SELECT
+  userid,
+  date_in_sec,
+  source,
+
+  CASE
+  --one channel and instant conversion
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND COUNT(userid) OVER (PARTITION BY userid) = 1 THEN '1'
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) > 2
+  THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.4, 3) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) = 2 THEN '0.5'
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec != FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND date_in_sec != LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+  AND COUNT(userid) OVER (PARTITION BY userid) > 2 THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.2, 1) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) > 2
+  THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.4, 1) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) = 2 THEN '0.5'
+  ELSE '0'
+  END AS weights
+FROM
+  FormatedStreaming)</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Simple_Attribution_Models/Position_based.png" alt="Position based">
+                              <div id="disqus_thread"></div>
+<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://lastclick-city.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="footer3 cid-rew4pnx1NQ" id="footer3-1">
+    <div class="container">
+        <div class="media-container-row content">
+            <div class="col-md-2 col-sm-4">
+                <div class="mb-3 img-logo">
+                    <a href="https://lastclick.city">
+                         <img src="assets/images/logo-192x384.png" alt="Last Click City" title="">
+                    </a>
+                </div>
+                <p class="mbr-fonts-style foot-logo display-7"></p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    CATEGORIES
+                </p>
+                <p class="mbr-text mbr-links-column mbr-fonts-style display-7">
+                    <a href="google-analytics.html" class="text-black">Google Analytics</a>
+                    <br><a href="google-tag-manager.html" class="text-black">Google Tag Manager</a>
+                    <br><a href="google-bigquery.html" class="text-black">Google BigQuery</a>
+                    <br><a href="attribution-models.html" class="text-black">Attribution models</a>
+                    <!--<br><a href="#" class="text-black">Careers</a>-->
+                </p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    LINKS
+                </p>
+                <p class="mbr-text mbr-fonts-style mbr-links-column display-7">
+                    <a href="https://www.linkedin.com/in/roman-prokashev-54732855/" class="text-black">LinkedIn</a>
+                    <br><a href = "mailto: roman.prokashev@gmail.com">Send Email</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <div class="media-container-row">
+                <div class="col-sm-12">
+                    <hr>
+                </div>
+            </div>
+            <div class="media-container-row">
+                <div class="col-sm-6 copyright">
+                    <p class="mbr-text mbr-fonts-style display-7">
+                        © Copyright 2019-2022 lastclick.city - All Rights Reserved
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+  <script src="assets/dropdown/js/script.min.js"></script>
+  <script src="assets/touchswipe/jquery.touch-swipe.min.js"></script>
+  <script src="assets/parallax/jarallax.min.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/formoid/formoid.min.js"></script>
+
+
+</body>
+</html>

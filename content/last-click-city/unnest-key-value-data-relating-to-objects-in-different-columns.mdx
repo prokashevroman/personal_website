@@ -1,0 +1,56 @@
+---
+title: "Unnest key-value data relating to objects in different columns."
+slug: "unnest-key-value-data-relating-to-objects-in-different-columns"
+date: "2021-08-14"
+description: "Unnest key-value data relating to objects in different columns."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/unnest-key-value-data-relating-to-objects-in-different-columns.html"
+thumbnail: "/images/last-click-city/For_index_page_35.png"
+excerptLead: "If you have a database, including a table with raw data,"
+excerpt: "where the first column is the user-id/date and the two others are the name and value of your URL parameters as follows"
+---
+
+<strong>If you have a database, including a table with raw data, </strong>where the first column is the user-id/date and the two others are the name and value of your URL parameters as follows:
+
+![Table with raw data](/images/last-click-city/Unnest_key-value/1.png)
+
+and you wish to transform it into a table, such as this:
+
+![Transformed table](/images/last-click-city/Unnest_key-value/2and9.png)
+
+I created solutions for two databases: Clickhouse and PostgreSQL. This article is based on the former, but [here](https://github.com/SergeyMatrosov/Clickhouse_Make_Columns_from_values_in_Rows/blob/main/query.md) you can also find a query relating to PostgreSQL.
+
+Firstly, we need to generate a data table via a query, using the columns, “userid”, “name” and “value”, as we did when we wrote [simple attribution models via BigQuery](/last-click-city/simple-attributions-via-sql-in-bigquery).
+
+![Modifying the table](/images/last-click-city/Unnest_key-value/3.png)
+
+As a result, we obtain a table as in our first screenshot. Then we need to use the CASE...WHEN construction to mutate the “name” column into columns that have as its name, the values of this column. The value of these new columns will be the value of the column, “value”.
+
+![CASE...WHEN construction use](/images/last-click-city/Unnest_key-value/4.png)
+
+Here is our result:
+
+![Modifying the table](/images/last-click-city/Unnest_key-value/10.png)
+
+The problem is obvious: not only does it have many void cells, but we wanted to have one row for each user. If you considered GROUP BY, you are correct, but we need to use a proper function for this. Firstly, I took an array function called groupArray:
+
+![groupArray function use](/images/last-click-city/Unnest_key-value/5.png)
+
+Don’t forget to use the GROUP BY userid statement:
+
+![GROUP BY userid](/images/last-click-city/Unnest_key-value/6.png)
+
+Here is our modified table:
+
+![Modified table](/images/last-click-city/Unnest_key-value/7.png)
+
+We are almost there; the last function is arrayJoin, which will unnest this array into the usual rows.
+
+![arrayJoin function use](/images/last-click-city/Unnest_key-value/8.png)
+
+And here it is:
+
+![final result](/images/last-click-city/Unnest_key-value/2and9.png)
+
+Hope this helped you. Good luck!

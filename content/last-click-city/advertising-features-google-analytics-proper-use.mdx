@@ -1,0 +1,41 @@
+---
+title: "Advertising Features in Google Analytics: proper use."
+slug: "advertising-features-google-analytics-proper-use"
+date: "2020-10-17"
+description: "Advertising Features in Google Analytics: proper use."
+originalUrl: "https://lastclick.city/advertising-features-google-analytics-proper-use.html"
+thumbnail: "/images/last-click-city/For_index_page_31.png"
+excerptLead: "Advertising Features significantly increase functionality in GA"
+excerpt: "and are necessary if you want to have the opportunity to remarket your website visitors using Google Analytics data. The main advantages of these Advertising Features are as follows:"
+---
+
+<strong>Advertising Features significantly increase functionality in GA</strong> and are necessary if you want to have the opportunity to remarket your website visitors using Google Analytics data. The main advantages of these Advertising Features are as follows:
+
+- Remarketing with Google Analytics allows you to create your website users' audiences and target them with relevant ads across Search and Display networks (including the DV360 inventory for GA360 users).
+- Demographics and Interests data in Google Analytics reports: When Advertising Features are enabled, Age, Gender, Affinity Categories, In-Market Segments and Other Categories data become available in the corresponding reports (which can be found in the Audience section). These audience characteristics can also be used when creating segments and remarketing lists.
+- Campaign Manager and Display and Video 360 integrations let Analytics 360 customers view and analyze data from these sources in the Google Analytics UI (the Acquisition section).
+- Google Display Network (GDN) Impression Reporting lets Google advertisers measure the impact of unclicked GDN Display ad impressions on website users' behavior and conversions.
+
+Previously, users had to enable Advertising Features separately in the Admin section of Google Analytics. However, now, if you allow Google Signals, Advertising Features are enabled as well.
+
+![Google Signals](/images/last-click-city/Advertising_features/Google_Signals.png)
+
+Please note that GDPR, CCPA and other similar regulatory acts have changed a lot in terms of the practice of using Advertising Features in Google Analytics. Some restrictions have emerged which pay more attention to personal data and privacy. The main one of these is the obligation to get a user's consent when using their sensitive data. This and other requirements are listed in a separate [Google Analytics help article:](https://support.google.com/analytics/answer/2700409?hl=en)
+
+> You will not identify users or facilitate the merging of personally identifiable information with non-personally identifiable information collected through any Google advertising product or feature unless you have robust notice of, and the user's prior affirmative (i.e., opt-in) consent to, that identification or merger, and are using a Google Analytics feature that expressly supports such identification or merger. Irrespective of users' consent, you must not attempt to disaggregate data that Google reports in aggregate.
+
+Therefore, the currently recommended way of using Advertising Features is to keep them enabled only for those users who give their explicit consent. So, silently keeping Google Signals enabled isn't an option today. One of the options to disable Advertising Features is to turn them off in Google Tag Manager. This can be done using the following settings:
+
+![allowAdfeatures are set to false](/images/last-click-city/Advertising_features/allowAdfeatures_false.png)
+
+This setting will override the property settings enabled in the Google Analytics UI.
+
+It is also possible to set the Advertising Features in Google Tag Manager dynamically and enable them only when consent is received from a user.
+
+![allowAdfeatures are set dynamically](/images/last-click-city/Advertising_features/allowAdfeatures_dynamically_set.png)
+
+In the example above, we keep AllowAdfeatures set to false unless the user's consent is received and passed with a cookie.
+
+![allowAdfeatures are set dynamically](/images/last-click-city/Advertising_features/Javascript.png)
+
+Please note that [other ways](https://support.google.com/analytics/answer/9050852?hl=en&ref_topic=2611283) to disable Advertising Features exist other than Google Tag Manager, but I would say that doing it in GTM is preferable and the most convenient method.

@@ -1,0 +1,84 @@
+---
+title: "Checking events firing on Android App at Firebase/GA4."
+slug: "checking-events-firing-android-firebasega4"
+date: "2021-05-24"
+description: "Checking events firing on Android App at Firebase/GA4."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/checking-events-firing-android-firebasega4.html"
+thumbnail: "/images/last-click-city/For_index_page_32.png"
+excerptLead: "Before starting to advertise your mobile app using Google App Campaign,"
+excerpt: "you must be sure that all your app conversions, based on events, are tracked by Firebase. The way the marketer can check it is similar to debugging events at Google Tag Manager, but it’s a little bit trickier. You see, you need to have an emulated Android device, connected to Firebase."
+---
+
+<strong>Before starting to advertise your mobile app using Google App Campaign, </strong>you must be sure that all your app conversions, based on events, are tracked by Firebase. The way the marketer can check it is similar to debugging events at Google Tag Manager, but it’s a little bit trickier. You see, you need to have an emulated Android device, connected to Firebase.
+
+1\. So, you need to install [Android Studio](https://developer.android.com/studio).
+
+2\. Start Android Studio and go to Configure.
+
+![Configure Android Studio](/images/last-click-city/Android_Events/fb1.png)
+
+3\. Choose AVD Manager, where AVD stands for Android Virtual Devices.
+
+4\. Choose a Device with a pre-installed “Play Store” and click on the green arrow (which symbolizes “Play” action) in the Action column.
+
+![Android Virtual Devices](/images/last-click-city/Android_Events/fb4.png)
+
+4.1. If there is no such device, click on “Create Virtual Device”.
+
+![Android Virtual Devices](/images/last-click-city/Android_Events/fb5.png)
+
+4.2. Then choose a device from Play Store to install. (In our case, this is Phone Category -> Pixel 4.)
+
+![Select Hardware Android Studio](/images/last-click-city/Android_Events/fb6.png)
+
+4.3. Then select the preferable system image to download (R in our case).
+
+![Select System Image Android Studio](/images/last-click-city/Android_Events/fb7.png)
+
+5\. After clicking on the “Play” button, the device will be emulated.
+
+![Emulated Device Android Studio](/images/last-click-city/Android_Events/fb8.png)
+
+6\. Go to Google Play and install your app just like you do on your own smartphone.
+
+7\. Then go to Terminal/Command Line and proceed to <strong>C:\\Users\\YOURUSERNAME\\AppData\\Local\\Android\\Sdk\\platform-toolsusing</strong> this command:
+
+```bash
+cd C:\Users\YOURUSERNAME\AppData\Local\Android\Sdk\platform-tools
+```
+
+(usually, you are already at C:\\Users\\YOURUSERNAME\\ so you need to just write cd AppData\\Local\\Android\\Sdk\\platform-tools)
+
+8\. When executing the following commands:
+
+```bash
+adb shell setprop debug.firebase.analytics.app YOURAPPID
+```
+
+YOURAPPID is the id of your application at Google Play. You can find it by going to the web page of your application in the Play Store. For example, suppose I want to know the id of the Google Translate app.
+
+[https://play.google.com/store/apps/details?id=com.google.android.apps.translate&hl=en](https://play.google.com/store/apps/details?id=com.google.android.apps.translate&hl=en)
+
+Here is the page. In the URL, you can find out that the id is “com.google.android.app.translate”.
+
+So, the command, in this case, would be:
+
+```bash
+adb shell setprop debug.firebase.analytics.app com.google.android.app.translate
+```
+
+9\. Then go to Firebase or GA4 -> Analytics -> DebugView.
+
+![Firebase Debug View](/images/last-click-city/Android_Events/fb9.png)
+
+10\. Using the emulator, start your application and check if Firebase receives the events.
+
+When it comes to checking events on iOS, everything is pretty similar, but you need to use Xcode instead of Android Studio and different commands to enable debug mode. Just specify the following command-line argument in Xcode:
+
+```bash
+-FIRDebugEnabled
+```
+
+Follow this [instruction](https://developer.apple.com/documentation/xcode/running-your-app-in-the-simulator-or-on-a-device) to emulate devices with iOS. Then go to Firebase to check the event’s flow.

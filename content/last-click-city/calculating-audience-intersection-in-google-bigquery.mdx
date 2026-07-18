@@ -1,0 +1,70 @@
+---
+title: "Calculating Audience Intersection in Google BigQuery."
+slug: "calculating-audience-intersection-in-google-bigquery"
+date: "2019-02-24"
+description: "Calculating Audience Intersection in Google BigQuery"
+originalUrl: "https://lastclick.city/calculating-audience-intersection-in-google-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_5.png"
+excerptLead: "Let’s imagine that we need to analyze"
+excerpt: "the number of users who have visited two particular webpages during the last year. We want to know how many of them have visited Page A, how many Page B and how many have visited both pages during the period."
+---
+
+<strong>Let’s imagine that we need to analyze </strong>the number of users who have visited two particular webpages during the last year. We want to know how many of them have visited Page A, how many Page B and how many have visited both pages during the period. It may seem surprising, but until recently, this basic analysis wasn’t possible with one Google Analytics report. Luckily the new Advanced Analysis section was introduced not long ago which includes one really great feature: Segment Overlap. To create segment overlap, you need to create two segments (e.g., “Visited Page A” and “Visited Page B”), import these segments into Advanced Analysis and run ‘Segment Comparison’. ![Advanced Analysis Report](/images/last-click-city/Audience_intersection/Advanced_Analysis.png)
+
+However, one crucial limitation is still in place: user-based segments have a maximum date range of 90 days (detailed information about segments can be found [here](https://support.google.com/analytics/answer/3123951?hl=en)). You face this limitation in any Google Analytics report where you want to use this type of segment and you’ll face it when creating a Segment Overlap in the Advanced Analysis section. If you try to create a report for a period which is longer than three months, you’ll see the following message:
+
+![Invalid date range](/images/last-click-city/Audience_intersection/Invalid_date_range.png)
+
+But what if we need to get information about the intersection over a longer period? In this case, BigQuery comes to the rescue. Let’s calculate a user’s intersection for one year. To achieve this, we need to run two SQL queries and visualize the data after that.
+
+Let’s zoom in on that a little bit. First, look at query #1:
+
+```sql
+SELECT
+    SUM(Group_A) AS visited_Page_A, SUM(Group_B) AS visited_Page_B
+FROM (SELECT
+    fullVisitorId,
+CASE
+    WHEN hits.page.pagePath CONTAINS '/pageA/' THEN 1
+    ELSE 0
+    END AS Group_A,
+CASE
+    WHEN hits.page.pagePath CONTAINS '/pageB/' THEN 1
+    ELSE 0
+    END AS Group_B,
+FROM
+    TABLE_DATE_RANGE( [pro-tracker-id.ga_sessions_], TIMESTAMP('2018-01-01'), TIMESTAMP('2018-12-31') )
+WHERE
+    hits.page.pagePath CONTAINS '/pageA/' OR hits.page.pagePath CONTAINS '/pageB/'
+GROUP BY
+    fullVisitorId, Group_A, Group_B)
+```
+
+In this query, we select users who have visited /pageA/ or /pageB/, group them into Group A and Group B (with the help of CASE statements) and calculate how many of them are there in each group. As a result, you get something like this:
+
+![First SQL query result](/images/last-click-city/Audience_intersection/First_query_result.png)
+
+The purpose of the second query is to get the number which represents the intersection itself:
+
+```sql
+SELECT
+    COUNT(fullVisitorId) AS visited_both_pages
+FROM (SELECT
+    fullVisitorId
+FROM
+    TABLE_DATE_RANGE( [pro-tracker-id.ga_sessions_], TIMESTAMP('2018-01-01'), TIMESTAMP('2018-12-31') )
+WHERE
+    hits.page.pagePath CONTAINS '/pageA/' OR hits.page.pagePath CONTAINS '/pageB/'
+GROUP BY
+    fullVisitorId
+HAVING
+    COUNT(CASE WHEN hits.page.pagePath CONTAINS '/pageA/' THEN 1 END) > 0
+    AND
+    COUNT(CASE WHEN hits.page.pagePath CONTAINS '/pageB/' THEN 1 END) > 0)
+```
+
+So, we have three numbers, yet we need to visualize them somehow. There is no way to insert a Venn Diagram in Microsoft Office or Google Spreadsheets but there are many free tools to do the job. For example, try this [one](https://www.meta-chart.com/venn). The end result should be something like this:
+
+![Final result](/images/last-click-city/Audience_intersection/End_result.png)
+
+To summarize: in any Google Analytics report (including the Advanced Analysis), user-based segments have a maximum date range of 90 days which can be an inconvenient restriction in some cases. Fortunately, BigQuery can help overcome such limitations and provide us with the data for a longer period.

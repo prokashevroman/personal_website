@@ -1,0 +1,305 @@
+---
+title: "Simple Attribution Models via SQL in BigQuery."
+slug: "simple-attributions-via-sql-in-bigquery"
+date: "2020-05-31"
+description: "Simple Attribution Models via SQL in BigQuery."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/simple-attributions-via-sql-in-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_25.png"
+excerptLead: "You know, one of the main reasons why this blog is named like the old-fashioned attribution “Last Click”"
+excerpt: "is that I and my co-host started our marketing careers when this attribution – like other classical ones such as “First Click” – was the only one we could use."
+---
+
+<strong>You know, one of the main reasons why this blog is named like the old-fashioned attribution “Last Click” </strong>is that I and my co-host started our marketing careers when this attribution – like other classical ones such as “First Click” – was the only one we could use. So the naming is a kind of tribute to those old school days.
+
+But not all old-fashioned methods can be used nowadays. These attributions are like broken glasses: it’s hard to use them, but sometimes you have to. This may be because channels are specific for your business or you are willing to look at your marketing efforts from different points of view. But today, many marketers work in BigQuery so if your goal is to build reports there using classic attributions, this may be the moment you get stuck. So, let’s deal with it!
+
+But before we start, remember, we don’t use the lookback window here. If you need it, for example, at last click (touch) and it is equal to 7 days, you must add the following to CASE-WHEN functions: date of the First Touch - date of conversion &lt; 7 days in seconds (604800).
+
+Ok, I guess we can start now. Full SQL query can be found [here](https://github.com/SergeyMatrosov/Simple_Attributions_via_SQL_in_BigQuery)
+
+1\. Our first step is to make a table with event streaming by user
+
+![Table](/images/last-click-city/Simple_Attribution_Models/Table.png)
+
+```sql
+WITH
+  WebsiteUserStreaming AS (
+  SELECT "11111" AS userid, "2020-01-01" AS time, "blog" AS source, "zero" AS event UNION ALL
+  SELECT "11111", "2020-01-02", "organic", "CONVERSION" UNION ALL
+  SELECT "22222", "2020-01-01", "ppc", "zero" UNION ALL
+  SELECT "22222", "2020-01-02", "blog", "zero" UNION ALL
+  SELECT "22222", "2020-01-03", "organic", "zero" UNION ALL
+  SELECT "22222", "2020-01-04", "ppc", "zero" UNION ALL
+  SELECT "22222", "2020-01-05", "organic", "zero" UNION ALL
+  SELECT "22222", "2020-01-06", "direct", "zero" UNION ALL
+  SELECT "22222", "2020-01-07", "direct", "CONVERSION" UNION ALL
+  SELECT "66666", "2020-01-01", "ppc", "CONVERSION" UNION ALL
+  SELECT "66666", "2020-01-02", "blog", "zero" UNION ALL
+  SELECT "66666", "2020-01-03", "ppc", "zero"),
+```
+
+2\. Then we need to format our query:
+
+```sql
+FormatedStreaming AS (
+  SELECT
+    userid,
+    UNIX_SECONDS(TIMESTAMP(time)) AS date_in_sec,
+    source,
+    CASE
+      WHEN event = 'zero' THEN 0
+      WHEN event = 'CONVERSION' THEN 1
+  END
+    AS event
+  FROM
+    WebsiteUserStreaming)
+```
+
+3\. Then, we need to check it:
+
+```sql
+SELECT
+  *
+FROM
+  FormatedStreaming
+```
+
+![Table](/images/last-click-city/Simple_Attribution_Models/Table2.png)
+
+Usually, data of events by user are unsorted. However, as we use WINDOW functions, there is no need for sorting. Even if you do, it’s not a big deal: you can use the operator ORDER BY userid, date_in_sec.
+
+Users can visit your site more than once in a day. This is why tables of user’s events often contain dates in TIMESTAMP format and why we transform dates into seconds: to understand the order of a user’s event flow in a day, for example:
+
+1. 10 PM - user finds our website organically
+2. 3 PM - the same user reaches the website through display ads
+3. 8 PM - the same user reaches the website from an email
+
+4\. Finally, we can write our queries.
+
+First of all, let’s make the Last Touch attribution. Just to avoid any misunderstandings, remember that it is the attribution itself, the rule or set of rules, that determines how conversions are assigned to touchpoints on the path to conversion. Last Touch gives all credit to the last point.
+
+```sql
+--LAST_TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN event > 0 AND date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS last_touch_attribution,
+FROM
+  FormatedStreaming
+```
+
+![Last touch](/images/last-click-city/Simple_Attribution_Models/Last_touch.png)
+
+Last Non-Direct Touch gives all credit to the Last Touch point too, but if the last one is “direct”, it gives all credit to channel before “direct”.
+
+```sql
+--LAST_TOUCH_NON_DIRECT
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event = 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN 'null'
+    WHEN event = 0 AND LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN 'null'
+    WHEN SUM(event) OVER (PARTITION BY userid) > 0 AND date_in_sec < LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+    AND LEAD(source) OVER (PARTITION BY userid ORDER BY date_in_sec) = 'direct' AND source != 'direct' THEN '1'
+    WHEN event > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AND source != 'direct' THEN '1'
+  ELSE
+  'null'
+END
+  AS last_non_direct,
+FROM
+  FormatedStreaming
+```
+
+![Last non direct](/images/last-click-city/Simple_Attribution_Models/Last_non_direct.png)
+
+But wait, what about userid ‘66666’? Why does ‘ppc’ have credit? Yes, it is not the last in the path of the user, but it is the last in the conversion path. Just look at our first table above!
+
+First Touch is rather simple too: all credit is given to the first channel.
+
+```sql
+--FIRST_TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS first_touch_attribution
+FROM
+  FormatedStreaming
+```
+
+![Last non direct](/images/last-click-city/Simple_Attribution_Models/First_touch.png)
+
+Any touch is a rare thing, but sometimes you may need to use it to measure a channel from the mix or to measure the mix itself, without knowing its exact impact, but knowing that it is crucial for your conversion path. For example, if your buying cycle is rather long, say around 90 days, and your customers read your blog posts from day 1 to day 90, you give a 100% credit to each interaction with the blog. Yes, all other channels in the example below will have 100% credit too, but in report via filters, you can choose only a blog to view its impact. I feel that I need to clarify: the attribution model is not about measuring conversions, it is about evaluating marketing efforts. That is why you could see x10 or x100 “conversions'' in any touch report, but it is not conversions, it is credit.
+
+```sql
+--ANY TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 THEN '1'
+  ELSE
+  'null'
+END
+  AS any_touch_attribution
+FROM
+  FormatedStreaming
+```
+
+![Any touch](/images/last-click-city/Simple_Attribution_Models/Any_touch.png)
+
+If your goal is only to give credit to every touch with the blog, if there is a conversion, just change rules in CASE WHEN:
+
+```sql
+--ALL CREDIT TO BLOG ONLY
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND source = 'blog' THEN '1'
+  ELSE
+  'null'
+END
+  AS blog_only
+FROM
+  FormatedStreaming
+```
+
+![All credit to blog](/images/last-click-city/Simple_Attribution_Models/All_credit_to_blog.png)
+
+Also, you can combine a set of rules: Last Touch + credit to blog each time if it was in the conversion’s path.
+
+```sql
+--BLOG + LAST TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND source = 'blog' THEN '1'
+    WHEN event > 0 AND date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS blog_and_last
+FROM
+  FormatedStreaming
+```
+
+![Blog and last touch](/images/last-click-city/Simple_Attribution_Models/Blog_and_last.png)
+
+Now for the time decay attribution. This is one of the attributions that can be called as multitouch. The core of it is that it gives a percentage of the credit to all the channels on the conversion path: the amount of credit for each channel is less (decaying) the further back in time the channel was interacted with. For example, consider a scenario where your customer interacted with the blog, then with “organic” and then with “ppc” before conversion. Channel “ppc” was the last one and will have the most credit (percent), ‘organic’ will have less and blog will have the lowest value.
+
+```sql
+--TIME_DECAY
+SELECT
+userid,
+date_in_sec,
+source,
+ROUND(IF(SAFE_CAST(weights AS FLOAT64)=0 OR SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)=0, 0, SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)), 2) AS time_decay,
+FROM
+(SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(1.1-ROW_NUMBER() OVER (PARTITION BY userid) AS STRING)
+    WHEN date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROUND(1.1-1/ROW_NUMBER() OVER (PARTITION BY userid), 2) AS STRING)
+  ELSE
+  'null'
+END
+  AS weights
+FROM
+  FormatedStreaming)
+```
+
+![Time decay](/images/last-click-city/Simple_Attribution_Models/Time_decay.png)
+
+However, if you need the reversed version, the first channel takes the most credit and others have lower values the later on in time they are. Here is the code:
+
+```sql
+--TIME_DECAY_REVERSED
+SELECT
+userid,
+date_in_sec,
+source,
+ROUND(IF(SAFE_CAST(weights AS FLOAT64)=0 OR SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)=0, 0, SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)), 2) AS time_decay_reversed,
+FROM
+(SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROW_NUMBER() OVER (PARTITION BY userid) AS STRING)
+    WHEN date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROUND(1/ROW_NUMBER() OVER (PARTITION BY userid), 2) AS STRING)
+  ELSE
+  'null'
+END
+  AS weights
+FROM
+  FormatedStreaming)
+```
+
+![Time decay](/images/last-click-city/Simple_Attribution_Models/Time_decay_reversed.png)
+
+The last one is position-based. Like time decay, it is sort of multitouch attribution. It gives a percentage of credit, based on when the touch occurred (first, last, in-between). In our example, first and last take 40% each (=80% of the credit), and in-between shares take the remaining 20%. To have accurate data, we use a ROUND function with two decimal places, but if your channel's path to conversion is usually long, use more decimal places. Otherwise, summing up all credits within the user journey from channel to channel could result in a sum > 1.
+
+```sql
+--POSITION BASED
+SELECT
+userid,
+date_in_sec,
+source,
+CASE
+WHEN SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid) > 1 THEN SAFE_CAST(ROUND(SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid), 2) AS STRING)
+ELSE weights
+END AS position_based
+FROM
+(
+SELECT
+  userid,
+  date_in_sec,
+  source,
+
+  CASE
+  --one channel and instant conversion
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND COUNT(userid) OVER (PARTITION BY userid) = 1 THEN '1'
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) > 2
+  THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.4, 3) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) = 2 THEN '0.5'
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec != FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND date_in_sec != LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+  AND COUNT(userid) OVER (PARTITION BY userid) > 2 THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.2, 1) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) > 2
+  THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.4, 1) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) = 2 THEN '0.5'
+  ELSE '0'
+  END AS weights
+FROM
+  FormatedStreaming)
+```
+
+![Position based](/images/last-click-city/Simple_Attribution_Models/Position_based.png)

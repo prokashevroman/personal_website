@@ -1,0 +1,76 @@
+---
+title: "Pulling out the next page visited by new users in Google BigQuery."
+slug: "pulling-out-the-next-page-visited-by-new-users-in-google-bigquery"
+date: "2019-06-28"
+description: "Pulling out the next page visited by new users in Google BigQuery."
+originalUrl: "https://lastclick.city/pulling-out-the-next-page-visited-by-new-users-in-google-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_9.png"
+excerptLead: "Suppose that you have a particular landing page"
+excerpt: "on your website, and you want to understand how it works for new users: how often they abandon the site after visiting this page or, for those who continue, which pages they visit afterwards. You could try to find these data in Google Analytics – it appears that the Navigation Summary report was invented for exactly this purpose and, to some extent, this is true."
+---
+
+<strong>Suppose that you have a particular landing page </strong>on your website, and you want to understand how it works for new users: how often they abandon the site after visiting this page or, for those who continue, which pages they visit afterwards. You could try to find these data in Google Analytics – it appears that the Navigation Summary report was invented for exactly this purpose and, to some extent, this is true. You can go to the Navigation Summary report, select the page for which you want to obtain the information, add the New Users segment, and here you are:
+
+![Pulling out the next page visited by new users in Google BigQuery](/images/last-click-city/Pulling_out_the_next_page/Navigation_summary.png)
+
+However, the GA report has several disadvantages.
+
+1\) If you want to analyze the new user’s behavior, it won’t be possible to avoid segments. However, segments can be used for a period of three months only, and this can be quite a limitation if you want to analyze more extended periods, e.g., one year or more.
+
+2\) The Navigation Summary report uses the pageview metric, and you can’t build the report using sessions or users. Nonetheless, session-based analysis can be more relevant, since the pageviews may include multiple clicks within one session (made by one user). Thus, the number of pageviews may be higher than the number of sessions, and there is no way of knowing it for sure in the Google Analytics interface.
+
+3\) You can't easily add a secondary dimension to the report. That means it’s comparatively hard to slice the data, if necessary.
+
+Now, let’s look at how the next page visited can be extracted via BigQuery.
+
+<strong>Update July 5, 2020</strong>: Standard SQL is used in the example below. If you need Legacy SQL implementation you can find it [here.](https://github.com/prokashev/bigquery-sql/blob/master/next_visited_page_legacy_sql.sql)
+
+```sql
+SELECT
+    t.page_path,
+    t.second_page_path,
+    count(sessionId) AS total_sessions
+FROM (SELECT
+    CONCAT(fullvisitorID, "-", visitId) AS sessionId,
+    hits.hitNumber,
+    visitNumber,
+    hits.page.pagePath AS page_path,
+    LEAD(hits.page.pagePath) OVER (PARTITION BY fullVisitorId, visitStartTime ORDER BY hits.hitNumber) AS second_page_path
+FROM
+    `pro-tracker-id.ga_sessions_*`,
+        UNNEST(hits) AS hits
+    WHERE
+    _TABLE_SUFFIX BETWEEN "20190101" AND "20190601"
+AND
+    hits.type="PAGE" AND
+    visitNumber = 1) t
+WHERE
+    hitNumber=1 AND page_path = "/page/"
+GROUP BY
+    t.page_path,
+    t.second_page_path
+ORDER BY
+    total_sessions DESC
+```
+
+Here’s a short query overview.
+
+1\) First of all, in the subquery we create a Session ID, which is a combination of fullVisitorId and visitStartTime attributes: `CONCAT(fullvisitorID, "-", visitId) AS sessionId`. This field will be used later to calculate the number of sessions for each next page visited.
+
+2\) The next important part is the LEAD function, which helps us to create the second_page_path field. LEAD is a powerful window function which returns the value of the next line in relation to the current one. With each window function, you should use the OVER expression, which can be combined with three optional components.
+
+<strong>PARTITION BY </strong>– defines which attribute will be used to divide the data. In our case, we use fullVisitorId and visitStartTime.
+
+<strong>ORDER BY </strong>– controls the order of rows in the subset. In the example above, we order the rows by the hits.hitNumber field.
+
+<strong>WINDOW FRAME </strong>– defines which group of rows will be processed. It isn’t used in our subquery.
+
+3\) Please pay attention to the condition `WHERE … visitNumber = 1`. This allows us to analyze the new users only.
+
+4\) In the top-level query, we select only those sessions where a particular page visit was the first hit, so that we can consider only those cases where a user has entered the website through that page (`hitNumber=1`).
+
+5\) Finally, in the same top-level query, we count the number of sessions.
+
+![Result of the next page query](/images/last-click-city/Pulling_out_the_next_page/result.png)
+
+Thank you for your attention, and feel free to reuse the above query!

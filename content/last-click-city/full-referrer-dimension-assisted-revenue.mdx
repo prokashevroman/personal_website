@@ -1,0 +1,91 @@
+---
+title: "Full Referrer Dimension: Measuring Assisted Revenue."
+slug: "full-referrer-dimension-assisted-revenue"
+date: "2019-06-03"
+description: "Full Referrer Dimension: Measuring Assisted Revenue."
+originalUrl: "https://lastclick.city/full-referrer-dimension-assisted-revenue.html"
+thumbnail: "/images/last-click-city/For_index_page_6.png"
+excerptLead: "Let’s imagine that someone"
+excerpt: "has posted a few articles that lead to your website, and you are able to find the data about this traffic source under the /referral section (because the links posted are https, luckily)."
+---
+
+<strong>Let’s imagine that someone </strong>has posted a few articles that lead to your website, and you are able to find the data about this traffic source under the /referral section (because the links posted are https, luckily). You are thinking about more in-depth collaboration with the website’s owners, but you want to check the revenue brought by these articles, to understand which of them have performed better than others. The only problem is that Google doesn't provide the data about the assisted revenue with full referrer information. ![Assisted conversions. Full referrer dimension](/images/last-click-city/Full_referrer/No_fullreferrer.png)
+
+As you can see on this screenshot, the “full referrer” dimension is not available in the Assisted Conversions report. Hence, if you have more than one article posted on one particular resource, you can’t allocate the revenue between the pieces of content, and therefore you can’t determine whether some particular content works or not. Fortunately, BigQuery comes to the rescue. Please take a look at the query below.
+
+```sql
+SELECT
+    revenue,
+    hits.transaction.transactionId,
+    trafficSource.referralPath,
+    MIN(lookback_window) as lookback_window
+FROM (SELECT
+    visitor_ID_pageviews,
+    visitor_ID_purchases,
+    revenue,
+    trafficSource.referralPath,
+    hits.transaction.transactionId,
+    hit.timestamp_transaction,
+    DATEDIFF(hit.timestamp_transaction,hit.timestamp) as lookback_window
+FROM (SELECT
+    fullVisitorId as visitor_ID_pageviews, visitID, visitNumber, trafficSource.referralPath,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime),"%Y-%m-%d %H:%M:%S") as hit.visitStartTime,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime + hits.time/1000),"%Y-%m-%d %H:%M:%S") as hit.timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2019-01-01'), TIMESTAMP('2019-06-01'))
+WHERE
+    trafficSource.medium CONTAINS "referral" AND hits.hitNumber = 1 AND trafficSource.source CONTAINS "website_hostname"
+GROUP BY
+    visitor_ID_pageviews,
+    visitNumber, visitID,
+    trafficSource.referralPath,
+    hit.timestamp,
+    hit.visitStartTime)
+AS table_with_visits
+INNER JOIN
+(SELECT
+    fullVisitorId as visitor_ID_purchases,
+    totals.totalTransactionRevenue/1000000 AS revenue,
+    hits.transaction.transactionId,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime),"%Y-%m-%d %H:%M:%S") as hit.visitStartTime,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime + hits.time/1000),"%Y-%m-%d %H:%M:%S") as hit.timestamp_transaction
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2019-01-01'), TIMESTAMP('2019-06-01'))
+WHERE
+    totals.transactions > 0
+GROUP BY
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId,
+    hit.timestamp_transaction,
+    hit.visitStartTime)
+AS table_with_transactions
+ON
+    table_with_visits.visitor_ID_pageviews = table_with_transactions.visitor_ID_purchases
+WHERE
+    hits.transaction.transactionId != 'null' AND hit.timestamp_transaction > hit.timestamp
+ORDER BY
+    revenue)
+WHERE
+    lookback_window < 91
+GROUP BY
+    visitor_ID_pageviews,
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId,
+    trafficSource.referralPath
+```
+
+The query structure is similar to one we have already discussed in [this article](/last-click-city/assisted-conversions-report-bigquery). However, there are some differences. Let’s take a closer look at them, step by step.
+
+1\) First, we are selecting an audience of users who came to our website via a particular referral source. This data forms a table called “table_with_visits” and contains everyone who clicked on the links to our site in the articles. In the very same query, we are selecting the trafficSource.referralPath field, which is equivalent to Google Analytics’ full referrer dimension.
+
+2\) Then, we join this data with the second table ("table_with_transactions"), which contains all the transactions during a chosen period. We use fullVisitorId as a key to match the two tables. It is important to mention that we are selecting only those transactions which occurred after the visit via a referral link.
+
+3\) In the next step, we calculate a lookback window. To do this we use one more SELECT statement and the DATEDIF SQL function (`DATEDIFF(hit.timestamp_transaction,hit.timestamp) as lookback_window`).
+
+4\) As the very last step, we select revenue, transaction ID, referral path and minimum lookback window. The result looks approximately like this:
+
+![Full referrer dimension in GA](/images/last-click-city/Full_referrer/result_full_referrer.png)
+
+That is all that you need to get the revenue for the full referrer dimension. If required, you can modify the lookback window and obtain the revenue for a particular period of time (including a period of more than 90 days, which is another excellent feature of BigQuery). Thank you for your attention, and I hope this stuff will be useful.

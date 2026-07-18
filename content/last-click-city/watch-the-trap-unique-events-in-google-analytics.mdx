@@ -1,0 +1,34 @@
+---
+title: "Watch the trap: Unique events in Google Analytics."
+slug: "watch-the-trap-unique-events-in-google-analytics"
+date: "2022-04-01"
+description: "Every single reason why a Google Analytics session will start over."
+originalUrl: "https://lastclick.city/watch-the-trap-unique-events-in-google-analytics.html"
+thumbnail: "/images/last-click-city/For_index_page_37.png"
+excerptLead: "Events in Google Analytics, in both Universal Analytics (which will be deprecated next year starting from July 1, 2023) and in Google Analytics 4"
+excerpt: "(which will be a replacement), are indispensable tools for measuring various activities on website pages and across applications."
+---
+
+<strong>Events in Google Analytics, in both Universal Analytics (which will be deprecated next year starting from July 1, 2023) and in Google Analytics 4 </strong>(which will be a replacement), are indispensable tools for measuring various activities on website pages and across applications. These activities may include scroll tracking and various server events, external and internal link clicks or button clicks, or video or audio playbacks, as well as form submissions, file downloads, and many more.
+
+It’s crucial to understand the difference between total events and unique events. Both are often used to measure effectiveness. Essentially, the total events counter increases every time an event occurs. If 50 users click the “Download the free ebook” button 100 times, the number of total events will be equal to 100. As opposed to the total, unique events are logged the first time users execute them. A unique event is counted as a first event during a session, containing a particular combination of event category, event action, and event label. It is crucial to note that the page where a unique event occurs doesn’t matter by default, and only the event which happened on the first page will be counted.
+
+Let us see why this is so important.
+
+Imagine the following scenario: you configured an event to measure scroll tracking on every page, and it counts each time a person starts to scroll. The same event category, action, and label are used for each event. You decided to use the unique events metric to understand how many unique users start to scroll on every webpage.
+
+Now let’s suppose that we need to build a report with the number of unique events and pick a page as a primary dimension. It may look something like this:
+
+![Unique events in Google Analytics and page dimension](/images/last-click-city/Unique_events/unique_events_2.png)
+
+It may seem that we can see a number of unique events on every page, but in fact, this may not be the case at all and the data might be incorrect. And here’s why:
+
+Once a user visits a website and starts to scroll on the first page during the session, Google Analytics records an increase in both the total and unique events. But if this user proceeds to another page and starts to scroll there, only the number of total events goes up, while the number of unique events doesn’t change.
+
+Apparently, only the first event during the session will be counted as unique in such a situation (in other words, the event that occurred on the first page in the session). Users may visit many more pages and scroll on them all, but the number of unique events on every page (except the first one) will be zero. This means that the page report will be completely improper.
+
+To avoid such a mess, you should make an event unique depending on the page where it occurs. For example, record the event label using a dynamic variable, like you can see in this example:
+
+![Unique events in Google Tag Manager](/images/last-click-city/Unique_events/unique_events_1.png)
+
+Have a great day, and be careful with unique events!

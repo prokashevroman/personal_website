@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Mobirise v4.8.10, mobirise.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <link rel="shortcut icon" href="assets/images/logo-48x48.png" type="image/x-icon">
+  <meta name="description" content="Every single reason why a Google Analytics session will start over.">
+  <title>Last Click City :: Six differences between a session in GA4 and a session in UA.</title>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5DK5ZKP');</script>
+  <!-- End Google Tag Manager -->
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <link rel="stylesheet" href="assets/web/assets/mobirise-icons/mobirise-icons.css">
+  <link rel="stylesheet" href="assets/tether/tether.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+  <script type="text/javascript" src="assets/theme/js/lang-sql.js"></script>
+  <link rel="stylesheet" type="text/css" href="prettify.css">
+  <link rel="stylesheet" href="assets/theme/css/rrssb.css" />
+
+  <meta property="og:title" content="Six differences between a session in GA4 and a session in UA." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lastclick.city/six-differences-between-a-session-in-ga4-and-a-session-in-ua.html" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content="Six differences between a session in GA4 and a session in UA."/>
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@prokashev_roman">
+  <meta name="twitter:creator" content="@prokashev_roman">
+  <meta name="twitter:title" content="Six differences between a session in GA4 and a session in UA.">
+  <meta name="twitter:description" content="Six differences between a session in GA4 and a session in UA. | https://lastclick.city/six-differences-between-a-session-in-ga4-and-a-session-in-ua.html">
+  <meta name="twitter:image" content="">
+
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5DK5ZKP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <section class="menu cid-rew4t9v9hr" once="menu" id="menu2-3">
+    <nav class="navbar navbar-expand beta-menu navbar-dropdown align-items-center navbar-fixed-top navbar-toggleable-sm">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="menu-logo">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="https://lastclick.city">
+                        <img src="assets/images/logo-122x244.png" alt="Mobirise" title="" style="height: 3.8rem;">
+                    </a>
+                </span>
+
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true"><li class="nav-item">
+                    <a class="nav-link link text-black display-4" href="https://lastclick.city">
+                        Last Click City</a>
+                </li></ul>
+
+        </div>
+    </nav>
+</section>
+
+
+<section class="mbr-section content6 cid-rew699umhM" id="content6-8">
+    <div class="container">
+        <div class="media-container-row">
+            <div class="col-12 col-md-10">
+                <div class="media-container-row">
+                    <div class="media-content">
+                      <div class="article">
+                        <div class="mbr-section-text">
+                            <p class="mbr-text mb-0 mbr-fonts-style display-7">
+                              <h2>Six differences between a session in GA4 and a session in UA.</h2>
+                              <div class="article-font">
+                              <p>April 18, 2022</p>
+                              <ul class="rrssb-buttons">
+                                <li class="rrssb-facebook">
+                                  <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+                                  https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+                                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://lastclick.city/six-differences-between-a-session-in-ga4-and-a-session-in-ua.html" class="popup">
+                                    <span class="rrssb-icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg>
+                                    </span>
+                                    <span class="rrssb-text"></span>
+                                  </a>
+                                </li>
+                                <li class="rrssb-twitter">
+                                  <!-- Replace href with your Meta and URL information  -->
+                                  <a href="https://twitter.com/intent/tweet?text=https://lastclick.city/six-differences-between-a-session-in-ga4-and-a-session-in-ua.html"
+                                  class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                              <li class="rrssb-linkedin">
+                                <!-- Replace href with your meta and URL information -->
+                                <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://lastclick.city/six-differences-between-a-session-in-ga4-and-a-session-in-ua.html&amp;title=six%20differences%20between%20a%20session%20in%20ga4%20and%20a%20session%20in%20UA&amp;summary=six%20differences%20between%20a%20session%20in%20ga4%20and%20a%20session%20in%20UA" class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                            </ul>
+                            <br>
+                            <p><strong>The session has always been one of the keystones in Google Analytics,</strong> and while it will also continue to be one of the essential concepts in GA4, the session has evolved. Let us take a closer look at these changes so that you can better understand GA4 metrics. Then, you will be able to adopt these metrics to evaluate your website and apps’ performance more effectively.</p>
+                            <p><b>How sessions are defined in UA and GA4.</b></p>
+                            <p>Firstly, let us review the definitions provided by Google in their <a href="https://support.google.com/analytics/answer/2731565#zippy=%2Cin-this-article">official documentation</a>. In UA, a session is as follows:</p>
+                            <p><blockquote>A session is a group of user interactions with your website that take place within a given time frame. For example a single session can contain multiple page views, events, social interactions, and ecommerce transactions.</blockquote></p>
+                            <p>In GA4, the <a href="https://support.google.com/analytics/answer/9964640?hl=en#sessions&zippy=%2Cin-this-article">definition</a> did not change. A session is still:</p>
+                            <p><blockquote>a group of user interactions with your website that take place within a given time frame.</blockquote></p>
+                            <p>However, rather significant changes have taken place regarding the way in which sessions are calculated.</p>
+                            <p><b>1. GA4 sessions are essentially events.</b></p>
+                            <p>As previously mentioned, the role of events in GA4 is much more important compared to UA, and <b>session count is tied to the events</b>. Every GA4 session starts with one of the automatically collected events - <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">session_start</code>. The duration of a session is based on the time span between the first and last event in the session.
+                            <p><b>2. <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">ga_session_id</code> parameter is not unique depending on the users.</b></p>
+                            <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Sessions_in_GA_and_UA/ga_session_id.png" alt="GA4 session ID">
+                            <p></p>
+                            <p>Like any other GA4 event, <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">session_start</code> has several parameters stored in a repeated record. <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">ga_session_id</code> is one of them. In contrast to the UA (in which a unique session identifier called <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">visitID</code>)  <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">ga_session_id</code> in GA4 is not really unique. In fact, it is a timestamp and thus can be the same for many website visitors (how many depends on the traffic volume).</p>
+                            <p>Therefore to count unique sessions in the BigQuery export for GA4, you need to combine the <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">ga_session_id</code> with <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">user_pseudo_id</code>. like this:</p>
+                            <p><code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">concat(user_pseudo_id, (select value.int_value from unnest(event_params) where key =‘ga_session_id’)) as session_id</code></p>
+                            <p><b>3. Sessions in GA4 are not subject to the limitations that exist in UA.</b></p>
+                            <p>Now, a session does not restart automatically when a campaign or traffic source has changed. This, in turn, leads to a <b>rather curious phenomenon - one session from various traffic sources.</b></p>
+                            <p>One more characteristic, which is important to mention, is that in GA4, a session does not restart at midnight. As previously mentioned, session count is tied to the <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">session_start</code> events. Hence, combining these facts results in sessions with the <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">session_start</code> event missing. This can occur, for example, if a user visits your website late in the evening and continues to browse throughout the night (after 12a.m.) and you will pick the data for analysis only on the second day of the activity. In this case, <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">session_start</code> will be on the previous day (the day before the analyzed one).</p>
+                            <p><b>4. The bounce rate is deprecated in GA4. Engaged sessions have replaced it.</b></p>
+                            <p>GA4 lost a metric that is familiar to everyone, namely, bounce rate. Now Google suggests using the brand-new indicator, engaged sessions.</p>
+                            <p><blockquote>Engaged sessions: The number of sessions that lasted 10 seconds or longer, or had 1 or more conversion events or 2 or more page or screen views.</blockquote></p>
+                            <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Sessions_in_GA_and_UA/engaged_sessions.png" alt="Engaged sessions">
+                            <p></p>
+                            <p>The engaged sessions metric is available in all main reports - acquisition, user, traffic, etc. It is important to note that the time for an engaged session can be adjusted.</p>
+                            <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/Sessions_in_GA_and_UA/adjust_session_timeout.png" alt="Adjust session timeout in GA4">
+                            <p></p>
+                            <p><b>5. Sessions without page views.</b></p>
+                            <p>GA4 uses an automatically configured event, <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">page_view</code>, (which is triggered each time the page loads or the browser history state is changed by the active site). It is easy to imagine the following scenario: a user visits a website, gets distracted or just switches to another task, returns to the resource and continues to consume the content. In this case, the user may have a session with no <code class="inline-javascript" style="color:green; font-size: 80%; background-color: none;">page_view</code> event, but containing some engagement event (scroll, for example).</p>
+                            <p><b>6. No session-scoped custom dimensions.</b></p>
+                            <p>Previously, there were session-scoped custom dimensions in UA, which is no longer the case in GA4. Now you can configure your custom dimensions to be either event-scoped or user-scoped. If you need an equivalent of the session-scoped dimension in Google Analytics, consider sending additional parameters on every event during the session.</p>
+                            <div id="disqus_thread"></div>
+                      <script>
+
+                      /**
+                      *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+                      *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+                      /*
+                      var disqus_config = function () {
+                      this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+                      this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                      };
+                      */
+                      (function() { // DON'T EDIT BELOW THIS LINE
+                      var d = document, s = d.createElement('script');
+                      s.src = 'https://lastclick-city.disqus.com/embed.js';
+                      s.setAttribute('data-timestamp', +new Date());
+                      (d.head || d.body).appendChild(s);
+                      })();
+                      </script>
+                      <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="footer3 cid-rew4pnx1NQ" id="footer3-1">
+    <div class="container">
+        <div class="media-container-row content">
+            <div class="col-md-2 col-sm-4">
+                <div class="mb-3 img-logo">
+                    <a href="https://lastclick.city">
+                         <img src="assets/images/logo-192x384.png" alt="Last Click City" title="">
+                    </a>
+                </div>
+                <p class="mbr-fonts-style foot-logo display-7"></p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    CATEGORIES
+                </p>
+                <p class="mbr-text mbr-links-column mbr-fonts-style display-7">
+                    <a href="google-analytics.html" class="text-black">Google Analytics</a>
+                    <br><a href="google-tag-manager.html" class="text-black">Google Tag Manager</a>
+                    <br><a href="google-bigquery.html" class="text-black">Google BigQuery</a>
+                    <br><a href="attribution-models.html" class="text-black">Attribution models</a>
+                    <!--<br><a href="#" class="text-black">Careers</a>-->
+                </p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    LINKS
+                </p>
+                <p class="mbr-text mbr-fonts-style mbr-links-column display-7">
+                    <a href="https://www.linkedin.com/in/roman-prokashev-54732855/" class="text-black">LinkedIn</a>
+                    <br><a href = "mailto: roman.prokashev@gmail.com">Send Email</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <div class="media-container-row">
+                <div class="col-sm-12">
+                    <hr>
+                </div>
+            </div>
+            <div class="media-container-row">
+                <div class="col-sm-6 copyright">
+                    <p class="mbr-text mbr-fonts-style display-7">
+                        © Copyright 2019-2022 lastclick.city - All Rights Reserved
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+  <script src="assets/dropdown/js/script.min.js"></script>
+  <script src="assets/touchswipe/jquery.touch-swipe.min.js"></script>
+  <script src="assets/parallax/jarallax.min.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/formoid/formoid.min.js"></script>
+
+
+</body>
+</html>

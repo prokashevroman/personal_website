@@ -1,0 +1,28 @@
+---
+title: "Get the value of UTM parameters using SQL."
+slug: "get-the-value-of-utm-parameters-using-sql"
+date: "2021-07-28"
+description: "Get the value of UTM parameters using SQL."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/get-the-value-of-utm-parameters-using-sql.html"
+thumbnail: "/images/last-click-city/For_index_page_34.png"
+excerptLead: "Parsing HTML with regular expressions is a really bad idea,"
+excerpt: "but if you are using a tracking template for your ads, I’m sure your URL has well-defined, structured UTM parameters. Therefore, this method may actually be used in this case."
+---
+
+<strong>Parsing HTML with regular expressions is a really bad idea, </strong>but if you are using a tracking template for your ads, I’m sure your URL has well-defined, structured UTM parameters. Therefore, this method may actually be used in this case. Here is a quick tip on how to get the value of UTM parameters, using SQL and REGEXP:
+
+The pattern is ‘<em>utm_parameter=([^&]\*)</em>‘. It will take everything, starting from the equal sign ‘=’ following ‘parameter’, as far as the ampersand, ‘&’.
+
+![get UTM parameters using SQL](/images/last-click-city/Get_the_value_using_SQL/с1.JPG)
+
+![get UTM parameters using SQL](/images/last-click-city/Get_the_value_using_SQL/с2.JPG)
+
+The main feature of this extraction is that the order of the UTM parameters is not at all important, therefore, if we rewrite the referrer as:
+ <em>this_is_referrer/?&utm_medium=cpc&utm_campaign=TEST&utm_source=google</em>
+ the result of our query will be the same.
+
+This means that if someone changes the order of the UTMs, either intentionally or by accident, the query won’t need any fixes.
+
+The full code is [here](https://github.com/SergeyMatrosov/Get_value_of_UTM_parameters_via_SQL/blob/main/GetValue.md).

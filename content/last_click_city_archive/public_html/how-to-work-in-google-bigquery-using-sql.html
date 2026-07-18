@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Mobirise v4.8.10, mobirise.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <link rel="shortcut icon" href="assets/images/logo-48x48.png" type="image/x-icon">
+  <meta name="description" content="How to work in Google BigQuery using SQL. A simple guide to using Google BigQuery">
+  <title>Last Click City :: How to work in Google BigQuery using SQL.</title>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5DK5ZKP');</script>
+  <!-- End Google Tag Manager -->
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <link rel="stylesheet" href="assets/web/assets/mobirise-icons/mobirise-icons.css">
+  <link rel="stylesheet" href="assets/tether/tether.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+  <script type="text/javascript" src="assets/theme/js/lang-sql.js"></script>
+  <link rel="stylesheet" type="text/css" href="prettify.css">
+  <link rel="stylesheet" href="assets/theme/css/rrssb.css" />
+
+  <meta property="og:title" content="How to work in Google BigQuery using SQL. A simple guide to using Google BigQuery." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lastclick.city/how-to-work-in-google-bigquery-using-sql.html" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content="How to work in Google BigQuery using SQL. A simple guide to using Google BigQuery."/>
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@prokashev_roman">
+  <meta name="twitter:creator" content="@prokashev_roman">
+  <meta name="twitter:title" content="How to work in Google BigQuery using SQL. A simple guide to using Google BigQuery.">
+  <meta name="twitter:description" content="How to work in Google BigQuery using SQL. A simple guide to using Google BigQuery. | https://lastclick.city/how-to-work-in-google-bigquery-using-sql.html">
+  <meta name="twitter:image" content="">
+
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5DK5ZKP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <section class="menu cid-rew4t9v9hr" once="menu" id="menu2-3">
+    <nav class="navbar navbar-expand beta-menu navbar-dropdown align-items-center navbar-fixed-top navbar-toggleable-sm">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="menu-logo">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="https://lastclick.city">
+                        <img src="assets/images/logo-122x244.png" alt="Mobirise" title="" style="height: 3.8rem;">
+                    </a>
+                </span>
+
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true"><li class="nav-item">
+                    <a class="nav-link link text-black display-4" href="https://lastclick.city">
+                        Last Click City</a>
+                </li></ul>
+
+        </div>
+    </nav>
+</section>
+
+
+<section class="mbr-section content6 cid-rew699umhM" id="content6-8">
+    <div class="container">
+        <div class="media-container-row">
+            <div class="col-12 col-md-10">
+                <div class="media-container-row">
+                    <div class="media-content">
+                      <div class="article">
+                        <div class="mbr-section-text">
+                            <p class="mbr-text mb-0 mbr-fonts-style display-7">
+                              <h2>How to work in Google BigQuery using SQL.</h2>
+                              <div class="article-font">
+                              <p>March 26, 2020</p>
+                              <ul class="rrssb-buttons">
+                                <li class="rrssb-facebook">
+                                  <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+                                  https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+                                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://lastclick.city/how-to-work-in-google-bigquery-using-sql.html" class="popup">
+                                    <span class="rrssb-icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg>
+                                    </span>
+                                    <span class="rrssb-text"></span>
+                                  </a>
+                                </li>
+                                <li class="rrssb-twitter">
+                                  <!-- Replace href with your Meta and URL information  -->
+                                  <a href="https://twitter.com/intent/tweet?text=https://lastclick.city/how-to-work-in-google-bigquery-using-sql.html"
+                                  class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                              <li class="rrssb-linkedin">
+                                <!-- Replace href with your meta and URL information -->
+                                <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://lastclick.city/how-to-work-in-google-bigquery-using-sql.html&amp;title=how%20to%20work%20in%20google%20bigquery%20using%20sql&amp;summary=how%20to%20work%20in%20google%20bigquery%20using%20sql" class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                            </ul>
+                            <br>
+                            <p></p><p><i>An article by <a href="https://www.linkedin.com/in/sergey-matrosov/"><i>Sergey Matrosov</i></a></i></p>
+                              <br>
+
+                              <h2>Table of contents</h2>
+                              <ul>
+                              <li><a href="#Introduction">Introduction</a></li>
+                              <li><p><a href="#What is Google Bigquery?">What is Google Bigquery?</a></li>
+                                &bull; <a href="#Terminology">Terminology</a>
+                              <li><p><a href="#Queries">Queries</a></li>
+                                &bull; <a href="#What is going on in the table?">What is going on in the table?</a>
+                              <li><p><a href="#SELECT">SELECT</a></li>
+                                &bull; <a href="#Basics">Basics</a><br>
+                                &bull; <a href="#Querying two tables">Querying two tables</a>
+                              <li><p><a href="#FROM">FROM</a></li>
+                              <li><p><a href="#WHERE">WHERE</a></li>
+                                &bull; <a href="#Simple Conditions">Simple Conditions</a><br>
+                                &bull; <a href="#More complex conditions">More complex conditions</a>
+                              <li><p><a href="#AND / OR">AND / OR</a></li>
+                                &bull; <a href="#More and more conditions">More and more conditions</a><br>
+                              <li><p><a href="#GROUP BY">GROUP BY</a></li>
+                                &bull; <a href="#Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP">Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP</a><br>
+                              <li><p><a href="#TIMESTAMP AND DATE">TIMESTAMP AND DATE</a></li>
+                              <li><p><a href="#VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH">VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH</a></li>
+                              <li><p><a href="#CASE WHEN... THEN... END">CASE WHEN... THEN... END</a></li>
+                              <li><p><a href="SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE">SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE</a></li>
+                                &bull; <a href="#SUBSTR">SUBSTR</a><br>
+                                &bull; <a href="#Column Parsing">Column Parsing</a><br>
+                                &bull; <a href="#Merge columns">Merge columns</a><br>
+                                &bull; <a href="#Make SQL do the calculations instead of you – analytical functions">Make SQL do the calculations instead of you – analytical functions</a><br>
+                              </ul>
+
+                              <h2 id="Introduction">Introduction</h2>
+                              <br>
+                              <strong>Hi there! This might be your first guide to SQL and BigQuery. </strong>If so, that’s cool, but if it isn’t, we hope that our guide will provide clear explanations and help you understand things better. The goal of this guide is to help you become more familiar with SQL and BigQuery as quickly as possible so that you can make simple queries by the end of it. With practice, you will be able to carry out difficult and complex data analysis tasks.
+                              <p></p>
+                              <p>We strongly recommend that you write and run the queries in this guide because learning by doing is key to understanding something. Good luck!</p>
+                              <p></p>
+                              <p>P.S. Feel free to send us constructive feedback. We are keen to make this guide as good as possible.</p>
+                              <h2 id="What is Google Bigquery?">What is Google Bigquery?</h2>
+                              <p></p>
+                              <p><a href="https://console.cloud.google.com/bigquery">Google Bigquery</a> is a cloud-based data warehouse, where you can group collections of data from other databases like SalesForce and data from Google Ads etc. by means of Bigquery <i>datasets</i> and <i>tables</i>.</p>
+                              <p id="Terminology"><b>Terminology</b></p>
+                              <p>&bull; A ‘project’ is just a collection of datasets and is made using the Google Cloud Platform. If you need to stream data from your service to BigQuery, you can do this by using the project’s credentials and API.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/BigQuery-project.png" alt="BigQuery project">
+                              <p></p>
+                              <p>&bull; The ‘dataset’ is a collection of tables, like a folder with files.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/project-dataset-table.png" alt="BigQuery project">
+                              <p></p>
+                              <p>&bull; ‘Table’: This presents data in columns and rows. You can query, manipulate and extract particular data from this.</p>
+                              <p></p>
+                              <p>&bull; ‘View’: This is a virtual table. You can think of it almost as a saved query that gives you the real table as a result of running it.</p>
+                              <p>Plenty of data are streamed to BigQuery from the different services that are integrated with it. Let’s assume that your business is E-commerce. You have a website and CRM. These are at least two services that could be connected to BQ. BQ itself can stream its data to different platforms such as Google Data Studio or Tableau and data-visualization tools.</p>
+                              <p>Summary:</p>
+                              <p>1.	BigQuery consists of projects (data from services).</p>
+                              <p>2.	Projects consist of datasets.</p>
+                              <p>3.	Datasets consist of tables and views (queries).</p>
+                              <p>4.	Tables consist of rows and columns (two-dimensional array).</p>
+                              <br>
+                              <h2 id="Queries">Queries</h2>
+                              <p id="What is going on in the table?"><b>What is going on in the table?</b></p>
+                              <table style="width:100%">
+                                <tr>
+                                  <td width="50%"><img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/bigquery-table-schema.png" alt="BigQuery project"></td>
+                                  <td width="50%"><img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/bigquery-table-details.png" alt="BigQuery project"></td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <p>‘Schema’ gives you an understanding of columns and each data type. The most common types are as follows:</p>
+                                    <p>&bull; STRING – represents text;<br>
+                                    &bull; INTEGER – whole numbers;<br>
+                                    &bull; BOOLEAN – the type, which has one of two possible values (1 and 0), where 1 = TRUE, and 0 = FALSE;<br>
+                                    &bull; DATA – stores only the date, without the time part;<br>
+                                    &bull; TIMESTAMP – is used to store data that contain both date and time parts;<br>
+                                    &bull; FLOAT – stores numbers with a fractional value, such as 3.14. Remember: this value is not an exact value; 3.14, for example, is a well-known pattern (Pi), but Pi itself has an infinite number of digits after the delimiter ‘,’. Use this type to show that a number is not a whole;<br>
+                                    &bull; NUMERIC – also stores numbers as an INTEGER or FLOAT but where precision needs to be ensured.</p>
+                                  </td>
+                                  <td>
+                                    <p>The ‘Details’ section has information about the table itself, as follows:</p>
+                                    <p>&bull; Table ID – path (address) of the table<br>
+                                    &bull; Table size<br>
+                                    &bull; Number of rows<br>
+                                    &bull; Creation time<br>
+                                    &bull; Last modified<br>
+                                    &bull; Expiration – the date when the table is deleted (generally set as ‘Never’ = ‘Do not delete’)<br>
+                                    &bull; Data location – the region where you want to store your data (EU or US). Remember the stipulations of the GDPR when setting this up.</p>
+                                  </td>
+                                </tr>
+                              </table>
+                              <br>
+                              <h2 id="SELECT">SELECT</h2>
+                              <p id="Basics"><b>Basics</b></p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/select-basics.png" alt="BigQuery project">
+                              <p></p>
+                              <p>‘Syntax’ is simple and refers to how you want the results to be shown – from where, with which conditions, how to show/represent your data and how much. The machine itself will execute syntax in this order:</p>
+                              <p>SELECT:<br>
+	                            1. FROM<br>
+	                            2. WHERE<br>
+	                            3. GROUP BY<br>
+	                            4. HAVING<br>
+	                            5. SELECT<br>
+	                            6. ORDER BY</p>
+                              <p>As you can see, this order is not equal to the order of the query that you write in the interface. It is done like this to make the query more readable for users and to help them maintain it. Just remember that the machine executes it a little bit differently.</p>
+                              <p>The syntax for all SQL dialects has pretty much the same structure.</p>
+                              <p id="Querying two tables"><b>Querying two tables</b></p>
+                              <p>If two tables have identical schema and data types in columns, you can query these two tables at the same time. The result will be data from each table, given sequentially. The data from table 1 will be presented first, and then the data from table 2 will be presented.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/Querying-two-tables.png" alt="BigQuery project">
+                              <br><br>
+                              <h2 id="FROM">FROM</h2>
+                              <p>If you want to take something, you should have an address or path where it is stored, and the path is structured as follows: project.dataset.table.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/from-structure.png" alt="BigQuery project">
+                              <p>Sometimes, a table can have nested tables, or it could be partitioned by date, by timestamp or by etc. These are the main results of data streaming in BigQuery.</p>
+                              <p>1. Table with nested tables: For example, project ‘bigquery-public-data’ with dataset ‘samples’ has the table ‘Shakespeare’, which can store such tables as ‘publication15980101’ and ‘sample15980201’ etc., where 1598 is the year.</p>
+                              <p>If you use Standard SQL (and we strongly recommend using only this dialect in BigQuery), you should use wildcards in WHERE to query it, as follows:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare.publication*`
+WHERE
+  _TABLE_SUFFIX BETWEEN ‘15980101’ AND ‘16000101’
+</code></pre>
+                              <p></p><p>The result will be all columns with data from all Shakespeare’s publications between 1598 and 1600.</p>
+                              <p>2. Partitioned table: This is like the previous table but it is one table that is divided into segments containing all the data and pseudo columns in schema, called, for example, _PARTITIONTIME or _PARTITIONDATE, depending on the dividing method. Let’s say it is partitioned by date.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  _PARTITIONTIME BETWEEN '1598-01-01' AND '1600-01-01'
+</code></pre>
+                              <h2 id="WHERE">WHERE</h2>
+                              <p>‘WHERE’ is the main operator you must use in order to have a table with only the data you need. Without this, you’ll either get the same table that you have queried or all data from columns that you chose in SELECT.</p>
+                              <p>It’s not that hard to make conditions. Just write ‘column’ and the value(s) that you want to see in this column.</p>
+                              <p id="Simple Conditions"><b>Simple Conditions</b></p>
+                              <p>Simple conditions are the precise value you want to pick out of the table.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'LVII'
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/simple-query-results.png" alt="BigQuery project">
+                              <p></p>
+                              <p id="More complex conditions"><b>More complex conditions</b></p>
+                              <p>WHERE really likes the command BETWEEN. This is very useful when you need, for example, to show only those words that have a word_count of more than two but less than four. In other cases, it could be data between dates and timestamps etc.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word_count BETWEEN 2 AND 3
+</code></pre>
+                              <h2 id="AND / OR">AND / OR</h2>
+                              <table style="width:100%">
+                                <tr>
+                                <td width="50%"><pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'meet' OR word = 'affords'
+</code></pre>
+</td>
+<td width="50%"><pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'meet' AND corpus = 'sonnets'
+</code></pre>
+</td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <p>‘OR' picks out all data that either have this or that value. In this case, it will be only those rows where column ‘word’ either contains ‘meet’ or ‘affords’.</p>
+                                  </td>
+                                  <td>
+                                    <p>‘AND’ takes only data that have both these records in a row. In this case, it will be only those rows, where column ‘word’ contains only ‘meet’ and simultaneously column ‘corpus’ contains only ‘sonnets’. Try this for yourself!</p>
+                                  </td>
+                                </tr>
+                              </table>
+                              <br>
+                              <p id="More and more conditions"><b>More and more conditions</b></p>
+                              <p>You can combine a lot of conditions in WHERE, but remember that it must be readable for you and other users. Use parentheses.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'meet'
+  AND (corpus_date=1590 OR corpus_date=1594)
+  AND NOT corpus IN ('sonnets', '1kinghenryvi', 'comedyoferrors')
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/more-conditions-results.png" alt="BigQuery project">
+                              <p></p>
+                              <p>Remember: if you have a zero result that seems odd, check the WHERE condition.</p>
+                              <h2 id="GROUP BY">GROUP BY</h2>
+                              <p>From our point of view, this is one of the most complicated functions to explain. Firstly, it is used when you use aggregation functions, and secondly, it groups data. Let’s use SUM word_count of the word ‘QUEEN’ to see the total number of times this word appears in Shakespeare’s poetry.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  word,
+  word_count,
+  corpus,
+  corpus_date,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word,
+  word_count,
+  corpus,
+  corpus_date</code></pre>
+                                <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/group-by-results.png" alt="BigQuery project">
+                                <p></p>
+                                <p>Try it and see how it changes nothing. Why? Because every row is unique, and, of course, after GROUP BY, all of them are grouped: every row is a unique group – itself. Hence, grouping by QUEEN results in word_count = 76, corpus = 2kinghenryvi, corpus_date = 1590, and as a result, the sum_word_count = 76.</p>
+                                <p>But what if we choose word and corpus_date in SELECT?</p>
+                                <pre class="prettyprint"><code class="language-sql">SELECT
+  word,
+  corpus_date,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word,
+  corpus_date</code></pre>
+                                <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/group-by-results-2.png" alt="BigQuery project">
+                                <p></p>
+                                <p>Look at corpus_date = 1590. Sum_word_count = 150. Now look at the first two rows in the result before that:</p>
+                                <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/group-by-results-3.png" alt="BigQuery project">
+                                <p></p>
+                                <p>76 + 74 = 150</p>
+                                <p>However, everything will be lost if we add word_count to the query column:</p>
+                                <pre class="prettyprint"><code class="language-sql">SELECT
+  word,
+  word_count,
+  corpus_date,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word,
+  word_count,
+  corpus_date</code></pre>
+                                <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/group-by-results-4.png" alt="BigQuery project">
+                                <p></p>
+                                <p>Look closely: rows 1 and 2 are unique because of different values in the word_counts column, so there cannot be any sum between these rows, which is why our aggregation does not work in the way we want. You see, to use aggregation, you should consider whether there will be repeated data in the columns that you want to group by. If one of these has mostly unrepeated data, your aggregation will be useless. So, in our case, we just need to take the ‘word’ column, as follows:</p>
+                                <pre class="prettyprint"><code class="language-sql">SELECT
+  word,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/group-by-results-5.png" alt="BigQuery project">
+                              <p></p>
+                              <p>One more thing (albeit rare) is a situation where we could use no GROUP BY and just throw out the column ‘word’.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/group-by-results-6.png" alt="BigQuery project">
+                              <p></p>
+                              <p id="Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP"><b>Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP</b></p>
+                              <p>1.	STRING: text data (which must be put in inverted commas in the query)<br>
+                              2.	INTEGER: whole numbers (queried without inverted commas)<br>
+                              3.	BOOLEAN: TRUE / FALSE or 1 / 0 (queried without inverted commas)<br>
+                              4.	TIMESTAMP: date + time data type (written as TIMESTAMP)(‘2017-07-23’)</p>
+                              <p>To change the data type in the column, use CAST or SAFE_CAST functions in SELECT:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  CAST(word_count AS STRING) AS word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+</code></pre>
+                              <p>Now column ‘word_count’ has a STRING data type instead of INTEGER.</p>
+                              <br>
+                              <h2 id="TIMESTAMP AND DATE">TIMESTAMP AND DATE</h2>
+                              <p>1.	‘TIMESTAMP’: stores the date and time<br>
+                              2.	‘DATE’: stores the date only</p>
+                              <p>There are plenty of methods for working with the formats that you can find in official documentation. Most of these are just about conversion from one date format to another.</p>
+                              <p>We want to touch upon the issue where you want to have a date column. Here, it is preferable to either use TIMESTAMP with hours, minutes, seconds and even milliseconds or the INTEGER type, which stores the UNIX (UNIX Epoch) date. For example, for the date January 1, 2018, this could be <b><u>1514764801</u></b>. What does this number mean? It is the number of seconds that have elapsed since January 1, 1970. If you see this kind of number but with three more digits (e.g., 1514764801<b><i>000</b></i>), it is the same but in milliseconds!</p>
+                              <p>But is this preferable? The thing is that if you stream data from your website, you could have hits/events every second, but if you store it as Year-Month-Date, you don’t know whether the particular hit of 2018-01-01 was the first result of that day, the last or in the middle.</p>
+                              <p>A helpful resource for testing conversion from seconds to the date (and vice versa) can be found at <a href="https://www.epochconverter.com/">epochconverter.com</a>.</p>
+                              <p>January 1, 2018 in seconds:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/january-1-seconds.png" alt="BigQuery project">
+                              <p></p>
+                              <p>January 1, 2018 in milliseconds:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/january-1-milliseconds.png" alt="BigQuery project">
+                              <p></p>
+                              <br>
+                              <h2 id="VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH">VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH</h2>
+                              <p>‘VLOOKUP’ in Excel is good, but if you need to join two tables with 700,000 rows each, it’ll take you a few hours. However, with JOIN in SQL, it takes about five minutes.</p>
+                              <p>‘JOIN’ merges two tables into one using a common column. (Here, we are talking about the data in the table, not the column names.) Moreover, this could be a LEFT, RIGHT, CROSS or INNER JOIN. For example, if this is a LEFT JOIN, then you JOIN everything in the left-hand part of the table.</p>
+                              <p>As an example, we will use some other public data, namely data relating to the San Francisco Bikeshare. One table has station id and a number of available bikes. The second one has a public name and station id too. We want to have a table that has station id, the public name of this and the number of available bikes.</p>
+                              <p>Remember:</p>
+                              <p>1.	Tables must have columns with identical data. (In the example below, station_id is station_id in both tables.)<br>
+                              2.	Columns must have an identical data type.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  t1.station_id,
+  t2.name,
+  t1.num_bikes_available
+FROM
+ (SELECT
+  station_id,
+  num_bikes_available
+FROM
+   --HERE WE DEFINED WHICH TABLE WILL BE ON THE LEFT
+   --ADD ALIAS T1 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER.
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_status`) AS t1
+LEFT JOIN
+ (SELECT
+  station_id,
+  name
+FROM
+   --HERE WE DEFINED WHICH TABLE WILL BE ON THE RIGHT
+   --ADD ALIAS T2 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER.
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`) AS t2
+   --COLUMNS, THAT HAVE IDENTICAL DATA. SOMETIMES, THEY MAY HAVE DIFFERENT NAMES, BUT ONLY DATA WITHIN MATTERS!
+ON t1.station_id = t2.station_id
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/join-results.png" alt="BigQuery project">
+                              <p></p>
+                              <br>
+                              <h2 id="CASE WHEN... THEN... END">CASE WHEN... THEN... END</h2>
+                              <p>CASE: This is kind of magic among the functions of SQL, and there are two variants. Let’s take a look at the first one:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  is_male,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT 100
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/case-results.png" alt="BigQuery project">
+                              <p></p>
+                              <p>This is nice, but we want ‘Yes’ or ‘No’ instead of ‘true’ and ‘false’.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+CASE
+  WHEN is_male = TRUE THEN 'Yes'
+  WHEN is_male = FALSE THEN 'No'
+END
+  AS is_male,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT
+  100
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/case-results-2.png" alt="BigQuery project">
+                              <p></p>
+                              <p>Variant 2</p>
+                              <p>This is good, but we are told to make separate columns for ‘Male’ and ‘Female’. We don’t know why, but o.k., let’s do it.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+CASE
+  WHEN is_male = TRUE THEN 1 ELSE 0
+END AS
+  Male,
+CASE
+  WHEN is_male = FALSE THEN 1 ELSE 0
+END AS
+  Female,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT
+  100
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/case-results-3.png" alt="BigQuery project">
+                              <p></p>
+                              <br>
+                              <h2 id="SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE">SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE</h2>
+                              <p>SUBQUERIES AND ‘WITH’ STATEMENT are another magic feature of SQL. Remember: every query just makes another NEW table, which we can use to query data with.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/shakespeare.png" alt="BigQuery project">
+                              <p></p>
+                              <p>	This table has four columns: word, word_count, corpus and corpus_date. Here, we will just take ‘word’:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  word
+FROM
+  `bigquery-public-data.samples.shakespeare`
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/word-results.png" alt="BigQuery project">
+                              <p></p>
+                              <p>We are free to query this for something. Let’s count the total number of words.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  COUNT(word) AS total_number_of_words
+FROM (
+  SELECT
+    word
+  FROM
+    `bigquery-public-data.samples.shakespeare`)
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/word-results-2.png" alt="BigQuery project">
+                              <p></p>
+                              <p>Please note that we query this table just like any other using SELECT FROM, and again we can subquery the result. Say we want to add 100,500 to total_number_of_words and name it ‘madness’.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  total_number_of_words + 100500 AS madness
+FROM (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM (
+    SELECT
+      word
+    FROM
+      `bigquery-public-data.samples.shakespeare`))
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/word-results-3.png" alt="BigQuery project">
+                              <p></p>
+                              <p>The query looks stepped. One day, you may need to debug such a query but with many subqueries, so our advice here is to read it from its core. In our case, it is SELECT word FROM `bigquery-public-data.samples.shakespeare'.</p>
+                              <p>Subqueries can also be used in SELECT and WHERE. In our example, we got a 1 x 1 table that is itself equal to the value 265,156, which could be used as a condition in WHERE, as follows:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+…
+FROM
+…
+WHERE
+Expression > (SELECT
+  total_number_of_words + 100500 AS madness
+FROM (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM (
+    SELECT
+      word
+    FROM
+      `bigquery-public-data.samples.shakespeare`)))
+</code></pre>
+                              <p>Another tip is to avoid making such stepped queries altogether because as you can see, it is hard to read. Use WITH statement instead. It essentially does the same thing but is far more readable:</p>
+                              <pre class="prettyprint"><code class="language-sql">WITH
+  Core AS (
+  SELECT
+    word
+  FROM
+    `bigquery-public-data.samples.shakespeare`),
+  Count AS (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM
+    Core),
+  Madness AS (
+  SELECT
+    total_number_of_words + 100500 AS mandess
+  FROM
+    Count)
+SELECT
+  *
+FROM
+  Madness
+</code></pre>
+                              <p>Each subquery is now made into a separate table (named ‘Core’, ‘Count’, ‘Madness’) within the query, which refers one to another. Our main and final query starts at 17. One thing to mention, though, is that WITH only works in Standard SQL.</p>
+                              <p>Using these methods (the last one in particular), the data processing is done without multiplying tables and views.</p>
+                              <br>
+                              <h2 id="SUBSTR">SUBSTR</h2>
+                              <p>SUBSTR is a string method that cuts your string and gives you a new one based on it. We will cut the word ‘QUEEN’, with the aim of having only the first letter (‘Q’) as a result.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/substr.png" alt="BigQuery project">
+                              <p></p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/substr-result.png" alt="BigQuery project">
+                              <p></p>
+                              <p>You will want to use it as a marketer if, for example, you want to get a specific part of a URL from website streaming.</p>
+                              <br>
+                              <h2 id="Column Parsing">Column Parsing</h2>
+                              <p>This will be a difficult but useful section. To be able to parse a column by a specific symbol (or delimiter like Text-to-Columns in Excel), we need to use the SPLIT and ARRAY method ‘OFFSET’, giving names to new columns. First of all, let’s look at the result of a query that gives us one column with date/time/time zone.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  created_at
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/column-parsing-results.png" alt="BigQuery project">
+                              <p></p>
+                              <p>	In this case, our delimiter will be the space symbol because there is a space between date and time, as well as between time and time zone. Our next step will involve using SPLIT:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  SPLIT(created_at, ' ') AS full_date
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/column-parsing-results-2.png" alt="BigQuery project">
+                              <p></p>
+                              <p>As a result, we get rows with arrays in each. The first row is equal to [2012/03/30, 02:17:15, -0700].</p>
+                              <p>Now we need to parse the array with OFFSET(n). The ‘n’ in parentheses corresponds to an element in the array (index of it), starting from zero.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  full_date[OFFSET(0)] AS date,
+  full_date[OFFSET(1)] AS time,
+  full_date[OFFSET(2)] AS timezone
+FROM
+  (SELECT
+    SPLIT(created_at, ' ') AS full_date
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10)
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/column-parsing-results-3.png" alt="BigQuery project">
+                              <p></p>
+                              <p>That’s all there is to it. Remember: if the index is out of range, for example, OFFSET(3), it will generate an error. A reasonable question to ask is why can’t we do it by SUBSTR? We could, and maybe in some cases it’s preferable, but it often lacks readability.</p>
+                              <br>
+                              <h2 id="Merge columns">Merge columns</h2>
+                              <p>To merge columns, you need to use CONCAT, but this function only works with a STRING data type.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  CONCAT(word, word_count, corpus, corpus_date)
+FROM
+  `bigquery-public-data.samples.shakespeare`
+LIMIT
+  10
+</code></pre>
+                              <table style="width:100%">
+                                <tr>
+                                  <td><p style="font-size:2vw;">Before</p></td>
+                                  <td><p style="font-size:2vw;">After</p></td>
+                                </tr>
+                                <tr>
+                                  <td width="50%"><img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/before.png" alt="BigQuery project"></td>
+                                  <td width="50%"><img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/after.png" alt="BigQuery project"></td>
+                                </tr>
+                              </table>
+                              <br>
+                              <h2 id="Make SQL do the calculations instead of you – analytical functions">Make SQL do the calculations instead of you – analytical functions</h2>
+                              <p>SQL can calculate different things by using its analytical functions.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  MIN(word_count) AS min_words,
+  MAX(word_count) AS max_words,
+  AVG(word_count) AS average_words
+FROM
+  `bigquery-public-data.samples.shakespeare`
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/analytical-functions-results.png" alt="BigQuery project">
+                              <p></p>
+                              <p>Remember: if you want to calculate values for a specific column, you must use GROUP BY. Let’s use the example of the word ‘QUEEN’ again.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  word,
+  SUM(word_count) AS total_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = "QUEEN"
+GROUP BY
+  word
+</code></pre>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_guide/analytical-functions-results.png" alt="BigQuery project">
+                              <p></p>
+                              <div id="disqus_thread"></div>
+<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://lastclick-city.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="footer3 cid-rew4pnx1NQ" id="footer3-1">
+    <div class="container">
+        <div class="media-container-row content">
+            <div class="col-md-2 col-sm-4">
+                <div class="mb-3 img-logo">
+                    <a href="https://lastclick.city">
+                         <img src="assets/images/logo-192x384.png" alt="Last Click City" title="">
+                    </a>
+                </div>
+                <p class="mbr-fonts-style foot-logo display-7"></p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    CATEGORIES
+                </p>
+                <p class="mbr-text mbr-links-column mbr-fonts-style display-7">
+                    <a href="google-analytics.html" class="text-black">Google Analytics</a>
+                    <br><a href="google-tag-manager.html" class="text-black">Google Tag Manager</a>
+                    <br><a href="google-bigquery.html" class="text-black">Google BigQuery</a>
+                    <br><a href="attribution-models.html" class="text-black">Attribution models</a>
+                    <!--<br><a href="#" class="text-black">Careers</a>-->
+                </p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    LINKS
+                </p>
+                <p class="mbr-text mbr-fonts-style mbr-links-column display-7">
+                    <a href="https://www.linkedin.com/in/roman-prokashev-54732855/" class="text-black">LinkedIn</a>
+                    <br><a href = "mailto: roman.prokashev@gmail.com">Send Email</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <div class="media-container-row">
+                <div class="col-sm-12">
+                    <hr>
+                </div>
+            </div>
+            <div class="media-container-row">
+                <div class="col-sm-6 copyright">
+                    <p class="mbr-text mbr-fonts-style display-7">
+                        © Copyright 2019-2022 lastclick.city - All Rights Reserved
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+  <script src="assets/dropdown/js/script.min.js"></script>
+  <script src="assets/touchswipe/jquery.touch-swipe.min.js"></script>
+  <script src="assets/parallax/jarallax.min.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/formoid/formoid.min.js"></script>
+
+
+</body>
+</html>

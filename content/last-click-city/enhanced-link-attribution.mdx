@@ -1,0 +1,48 @@
+---
+title: "Enhanced link attribution in Google Analytics and Google Tag Manager"
+slug: "enhanced-link-attribution"
+date: "2020-04-08"
+description: "Short guide on how to configure Enhanced Link attribution Plugin in Google Analytics and Google Tag Manager"
+originalUrl: "https://lastclick.city/enhanced-link-attribution.html"
+thumbnail: "/images/last-click-city/For_index_page_19.png"
+excerptLead: "Google Analytics does not provide its users with heatmaps,"
+excerpt: "but it does enable a site visitor’s behavior to be analyzed using Page analytics plugin for Google Chrome. Page Analytics is not a heatmap, but it shows the clicks distribution between different links on the analyzed page."
+---
+
+<strong>Google Analytics does not provide its users with heatmaps, </strong>but it does enable a site visitor’s behavior to be analyzed using [Page analytics plugin for Google Chrome](https://chrome.google.com/webstore/detail/page-analytics-by-google/fnbdnhhicmebfgdgglcdacdapkcihcoh?hl=en). Page Analytics is not a heatmap, but it shows the clicks distribution between different links on the analyzed page. When installed and launched, Page Analytics plugin shows the following data: ![Page Analytics plugin](/images/last-click-city/Enhanced_Link_Attribution/page_Analytics.jpg)
+
+To make the Page Analytics data more accurate, you need to enable Enhanced Link Attribution in Google Analytics, which can be done in Google Analytics tag itself or via Google Tag Manager. Let’s consider both options. Firstly, to make enhanced link attribution work, you will need to enable it in the Google Analytics Admin panel (“Property settings” section):
+
+![GA Admin panel](/images/last-click-city/Enhanced_Link_Attribution/Admin_panel.png)
+
+Then, to set everything up in the Google Analytics tag, modify your code on each page to load the enhanced link attribution plugin (called "linkid").
+
+The following code shows how to load the enhanced link attribution plugin:
+
+```javascript
+ga('create', 'UA-XXXXX-Y', 'auto');
+ga('require', 'linkid');
+ga('send', 'pageview');
+```
+
+Customization of the plugin is available. Enhanced Link Attribution differentiates between links to the same URL, by checking the parent element ID and you can control how the plugin should look.
+
+This example explains how to customize configuration options when using the Enhanced Link Attribution plugin:
+
+```javascript
+ga('create', 'UA-XXXXX-Y', 'auto');
+ga('require', 'linkid', {
+  'cookieName': '_ela',
+  'duration': 45,
+  'levels': 5
+});
+ga('send', 'pageview');
+```
+
+“Levels” is the most important setting which will tell the plugin the maximum number of DOM levels to check. The default value is “3”.
+
+How to configure Enhanced Link Attribution in Google Tag Manager.
+
+To enable Enhanced Link Attribution in Google Tag Manager, you need to go to your Google Analytics settings variable, select “More settings” and then “Advanced configuration”. Set “Enable Enhanced Link Attribution” to true and that’s it. Please note that if you configure everything in GTM, you still need to have ELA enabled in the Google Analytics Admin Panel.
+
+![ELA Google Tag Manager](/images/last-click-city/Enhanced_Link_Attribution/Google_Tag_Manager.png)

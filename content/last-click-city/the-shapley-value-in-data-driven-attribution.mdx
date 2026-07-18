@@ -1,0 +1,53 @@
+---
+title: "The Shapley Value in Data-Driven Attribution: How It Works."
+slug: "the-shapley-value-in-data-driven-attribution"
+date: "2019-10-02"
+description: "The Shapley Value in Data-Driven Attribution: How It Works."
+originalUrl: "https://lastclick.city/the-shapley-value-in-data-driven-attribution.html"
+thumbnail: "/images/last-click-city/For_index_page_13.png"
+excerptLead: "To accurately evaluate marketing efforts,"
+excerpt: "proper attribution is crucial. These days, increasingly diverse approaches are being suggested by vendors to help advertisers in this domain gain deeper insights into how different touchpoints, channels and campaigns contribute to overall marketing outcomes."
+---
+
+<strong>To accurately evaluate marketing efforts, proper attribution is crucial. </strong>These days, increasingly diverse approaches are being suggested by vendors to help advertisers in this domain gain deeper insights into how different touchpoints, channels and campaigns contribute to overall marketing outcomes. One of these solutions is Google’s [data-driven attribution.](https://support.google.com/google-ads/answer/6394265?hl=en)
+
+A data-driven attribution model is based on the solution concept in cooperative game theory, called the Shapley value. To understand exactly how this attribution model works, let’s consider the following example: suppose we know the conversion rate for the three marketing channels organic search, paid search and display:
+
+organic search – 20%
+ paid search – 11%
+ display – 1%
+
+Let’s also suppose that we know how the combinations of these channels work. You can find something similar in the Top Conversion Paths report in Google Analytics, but there are only a limited number of conversions available (not conversion rate).
+
+Paid search + display = 13%
+ Organic + paid search = 35%
+ Display + organic = 23%
+ Display + organic + paid search = 37%
+
+To calculate the Shapley value, we need to 1) create all possible combinations of channel interactions (conversion paths); 2) sum up the values for each channel’s contribution; and 3) divide each sum by six (the number of conversion paths analyzed). Let’s take a look at each step in more detail.
+
+Firstly, let’s list all the possible conversion paths and calculate the value of each interaction for each channel. To see how this value is calculated, look at the following example:
+
+![Shapley value calculation](/images/last-click-city/Shapley_value/Shapley_value_calculation_1.png)
+
+Let’s use this method to calculate the contribution values for each channel:
+
+![Shapley value calculation](/images/last-click-city/Shapley_value/Shapley_value_calculation_2.png)
+
+The next step is to sum up the values for each channel and divide the result by six. For example, in the case of an organic search, this would be (20+20+24+24+26+22)/6 = 22.66%.
+
+The Shapley value for each channel would, therefore, be as follows:
+
+organic search = 22.66% (+13.33%, compared to the last-click model)
+ paid search = 12.5% (+25%)
+ display campaign = 1.83% (+83%)
+
+Here are some important notes about the data-driven attribution model:
+
+1\) Some channels will not add value, and this is absolutely normal. The example above only includes data with a positive impact in order to illustrate more clearly how the model works. In fact, data-driven attribution can help to detect channels or touchpoints which bring low on no value at all.
+
+2\) Data-driven attribution can’t answer every question. For example, branded paid search is highly likely to be among the top channels evaluated with DDM. However, it’s essential to understand that there are many factors which can influence branded search, and these might often be hard to detect.
+
+3\) It’s important to meet and maintain the minimum conversion threshold to keep the model working. Currently, data-driven attribution is available for Google Analytics 360 users and all users of Google Ads. Both platforms have several requirements before you can start the model. For instance, to use the model on Google Ads, you need to have at least 15,000 clicks on Google Search and a conversion action with at least 600 conversions within 30 days.
+
+Thank you for your attention!

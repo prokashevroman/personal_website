@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Mobirise v4.8.10, mobirise.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <link rel="shortcut icon" href="assets/images/logo-48x48.png" type="image/x-icon">
+  <meta name="description" content="BigQuery: User-Defined Functions. Complex guide on how to get the most of user-defined functions in BigQuery. The guide provides both legacy and standard SQL examples.">
+  <title>Last Click City :: BigQuery: User-Defined Functions.</title>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5DK5ZKP');</script>
+  <!-- End Google Tag Manager -->
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <link rel="stylesheet" href="assets/web/assets/mobirise-icons/mobirise-icons.css">
+  <link rel="stylesheet" href="assets/tether/tether.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+  <script type="text/javascript" src="assets/theme/js/lang-sql.js"></script>
+  <link rel="stylesheet" type="text/css" href="prettify.css">
+  <link rel="stylesheet" href="assets/theme/css/rrssb.css" />
+
+  <meta property="og:title" content="BigQuery: User-Defined Functions. Complex guide on how to get the most of user-defined functions in BigQuery." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lastclick.city/bigquery-user-defined-functions.html" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content="BigQuery: User-Defined Functions. Complex guide on how to get the most of user-defined functions in BigQuery."/>
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@prokashev_roman">
+  <meta name="twitter:creator" content="@prokashev_roman">
+  <meta name="twitter:title" content="BigQuery: User-Defined Functions. Complex guide on how to get the most of user-defined functions in BigQuery.">
+  <meta name="twitter:description" content="BigQuery: User-Defined Functions. Complex guide on how to get the most of user-defined functions in BigQuery. | https://lastclick.city/bigquery-user-defined-functions.html">
+  <meta name="twitter:image" content="">
+
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5DK5ZKP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <section class="menu cid-rew4t9v9hr" once="menu" id="menu2-3">
+    <nav class="navbar navbar-expand beta-menu navbar-dropdown align-items-center navbar-fixed-top navbar-toggleable-sm">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="menu-logo">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="https://lastclick.city">
+                        <img src="assets/images/logo-122x244.png" alt="Mobirise" title="" style="height: 3.8rem;">
+                    </a>
+                </span>
+
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true"><li class="nav-item">
+                    <a class="nav-link link text-black display-4" href="https://lastclick.city">
+                        Last Click City</a>
+                </li></ul>
+
+        </div>
+    </nav>
+</section>
+
+
+<section class="mbr-section content6 cid-rew699umhM" id="content6-8">
+    <div class="container">
+        <div class="media-container-row">
+            <div class="col-12 col-md-10">
+                <div class="media-container-row">
+                    <div class="media-content">
+                      <div class="article">
+                        <div class="mbr-section-text">
+                            <p class="mbr-text mb-0 mbr-fonts-style display-7">
+                              <h2>BigQuery: User-Defined Functions.</h2>
+                              <div class="article-font">
+                              <p>March 8, 2020</p>
+                              <ul class="rrssb-buttons">
+                                <li class="rrssb-facebook">
+                                  <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+                                  https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+                                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://lastclick.city/bigquery-user-defined-functions" class="popup">
+                                    <span class="rrssb-icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg>
+                                    </span>
+                                    <span class="rrssb-text"></span>
+                                  </a>
+                                </li>
+                                <li class="rrssb-twitter">
+                                  <!-- Replace href with your Meta and URL information  -->
+                                  <a href="https://twitter.com/intent/tweet?text=https://lastclick.city/bigquery-user-defined-functions"
+                                  class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                              <li class="rrssb-linkedin">
+                                <!-- Replace href with your meta and URL information -->
+                                <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://lastclick.city/bigquery-user-defined-functions&amp;title=bigquery%20user%20defined%20functions&amp;summary=bigquery%20user%20defined%20functions" class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                            </ul>
+                            <br>
+                            <p></p><p><i>An article by <a href="https://www.linkedin.com/in/sergey-matrosov/"><i>Sergey Matrosov</i></a></i></p>
+                              <br>
+                              <strong>BigQuery has an option called User-Defined Functions, which helps users to maintain data as they want, row by row, using JavaScript. </strong>You will only want to use this if you cannot do something with data by standard BQ methods.
+                              <p></p>
+                              <p>You write functions here:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-0.JPG" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>How does it work? Well, you pass columns from a table to some function, and this function performs actions with it, row by row, returning a new table. Let’s say there is a Pseudo-query, where Col1 (inputA) and Col2 (inputB)  - values:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  outputA,
+  outputB
+  customFunction(
+  SELECT
+    Col1 AS inputA,
+    Col2 AS inputB
+  FROM
+    Table1)
+</code></pre>
+                              <p></p><p>Function:</p>
+<pre class="prettyprint"><code class="language-javascript">function customFunction(row, emit) {
+  emit({outputA: row.inputA, outputB: row.inputB});
+}</code></pre>
+                              <p>function – keyword for function in JavaScript;</p>
+                              <p>customFunction – name of function, which represents its actions:<br>
+                              -	addPlusTwo<br>
+                              -	makeStuff<br>
+                              -	goOutOfHere<br>
+                              -	etc.</p>
+                              Row – our value</p>
+                              <p>Emit – our return.</p>
+                              <p>row.inputA and row.inputB are values of some row from inputA (= Col1) и inputB (= Col2).</p>
+                              <p>Function gets STRING values, so your default methods and properties are related to <a href="https://www.w3schools.com/jsref/jsref_obj_string.asp">STRING type</a>. I would like to show you what I mean. Let’s go <a href="http://storage.googleapis.com/bigquery-udf-test-tool/testtool.html">here</a>.</p>
+                              <p>You will see that the table data as JSON. ‘A’ is for the column’s name, and data near it are row data.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-1.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>The first row is ‘‘Enter your query data’’.</p>
+                              <p>The second is ‘‘here, as JSON‘‘.</p>
+                              <p>The third is ‘and click “Evaluate” to run your function over the data rows!’</p>
+                              <table style="width:100%">
+                                <tr>
+                                  <td>Row number</td>
+                                  <td>a</td>
+                                </tr>
+                                <tr>
+                                  <td>1</td>
+                                  <td>Enter your query data</td>
+                                </tr>
+                                <tr>
+                                  <td>2</td>
+                                  <td>here, as JSON,</td>
+                                </tr>
+                                <tr>
+                                  <td>3</td>
+                                  <td>and click ‘Evaluate’ to run your function over the data rows!</td>
+                                </tr>
+                              </table>
+                              <p></p>
+                              <p>You then see the function.</p>
+                              <p>Click on the Evaluate button, and you’ll get data like in BigQuery:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-2.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Or</p>
+                              <table style="width:100%">
+                                <tr>
+                                  <td>Row number</td>
+                                  <td>len</td>
+                                </tr>
+                                <tr>
+                                  <td>1</td>
+                                  <td>21</td>
+                                </tr>
+                                <tr>
+                                  <td>2</td>
+                                  <td>14</td>
+                                </tr>
+                                <tr>
+                                  <td>3</td>
+                                  <td>61</td>
+                                </tr>
+                              </table>
+                              <p></p>
+                              <p>	But what is going on here? Check User-defined function. You’ll notice that it uses <a href="https://www.w3schools.com/jsref/jsref_length_string.asp">‘length’ property</a> near ‘a’, which counts the length of the string.</p>
+                              <p>Let us rebuild this function like this (where “replace” is the <a href="https://www.w3schools.com/jsref/jsref_replace.asp">string method</a>):</p>
+                              <pre class="prettyprint"><code class="language-javascript">function customFunction(row, emit) {
+  emit({new: r.a.replace("JSON", "STRING")});
+}</code></pre>
+                              <p>Evaluate:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-3.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Or</p>
+                              <table style="width:100%">
+                                <tr>
+                                  <td>Row number</td>
+                                  <td><strong>new</strong></td>
+                                </tr>
+                                <tr>
+                                  <td>1</td>
+                                  <td>Enter your query data</td>
+                                </tr>
+                                <tr>
+                                  <td>2</td>
+                                  <td>here, as <strong>STRING</strong>,</td>
+                                </tr>
+                                <tr>
+                                  <td>3</td>
+                                  <td>and click ‘Evaluate’ to run your function over the data rows!</td>
+                                </tr>
+                              </table>
+                              <p></p>
+                              <p>Word ‘JSON’ became word “STRING”.</p>
+                              <p>Now let’s do something cooler. Let’s change input data like this:<br>
+                              [{a: “1234”},<br>
+                              {a: “5678”},<br>
+                              {a: “101010”}]</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-4.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>and write the new function ‘Square’, which squares our input from each row:</p>
+                              <pre class="prettyprint"><code class="language-javascript">function Square(r, emit) {
+  var value = r.a; // assign row value to var value
+  var square = value ** 2; // square value and assign to var square
+  emit({square: square}); // save var square to column named “square”
+}</code></pre>
+                              <p>We then get this:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-5.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Or</p>
+                              <table style="width:100%">
+                                <tr>
+                                  <td>row</td>
+                                  <td><strong>square</strong></td>
+                                </tr>
+                                <tr>
+                                  <td>1</td>
+                                  <td>1522756</td>
+                                </tr>
+                                <tr>
+                                  <td>2</td>
+                                  <td>32239684</td>
+                                </tr>
+                                <tr>
+                                  <td>3</td>
+                                  <td>10203020100</td>
+                                </tr>
+                              </table>
+                              <p></p>
+                              <p>Now let’s do this in the new BigQuery interface. Everything we have said mostly relates to Legacy SQL, so let’s do it using the dialect of SQL in the old BigQuery interface, and we will rewrite it with Standard SQL afterwards.</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  word,
+  corpus
+FROM
+  [bigquery-public-data:samples.shakespeare]
+LIMIT
+  10</code></pre>
+                              <p>The result is:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-6.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Now you click on UDF Editor:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-0.JPG" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Another thing to do is to define your function (prototype) in BigQuery. The template of the function is already given in UDF Editor:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-7.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Our function will be pretty simple:</p>
+                              <pre class="prettyprint"><code class="language-javascript">function changeWordsAndCorpus(row, emit) {
+  var word = row.word;
+  var corpus = row.corpus;
+
+  if (word == 'treason') {
+     word = 'TRAITOR';
+  }
+
+  if (corpus == 'sonnets') {
+    corpus = 'SONNETS';
+  }
+  emit({modified_word: word, modified_corpus: corpus});
+}
+
+bigquery.defineFunction(
+  'changeWordsAndCorpus',                          // Name of the function exported to SQL
+  ['word', 'corpus'],                              // Names of input columns
+  [{'name': 'modified_word', 'type': 'string'},    // Output schema
+   {'name': 'modified_corpus', 'type': 'string'}],
+  changeWordsAndCorpus                             // Reference to JavaScript UDF
+);</code></pre>
+                              <p>We then rewrite our query:</p>
+                              <pre class="prettyprint"><code class="language-sql">SELECT
+  modified_word,
+  modified_corpus
+FROM
+  changeWordsAndCorpus(
+  SELECT
+    word,
+    corpus
+  FROM
+    [bigquery-public-data:samples.shakespeare]
+  LIMIT
+    10)</code></pre>
+                              <p>When we run the query, here is the result:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-8.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Now it’s time to do this via Standard SQL in the new BigQuery interface. It is a bit tricky.</p>
+                              <pre class="prettyprint"><code class="language-sql">CREATE TEMP FUNCTION
+  changeWord(word STRING)
+  RETURNS STRING
+  LANGUAGE js AS """
+  if (word == 'treason') {
+     word = 'TRAITOR';
+  }
+  return word;
+""";
+CREATE TEMP FUNCTION
+  changeCorpus(corpus STRING)
+  RETURNS STRING
+  LANGUAGE js AS """
+  if (corpus == 'sonnets') {
+     corpus = 'SONNETS';
+  }
+  return corpus;
+""";
+SELECT
+  changeWord(word) AS modified_word,
+  changeCorpus(corpus) AS modified_corpus
+FROM (
+  SELECT
+    word,
+    corpus
+  FROM
+    `bigquery-public-data.samples.shakespeare`
+  LIMIT
+    10)</code></pre>
+                              <p>The result is the same.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_User_defined_functions/bq-js-9.png" alt="BigQuery User defined functions">
+                              <p></p>
+                              <p>Yes, you could write it using one function, returning the array to un-nest it in the query itself. But for simplicity, I made it using two functions. You can also use methods of SQL itself to do data manipulation instead of JavaScript when using your own functions.</p>
+                              <p>That’s all. Good luck!</p>
+                              <div id="disqus_thread"></div>
+<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://lastclick-city.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="footer3 cid-rew4pnx1NQ" id="footer3-1">
+    <div class="container">
+        <div class="media-container-row content">
+            <div class="col-md-2 col-sm-4">
+                <div class="mb-3 img-logo">
+                    <a href="https://lastclick.city">
+                         <img src="assets/images/logo-192x384.png" alt="Last Click City" title="">
+                    </a>
+                </div>
+                <p class="mbr-fonts-style foot-logo display-7"></p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    CATEGORIES
+                </p>
+                <p class="mbr-text mbr-links-column mbr-fonts-style display-7">
+                    <a href="google-analytics.html" class="text-black">Google Analytics</a>
+                    <br><a href="google-tag-manager.html" class="text-black">Google Tag Manager</a>
+                    <br><a href="google-bigquery.html" class="text-black">Google BigQuery</a>
+                    <br><a href="attribution-models.html" class="text-black">Attribution models</a>
+                    <!--<br><a href="#" class="text-black">Careers</a>-->
+                </p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    LINKS
+                </p>
+                <p class="mbr-text mbr-fonts-style mbr-links-column display-7">
+                    <a href="https://www.linkedin.com/in/roman-prokashev-54732855/" class="text-black">LinkedIn</a>
+                    <br><a href = "mailto: roman.prokashev@gmail.com">Send Email</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <div class="media-container-row">
+                <div class="col-sm-12">
+                    <hr>
+                </div>
+            </div>
+            <div class="media-container-row">
+                <div class="col-sm-6 copyright">
+                    <p class="mbr-text mbr-fonts-style display-7">
+                        © Copyright 2019-2022 lastclick.city - All Rights Reserved
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+  <script src="assets/dropdown/js/script.min.js"></script>
+  <script src="assets/touchswipe/jquery.touch-swipe.min.js"></script>
+  <script src="assets/parallax/jarallax.min.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/formoid/formoid.min.js"></script>
+
+
+</body>
+</html>

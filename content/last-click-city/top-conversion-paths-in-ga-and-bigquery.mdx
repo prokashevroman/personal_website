@@ -1,0 +1,135 @@
+---
+title: "Top Conversion Paths in Google Analytics and BigQuery."
+slug: "top-conversion-paths-in-ga-and-bigquery"
+date: "2019-02-05"
+description: "Top Conversion Paths in Google Analytics and BigQuery"
+originalUrl: "https://lastclick.city/top-conversion-paths-in-ga-and-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_4.png"
+excerptLead: "Understanding top conversion paths"
+excerpt: "can be a crucial part of the customer journey analysis and an important step towards better understanding of how marketing channels cooperate. It is particularly useful to know the top paths to conversion when planning marketing and advertising budgets."
+---
+
+<strong>Understanding top conversion paths can be a crucial part </strong>of the customer journey analysis and an important step towards better understanding of how marketing channels cooperate. It is particularly useful to know the top paths to conversion when planning marketing and advertising budgets. A lack of awareness regarding the intersection of channels can lead to both overestimation and underestimation of different marketing channels which in turn will result in a waste of money or missed opportunities. Luckily, there are several ways to analyze top conversion paths, and we will talk about two of them today.
+
+<strong>1) Google Analytics Top Conversion Paths Report</strong>
+
+The Top Conversion Paths report can be found under the Conversions -> Multi-Channel Funnels section. There are different options with regard to how the interactions on the path can be represented - by default it is MCF Channels, but they can be changed to Sources, Mediums and Channels from the Default Channel grouping and, of course, to the interactions from Google-owned advertising platforms (Google Ads, Display & Video 360 and others).
+
+![Top Conversion Paths](/images/last-click-city/Top_conversion_paths/Top_Conversion_Paths.png)
+
+As a conversion, you can choose transactions, goals or Floodlights if you have configured some. The downside is that there only 20 goals (even in GA360).
+
+Conversion segments are a great feature to narrow down the analyzed subset of conversions or conversion paths. More information about the Conversion segment can be found by this [link](https://support.google.com/analytics/answer/1329505?hl=en).
+
+All right, now let’s move to more exciting stuff and take a look at how this report can be reproduced in BigQuery.
+
+<strong>2) Top Conversion Paths Report in BigQuery</strong>
+
+The query to export a basic analog of the Top Conversion Paths report is below:
+
+```sql
+SELECT
+    REGEXP_REPLACE(touchpointPath, 'Conversion >.*', 'Conversion') as touchpointPath, COUNT(touchpointPath) AS TOP
+FROM (SELECT
+    GROUP_CONCAT(touchpoint,' > ') AS touchpointPath
+FROM (SELECT
+    *
+FROM (SELECT
+    fullVisitorId,
+    'Conversion' AS touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-10-01'), TIMESTAMP('2018-10-05'))
+WHERE
+    hits.eventInfo.eventAction="Email Submission success")
+    ,
+    (SELECT
+    fullVisitorId,
+    CONCAT(trafficSource.source,'/',trafficSource.medium) AS touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-10-01'), TIMESTAMP('2018-10-05'))
+WHERE
+    hits.hitNumber=1)
+ORDER BY
+    timestamp)
+GROUP BY
+    fullVisitorId
+HAVING
+    touchpointPath LIKE '%Conversion%')
+GROUP BY
+    touchpointPath
+ORDER BY
+    TOP DESC
+```
+
+In this particular example, we are trying to replicate a Top Conversion Paths report in which interactions on the path are represented by the associated combination of source and medium (Source/Medium Path) and conversion is an event-based goal. Since there are no goals in BigQuery we need to recreate the goal condition in the Query body: hits.eventInfo.eventAction="Email Submission success".
+
+We start with two subqueries: in the first, we select conversions and in the second the sources and medium combinations which will represent the steps on the path to the chosen conversion.
+
+After that, we can use the GROUP_CONCAT function to link the touchpoint, so they form structured user paths and select only those paths which contain the specific conversion: `HAVING touchpointPath LIKE '%Conversion%'.`
+
+And the final point here - we are excluding the steps which happen after the conversion (because our current goal is to evaluate the paths to conversion only); we can do this with the help of the REGEXP_REPLACE function by simply removing everything after the “Conversion >” substring. This allows us to treat the paths with and without any subsequent steps after conversion as the same.
+
+Let’s discover some cool things which are available in BigQuery compared to the Google Analytics interface.
+
+First of all, there is more flexibility regarding steps: in the Google Analytics interface you can choose only those steps which are suggested by Google, whereas in BigQuery you can pick many more types of events, interactions or dimensions. The first option is to change `CONCAT(trafficSource.source,'/',trafficSource.medium)` to something different, e.g., trafficSource.campaign or device.browser (yes, browser’s path sounds a little weird, but it shows how much more flexible the GA data becomes when accessed via BigQuery). The disadvantage of this basic approach is that you can’t use it with “hits” rows and its nested fields. Please take a look at the query which is used to create the paths using the “hits” fields:
+
+```sql
+SELECT
+    REGEXP_REPLACE(touchpointPath, 'Conversion >.*', 'Conversion') as touchpointPath, COUNT(touchpointPath) AS TOP
+FROM (SELECT
+    GROUP_CONCAT(touchpoint,' > ') AS touchpointPath
+FROM (SELECT
+    fullVisitorId,
+    touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM (SELECT
+    fullVisitorId,
+    'Conversion_submit' AS touchpoint,
+    visitStartTime, hits.time
+FROM
+    ([pro-tracker-id.ga_sessions_])
+WHERE
+    hits.eventInfo.eventAction="Email Submission success")
+    ,
+    (SELECT
+    fullVisitorId,
+    hits.page.pagePath as touchpoint,
+    visitStartTime, hits.time
+FROM
+    (FLATTEN([pro-tracker-id.ga_sessions_],hits))
+WHERE
+    hits.hitNumber=1)
+ORDER BY
+    timestamp)
+GROUP BY
+    fullVisitorId
+HAVING
+    touchpointPath LIKE '%Conversion_submit%')
+GROUP BY
+    touchpointPath
+ORDER BY
+    TOP DESC
+```
+
+In this query, we use the hits.page.pagePath field value as steps on the way to the conversion, but this is possible only if we flatten the data from the hits row. More information about the flatten function can be found [here](https://cloud.google.com/bigquery/docs/legacy-nested-repeated). Please also pay attention to the fact that in this case, the timestamp definition goes up one level in the query hierarchy.
+
+Another great feature is the ability to add more than one conversion/interaction to the path. For example, you may want to see the paths to the conversions, but you also want to know if these paths have contained some other particular event before or after the conversion. Something like this:
+
+![Anvanced Conversion Path](/images/last-click-city/Top_conversion_paths/Advanced_Conversion_Path.png)
+
+To achieve this add one more comma-separated touchpoint subquery and change the WHERE condition:
+
+```sql
+SELECT
+    fullVisitorId,
+    'Conversion' AS touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-10-01'), TIMESTAMP('2018-10-05'))
+WHERE
+    hits.eventInfo.eventAction="Email Submission success"
+```
+
+Hope you’ll find some of this stuff useful!

@@ -1,0 +1,52 @@
+---
+title: "Custom Event Trigger in Google Tag Manager: Two Different Ways to Use it in One Example."
+slug: "custom-event-trigger-in-google-tag-manager"
+date: "2019-01-24"
+description: "Custom Event Trigger in Google Tag Manager: Two Different Ways to Use it in One Example."
+originalUrl: "https://lastclick.city/custom-event-trigger-in-google-tag-manager.html"
+thumbnail: "/images/last-click-city/For_index_page_3.png"
+excerptLead: "Today, we will talk about the custom event trigger"
+excerpt: "using one of our case studies, in which we used Google Tag Manager custom event to track a user’s interaction with a simple promo game on one of our landing pages."
+---
+
+<strong>Today, we will talk about the custom event trigger </strong>using one of our case studies, in which we used Google Tag Manager (and, specifically, a [custom event](https://support.google.com/tagmanager/answer/7679219?hl=en)) to track a user’s interaction with a simple promo game on one of our landing pages.
+
+It all started when we published a page with a basic keyboard game and decided that it would be cool to track, in Google Analytics, when a user 1) starts to play and 2) collects 150 points (after which s/he receives a discount!). This information could help us to understand the level of audience engagement with the game and decide whether it makes sense to plan similar marketing activities in the future.
+
+So, the task was split into two parts, the first of which was to track when a user starts to play.
+
+<strong>1. A user starts to play:</strong>
+
+In the game, only two buttons are used to control the character: the left arrow and the right arrow. In other words, pressing any of these buttons can be considered as the start of a game. As tracking particular keyboard button clicks is not something built into Google Analytics and Google Tag Manager, we had to start by adding a custom keyboard event listener:
+
+![Custom JavaScript tag](/images/last-click-city/Custom_event/Custom_JS.png)
+
+As you see, it’s a custom HTML tag containing JavaScript code, which sends an event to the data layer when the left arrow or the right arrow keyboard button is clicked for the first time, making the character move in the corresponding direction.
+
+Perhaps you’ve noticed that the keyCode for the left arrow is 37 (and 39 for the right). If you need to track any other button clicks, you can easily find its number [here](https://css-tricks.com/snippets/javascript/javascript-keycodes/).
+
+After that, we just need to create a Google Analytics tag, which is triggered by this custom event:
+
+![First event tag](/images/last-click-city/Custom_event/Tag_first_event.png)
+
+And that’s it. The two-step process described above can be used to quickly transform any keyboard click into Google Analytics event.
+
+Ok, let’s move onto the next step.
+
+<strong>2) A user collects 150 points:</strong>
+
+When a user collects 150 points, a congratulations message appears but the URL stays the same:
+
+![Congratulations message](/images/last-click-city/Custom_event/Congratulations_message.png)
+
+There are several options for tracking events like this in Google Analytics. One of them involves using virtual pageviews; however, this is not the best approach, not least because it inflates the pageview number and makes some reports (e.g., Navigation Summary) less reliable. So, we decided to generate a server-side datalayer.push event each time a user collects 150 points:
+
+```javascript
+dataLayer.push({event: ‘150Points’});
+```
+
+Again, the second step is quite similar to the first: all we needed was to create an event tag triggered by this custom event:
+
+![Second event tag](/images/last-click-city/Custom_event/Tag_second_event.png)
+
+<em>To summarize:</em> maybe generating custom events in two different ways in a single project won’t be the most convenient solution to. But this example excellently illustrates that, with a custom event trigger and a small piece of code, you can easily track users’ interactions, based on keyboard or server-side events, rather than mouse clicks.

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Mobirise v4.8.10, mobirise.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <link rel="shortcut icon" href="assets/images/logo-48x48.png" type="image/x-icon">
+  <meta name="description" content="BigQuery Interface Overview. Basics of wortking with BigQuery: projects, tables, queries.">
+  <title>Last Click City :: BigQuery Interface Overview.</title>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5DK5ZKP');</script>
+  <!-- End Google Tag Manager -->
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <link rel="stylesheet" href="assets/web/assets/mobirise-icons/mobirise-icons.css">
+  <link rel="stylesheet" href="assets/tether/tether.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+  <script type="text/javascript" src="assets/theme/js/lang-sql.js"></script>
+  <link rel="stylesheet" type="text/css" href="prettify.css">
+  <link rel="stylesheet" href="assets/theme/css/rrssb.css" />
+
+  <meta property="og:title" content="BigQuery Interface Overview. Basics of wortking with BigQuery: projects, tables, queries." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lastclick.city/bigquery-interface-overview.html" />
+  <meta property="og:image" content="" />
+  <meta property="og:description" content="BigQuery Interface Overview. Basics of wortking with BigQuery: projects, tables, queries."/>
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@prokashev_roman">
+  <meta name="twitter:creator" content="@prokashev_roman">
+  <meta name="twitter:title" content="BigQuery Interface Overview. Basics of wortking with BigQuery: projects, tables, queries.">
+  <meta name="twitter:description" content="BigQuery Interface Overview. Basics of wortking with BigQuery: projects, tables, queries. | https://lastclick.city/bigquery-interface-overview.html">
+  <meta name="twitter:image" content="">
+
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5DK5ZKP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <section class="menu cid-rew4t9v9hr" once="menu" id="menu2-3">
+    <nav class="navbar navbar-expand beta-menu navbar-dropdown align-items-center navbar-fixed-top navbar-toggleable-sm">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="menu-logo">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="https://lastclick.city">
+                        <img src="assets/images/logo-122x244.png" alt="Mobirise" title="" style="height: 3.8rem;">
+                    </a>
+                </span>
+
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true"><li class="nav-item">
+                    <a class="nav-link link text-black display-4" href="https://lastclick.city">
+                        Last Click City</a>
+                </li></ul>
+
+        </div>
+    </nav>
+</section>
+
+
+<section class="mbr-section content6 cid-rew699umhM" id="content6-8">
+    <div class="container">
+        <div class="media-container-row">
+            <div class="col-12 col-md-10">
+                <div class="media-container-row">
+                    <div class="media-content">
+                      <div class="article">
+                        <div class="mbr-section-text">
+                            <p class="mbr-text mb-0 mbr-fonts-style display-7">
+                              <h2>BigQuery Interface Overview.</h2>
+                              <div class="article-font">
+                              <p>July 2, 2019</p>
+                              <ul class="rrssb-buttons">
+                                <li class="rrssb-facebook">
+                                  <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header:
+                                  https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+                                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://lastclick.city/bigquery-interface-overview.html" class="popup">
+                                    <span class="rrssb-icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg>
+                                    </span>
+                                    <span class="rrssb-text"></span>
+                                  </a>
+                                </li>
+                                <li class="rrssb-twitter">
+                                  <!-- Replace href with your Meta and URL information  -->
+                                  <a href="https://twitter.com/intent/tweet?text=https://lastclick.city/bigquery-interface-overview.html"
+                                  class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                              <li class="rrssb-linkedin">
+                                <!-- Replace href with your meta and URL information -->
+                                <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://lastclick.city/bigquery-interface-overview.html&amp;title=bigquery%20interface%20overview&amp;summary=bigquery%20interface%20overview" class="popup">
+                                  <span class="rrssb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"/></svg>
+                                  </span>
+                                  <span class="rrssb-text"></span>
+                                </a>
+                              </li>
+                            </ul>
+                            <br>
+                            <p></p><p><i>An article by <a href="https://www.linkedin.com/in/sergey-matrosov/"><i>Sergey Matrosov</i></a></i></p>
+                              <strong>These instructions will help you to get started </strong>with the BigQuery interface. All you need to try it is a Google account: that’s it!
+                              <p></p>
+                              <p>BigQuery, in a nutshell, is cloud storage that may include data from many data sources, such as Google Analytics, Google Ads, Salesforce, etc. Here is the new version:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/1_BigQuery_new_interface.png" alt="BigQuery new interface">
+                              <p></p>
+                              <p>First of all, let’s think about projects.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/2_BigQuery_projects.jpg" alt="BigQuery projects">
+                              <p></p>
+                              <p>A project is a namespace that consists of different types of data. In our case, the project is “bigquery-overview”. The data in this project are organized into data sets, which are stored as data tables and SQL queries. In our case, an example of a data set is “just_some_data”, which has a table named “logs” and an SQL query named “logs_sql”. You can tell the difference between a table and a query by the icon next to it, but the “_sql” suffix is added just to make it easy.</p>
+                              <p>The SQL query is also called “view” in BigQuery. In other words, you could think of view as a saved query, but they are not equal entities (this will be shown later). The query has only two main goals:
+                              <br> <br>●	To calculate the (mostly regularly updated) data for storing in the table.
+                              <br> <br>●	To calculate data on the fly. For example, you may need to know something on a weekly basis, but it is unimportant, so there is no need to store it in the table.</p>
+                              <p>In our example, we are concerned with the first goal (we’ll discuss how to update the table in another article). We have the  “logs_sql” view that forms the “logs” table. A table doesn’t necessarily have an SQL view, for example if it stores data just for archiving or it is updated directly from the source, (e.g., Google Ads through Google Ads Scripts) or through BQ’s data transfer service (we will review this later).</p>
+                              <p>Each table has a schema, details and a preview. The preview shows the data themselves. The most important items are the schema and the preview. Let’s take a look at “unique_keys”:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/3_BigQuery_preview.png" alt="BigQuery preview">
+                              <p></p>
+                              <p>If you want to make new table from an existing one, you always need to know three things: what to take (that’s why “Description” must be filled in, unlike in my example), the name of the entity (“Field name”) and it’s type (“Type”), in order to handle it correctly. The schema will show them all.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/4_BigQuery_table_info.png" alt="BigQuery table info">
+                              <p></p>
+                              <p>“Details” helps you understand when the table was last modified. This is crucial because some tables could contain invalid data (in other words, the table has been abandoned). Table ID is also useful: like the data in the schema, it will help you in your query. Other data are less important from my point of view, especially for marketers.</p>
+                              <p>Now we can take a look at how to query. We can do it on the table level or on the view level. Let’s start from the table level. Go to one of your tables and press the “query table” button:<p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/5_BigQuery_query_table.png" alt="BigQuery query table">
+                              <p></p>
+                              <p>In the code field, you’ll get:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/6_BigQuery_default_query.png" alt="BigQuery default query">
+                              <p></p>
+                              <p>You can see the notification on line 1. This is a validator that checks your query and tells you if there is an error. Click on the right corner of the notification and it will show what’s wrong.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/7_BigQuery_syntax_error.png" alt="BigQuery syntax error">
+                              <p></p>
+                              <p>In our example it tells us that we didn’t choose a field from the table “logs”, and therefore we could not compose a new table/view. The validator also estimates the number of bytes read – very helpful if you want to calculate the query cost.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/8_BigQuery_valid_query.png" alt="BigQuery valid query">
+                              <p></p>
+                              <p>Now everything looks fine. Let’s run it!</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/9_BigQuery_Query_results.png" alt="BigQuery query results">
+                              <p></p>
+                              <p>Great, we have some results. Now we could save it, for example, as a table.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/10_BigQuery_save_as_table.png" alt="BigQuery save as table">
+                              <p></p>
+                              <p>The next steps are easy to follow, so we can omit them.</p>
+                              <p>Another way of composing a query is by using query view. The only difference from the table query is that view will be composed first (and you’ll get a table as a result), then your query will start (based on this table). The main goal of this sequence is to set up an automatic update of a table using Google Apps Scripts, especially if you are using dynamic functions in your view, such as “Current_Date()”. Yes, it could also be done using the option “Scheduled queries”, <i>but the latter must be written in standard SQL.</i></p>
+                              <p>In addition, you could format your query for readability.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/11_BigQuery_formated_query.png" alt="BigQuery formated query">
+                              <p></p>
+                              <p>This is what formatted query would look like:</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/12_BigQuery_formated_query.jpg" alt="BigQuery formated query">
+                              <p></p>
+                              <p>In “Query Settings” you <i>set up the SQL dialect</i>, set the destination for query results (write to (if empty), append to or overwrite the table), etc. </p>
+                              <p>One more thing to mention is the UI menu in the left corner.</p>
+                              <img style='height: 100%; width: 100%; object-fit: contain' src="assets/images/BigQuery_interface/13_BigQuery_UI.jpg" alt="BigQuery UI">
+                              <p></p>
+                              <p>“Query history” <i>temporarily</i> stores all your queries: those with errors and those without them.</p>
+                              <p>Like “saved queries”, it is obvious, but remember what we said about view? It’s like a saved query, but the difference is that <i>only you</i> can see the saved query, whereas view is open to other participants in the project.</p>
+                              <p>“Job history” is also obvious. To understand it fully, you just need to know that jobs are actions associated with loading, exporting, copying and querying data. </p>
+                              <p>“Transfers” contains options to enable data transfer from systems such as Amazon S3, Google Ads, Google Cloud Storage, Google Play, DoubleClick Campaign Manager (DCM), Google Ad Manager (DFP – DoubleClick For Publishers), Redshift and Teradata, and from YouTube channels and content owners.</p>
+                              <p>As we said, “Scheduled queries” could help you automatically update tables, but they must be written in standard SQL. For those who prefer legacy SQL, there is an option through Google Apps Scripts.</p>
+                              <p>“BI Engine” is a new feature of BigQuery that boosts the speed of your queries significantly (so you could perform analytics in real time, interactively). Of course, it costs money. </p>
+                              <p>The last one is “Resources”. You could add your other company projects to your dashboard or explore public data sets for free.</p>
+                              <p>Now it’s your turn. Go to “Resources” -> “Add Data” -> “Explore public datasets”. Choose whatever you like and get started! If you don’t know how to use SQL, it’s not a problem: there are various tutorials on the Internet. Good luck!</p>
+
+                              <div id="disqus_thread"></div>
+<script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = 'https://lastclick-city.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="footer3 cid-rew4pnx1NQ" id="footer3-1">
+    <div class="container">
+        <div class="media-container-row content">
+            <div class="col-md-2 col-sm-4">
+                <div class="mb-3 img-logo">
+                    <a href="https://lastclick.city">
+                         <img src="assets/images/logo-192x384.png" alt="Last Click City" title="">
+                    </a>
+                </div>
+                <p class="mbr-fonts-style foot-logo display-7"></p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    CATEGORIES
+                </p>
+                <p class="mbr-text mbr-links-column mbr-fonts-style display-7">
+                    <a href="google-analytics.html" class="text-black">Google Analytics</a>
+                    <br><a href="google-tag-manager.html" class="text-black">Google Tag Manager</a>
+                    <br><a href="google-bigquery.html" class="text-black">Google BigQuery</a>
+                    <br><a href="attribution-models.html" class="text-black">Attribution models</a>
+                    <!--<br><a href="#" class="text-black">Careers</a>-->
+                </p>
+            </div>
+            <div class="col-md-3 col-sm-4">
+                <p class="mb-4 mbr-fonts-style foot-title display-7">
+                    LINKS
+                </p>
+                <p class="mbr-text mbr-fonts-style mbr-links-column display-7">
+                    <a href="https://www.linkedin.com/in/roman-prokashev-54732855/" class="text-black">LinkedIn</a>
+                    <br><a href = "mailto: roman.prokashev@gmail.com">Send Email</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <div class="media-container-row">
+                <div class="col-sm-12">
+                    <hr>
+                </div>
+            </div>
+            <div class="media-container-row">
+                <div class="col-sm-6 copyright">
+                    <p class="mbr-text mbr-fonts-style display-7">
+                        © Copyright 2019-2022 lastclick.city - All Rights Reserved
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+  <script src="assets/dropdown/js/script.min.js"></script>
+  <script src="assets/touchswipe/jquery.touch-swipe.min.js"></script>
+  <script src="assets/parallax/jarallax.min.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/formoid/formoid.min.js"></script>
+
+
+</body>
+</html>
