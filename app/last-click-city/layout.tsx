@@ -12,9 +12,7 @@ export const metadata: Metadata = {
 export default function ArchiveLayout({ children }: { children: React.ReactNode }) {
   return (
     <div>
-      <div className="mx-auto max-w-3xl">
-        <ArchiveBanner />
-      </div>
+      <ArchiveBanner />
       {children}
     </div>
   );

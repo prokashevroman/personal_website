@@ -41,6 +41,21 @@ const CATEGORY_FILES = [
 // Root-level assets used by the archive chrome (hero + logo fallback).
 const EXTRA_IMAGES = ["city-1879x701v3.png", "logo-122x244.png"];
 
+// The old blog printed the wrong year for a few posts; override the ISO date here.
+const DATE_OVERRIDES: Record<string, string> = {
+  "user-journey-and-multi-channel-funnel-using-appsflyer-data": "2023-02-21",
+};
+
+// A few low-resolution screenshots look oversized/blurry stretched to the full
+// column; cap their display width (px). Matched against the rewritten /images path.
+const IMAGE_SIZE_OVERRIDES: { contains: string; endsWith?: string; width: number }[] = [
+  { contains: "/Yandex_Direct/12.png", width: 240 },
+  { contains: "/Android_Events/fb9.png", width: 240 },
+  { contains: "/Android_Events/fb8.png", width: 480 },
+  { contains: "/Unnest_key-value/6.png", width: 280 },
+  { contains: "/Get_the_value_using_SQL/", endsWith: "2.JPG", width: 360 },
+];
+
 // Every image path (relative to assets/images, original spelling) we actually
 // reference, so we copy only those.
 const referencedImages = new Set<string>();
@@ -192,7 +207,10 @@ function renderImage(el: HTMLElement): string {
   const newSrc = rewriteImageSrc(el.getAttribute("src"));
   if (!newSrc) return "";
   const alt = decode(el.getAttribute("alt")).replace(/\s+/g, " ").replace(/[[\]]/g, "").trim();
-  return `![${alt}](${newSrc})`;
+  const size = IMAGE_SIZE_OVERRIDES.find(
+    (o) => newSrc.includes(o.contains) && (!o.endsWith || newSrc.endsWith(o.endsWith)),
+  );
+  return `![${alt}](${newSrc}${size ? ` "w=${size.width}"` : ""})`;
 }
 
 function serializeInline(nodes: Node[]): string {
@@ -704,6 +722,7 @@ function main() {
         break;
       }
     }
+    if (DATE_OVERRIDES[slug]) date = DATE_OVERRIDES[slug];
 
     // Byline.
     let author: string | undefined;

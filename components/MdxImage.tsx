@@ -51,15 +51,25 @@ function readDimensions(src: string): { width: number; height: number } | null {
 export function MdxImage({ src, alt, title }: Props) {
   if (!src) return null;
   const dims = readDimensions(src) ?? { width: FALLBACK_WIDTH, height: FALLBACK_HEIGHT };
+  // Optional size hint via the Markdown title — `![alt](src "w=240")` caps the
+  // display width (px) and centers the image, for low-res shots that look
+  // oversized stretched to the full column. Without it, fill the column as before.
+  const widthHint = title?.match(/^w=(\d+)$/);
+  const maxWidth = widthHint ? Number(widthHint[1]) : null;
   return (
     <Image
       src={src}
       alt={alt ?? ""}
-      title={title}
+      title={maxWidth ? undefined : title}
       width={dims.width}
       height={dims.height}
-      sizes="(min-width: 768px) 720px, 100vw"
-      className="my-8 h-auto w-full rounded-lg"
+      sizes={maxWidth ? `${maxWidth}px` : "(min-width: 768px) 720px, 100vw"}
+      className={
+        maxWidth
+          ? "mx-auto my-8 block h-auto w-full rounded-lg"
+          : "my-8 h-auto w-full rounded-lg"
+      }
+      style={maxWidth ? { maxWidth: `${maxWidth}px` } : undefined}
     />
   );
 }
