@@ -140,10 +140,24 @@ function rewriteImageSrc(src: string | undefined): string | null {
   return `/images/last-click-city/${safe}`;
 }
 
+// Slugify an in-page anchor so the same original text produces the same id on the
+// target and the same href on the link (the old blog used ids/hrefs with spaces,
+// "/" and ":", which don't survive Markdown/HTML cleanly).
+function anchorSlug(text: string): string {
+  return decode(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function rewriteLink(href: string | undefined): string {
   const h = decode(href).trim();
   if (!h) return "";
-  if (h.startsWith("#") || /^(mailto|tel):/i.test(h)) return h;
+  if (/^(mailto|tel):/i.test(h)) return h;
+  if (h.startsWith("#")) {
+    const frag = h.slice(1);
+    return frag ? `#${anchorSlug(frag)}` : "";
+  }
   const lc = h.match(/^https?:\/\/(?:www\.)?lastclick\.city\/?(.*)$/i);
   if (lc) {
     const rest = lc[1] || "";
@@ -155,6 +169,9 @@ function rewriteLink(href: string | undefined): string {
   if (/^[A-Za-z0-9][A-Za-z0-9-]*\.html($|[?#])/.test(h)) {
     return "/last-click-city/" + h.replace(/\.html($|[?#])/i, "$1");
   }
+  // A relative href containing whitespace can't be a real path — it's an in-page
+  // anchor that lost its leading '#' in the original (e.g. the SUBQUERIES TOC link).
+  if (/\s/.test(h)) return `#${anchorSlug(h)}`;
   return h;
 }
 
@@ -270,26 +287,51 @@ function renderParagraph(nodes: Node[]): string[] {
 }
 
 function renderList(el: HTMLElement, ordered: boolean): string {
-  const items: string[] = [];
-  const tail: string[] = []; // non-<li> children (malformed Mobirise nests tables here)
+  const out: string[] = [];
   let i = 0;
+  // Malformed Mobirise lists put content directly under <ul>: bullet sub-items as
+  // loose "&bull; <a>…</a>" text+inline between <li>s, and sometimes tables. Buffer
+  // inline runs (so links survive) and emit them in document order — sub-item
+  // bullets get indented under the preceding item; block children pass through.
+  const tail: string[] = []; // non-bullet inline content + block children, appended after the list
+  let inlineBuf: Node[] = [];
+  const flushInline = () => {
+    if (!inlineBuf.length) return;
+    const blocks = renderParagraph(inlineBuf);
+    inlineBuf = [];
+    for (const b of blocks) {
+      // Bullet sub-items nest under the preceding item; anything else (a stray
+      // image, prose) is appended after the list, as it was before.
+      if (out.length && /^\s*[-*]\s/.test(b)) {
+        out.push(b.split("\n").map((l) => `  ${l}`).join("\n"));
+      } else {
+        tail.push(b);
+      }
+    }
+  };
   for (const child of el.childNodes) {
-    if (tagOf(child) === "li") {
+    const t = tagOf(child);
+    if (t === "li") {
+      flushInline();
       const content = serializeBlocks(child as HTMLElement).join("\n\n").trim();
       if (!content) continue;
       const marker = ordered ? `${++i}. ` : "- ";
       const pad = " ".repeat(marker.length);
-      items.push(
+      out.push(
         content
           .split("\n")
           .map((line, idx) => (idx === 0 ? marker + line : pad + line))
           .join("\n"),
       );
+    } else if (isText(child) || INLINE_TAGS.has(t)) {
+      inlineBuf.push(child);
     } else if (isEl(child)) {
-      tail.push(...renderBlockElement(child));
+      flushInline();
+      tail.push(...renderBlockElement(child as HTMLElement));
     }
   }
-  return [items.join("\n"), ...tail].filter((s) => s.trim()).join("\n\n");
+  flushInline();
+  return [out.join("\n"), ...tail].filter((s) => s.trim()).join("\n\n");
 }
 
 function renderCode(pre: HTMLElement): string {
@@ -365,9 +407,17 @@ function renderBlockElement(el: HTMLElement): string[] {
   const tag = tagOf(el);
   if (DROP_TAGS.has(tag)) return [];
   if (el.getAttribute("id") === "disqus_thread") return [];
+  const anchorId = el.getAttribute("id");
   switch (tag) {
-    case "p":
+    case "p": {
+      // A <p> with an id is an anchor target (a pseudo-heading or footnote on the
+      // old blog). Emit it as HTML so the id survives for in-page links.
+      if (anchorId && !hasBlockDescendant(el)) {
+        const inline = serializeInline(el.childNodes).replace(/\s+/g, " ").trim();
+        return inline ? [`<p id="${anchorSlug(anchorId)}">${inline}</p>`] : [];
+      }
       return hasBlockDescendant(el) ? serializeBlocks(el) : renderParagraph(el.childNodes);
+    }
     case "div":
     case "section":
     case "article":
@@ -390,7 +440,10 @@ function renderBlockElement(el: HTMLElement): string[] {
     case "h6": {
       const level = Number(tag[1]);
       const t = serializeInline(el.childNodes).replace(/\s+/g, " ").trim();
-      return t ? [`${"#".repeat(level)} ${t}`] : [];
+      if (!t) return [];
+      // Preserve an explicit id (a TOC anchor target) by emitting an HTML heading.
+      if (anchorId) return [`<h${level} id="${anchorSlug(anchorId)}">${t}</h${level}>`];
+      return [`${"#".repeat(level)} ${t}`];
     }
     case "ul":
     case "ol": {
@@ -434,7 +487,11 @@ function serializeBlocks(node: HTMLElement): string[] {
     }
     if (!isEl(child)) continue;
     const tag = tagOf(child);
-    if (INLINE_TAGS.has(tag)) {
+    // An inline tag that wraps block content is malformed source (e.g. a
+    // mis-nested `<b><i>x</b></i>` leaves headings/paragraphs trapped inside a
+    // bold tag). Treat it as a block container so the nested structure survives
+    // instead of the whole rest of the article rendering bold.
+    if (INLINE_TAGS.has(tag) && !hasBlockDescendant(child)) {
       inlineBuf.push(child);
     } else {
       flush();

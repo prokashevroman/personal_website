@@ -148,7 +148,23 @@ You can get raw data using the following [<sup>14</sup>](#footnote-14):
 
 Now let’s see what we get from AppsFlyer using DataLocker in our database. 9 major tables [<sup>15</sup>](#footnote-15) are enough to make a user journey:
 
-`clicks installs post-attribution installs inapps clicks_retargeting inapps_retargeting post-attribution in-apps organic_uninstalls uninstalls`
+clicks
+
+installs
+
+post-attribution installs
+
+inapps
+
+clicks_retargeting
+
+inapps_retargeting
+
+post-attribution in-apps
+
+organic_uninstalls
+
+uninstalls
 
 Here is a schema showing how most of these tables representing the user journey are connected:
 
@@ -162,7 +178,13 @@ Here is a schema showing how most of these tables representing the user journey 
 
 There are 4 additional tables:
 
-`organic_uninstalls uninstalls post-attribution installs post-attribution in-app events`
+organic_uninstalls
+
+uninstalls
+
+post-attribution installs
+
+post-attribution in-app events
 
 The last two are reports from the Protect360 tool, which provides fraud protection.
 
@@ -991,50 +1013,50 @@ FROM multi_channel_funnel
 
 Here is the [query with dummy data](https://github.com/SergeyMatrosov/AppsFlyer_Multi_Channel_Funnel/blob/main/AppsFlyerMultiFunnel_20221115.md), which you can easily rewrite to actual data. Change the name of tables if needed and select the time range. That’s all. We hope you find this helpful. Feel free to write to us if you would like a consultation.
 
-<sup>1</sup> Which can be combined into one, of course.
+<p id="footnote-1"><sup>1</sup> Which can be combined into one, of course.</p>
 
-<sup>2</sup> Note: by using custom unique domains/coupons, you can also track some offline ads.
+<p id="footnote-2"><sup>2</sup> Note: by using custom unique domains/coupons, you can also track some offline ads.</p>
 
-<sup>3</sup> [https://support.appsflyer.com/hc/en-us/articles/209680773-Raw-data-reporting-overview#user-journey-report-availability](https://support.appsflyer.com/hc/en-us/articles/209680773-Raw-data-reporting-overview#user-journey-report-availability)
+<p id="footnote-3"><sup>3</sup> [https://support.appsflyer.com/hc/en-us/articles/209680773-Raw-data-reporting-overview#user-journey-report-availability](https://support.appsflyer.com/hc/en-us/articles/209680773-Raw-data-reporting-overview#user-journey-report-availability)</p>
 
-<sup>4</sup> We will use NULL as a synonym.
+<p id="footnote-4"><sup>4</sup> We will use NULL as a synonym.</p>
 
-<sup>5</sup> This also means that you cannot compare raw clicks/impressions data with SRN ad account data: you can only do it using AppsFlyer reports like Overview, within its user interface.
+<p id="footnote-5"><sup>5</sup> This also means that you cannot compare raw clicks/impressions data with SRN ad account data: you can only do it using AppsFlyer reports like Overview, within its user interface.</p>
 
-<sup>6</sup> The same goes for the impressions table. We won’t use it because impressions data are also restricted for the web.
+<p id="footnote-6"><sup>6</sup> The same goes for the impressions table. We won’t use it because impressions data are also restricted for the web.</p>
 
-<sup>7</sup> [https://support.appsflyer.com/hc/en-us/articles/360006868017-Raw-data-content-restriction-media-source-or-user-identifiers](https://support.appsflyer.com/hc/en-us/articles/360006868017-Raw-data-content-restriction-media-source-or-user-identifiers) – Facebook, TikTok, Twitter, Roku.
+<p id="footnote-7"><sup>7</sup> [https://support.appsflyer.com/hc/en-us/articles/360006868017-Raw-data-content-restriction-media-source-or-user-identifiers](https://support.appsflyer.com/hc/en-us/articles/360006868017-Raw-data-content-restriction-media-source-or-user-identifiers) – Facebook, TikTok, Twitter, Roku.</p>
 
-<sup>8</sup> [https://support.appsflyer.com/hc/en-us/articles/4409322107537-Bulletin-Action-required-Get-Facebook-raw-data-using-Google-Install-Referrer](https://support.appsflyer.com/hc/en-us/articles/4409322107537-Bulletin-Action-required-Get-Facebook-raw-data-using-Google-Install-Referrer)
+<p id="footnote-8"><sup>8</sup> [https://support.appsflyer.com/hc/en-us/articles/4409322107537-Bulletin-Action-required-Get-Facebook-raw-data-using-Google-Install-Referrer](https://support.appsflyer.com/hc/en-us/articles/4409322107537-Bulletin-Action-required-Get-Facebook-raw-data-using-Google-Install-Referrer)</p>
 
-<sup>9</sup> Note: clicks and impressions are engagements too.
+<p id="footnote-9"><sup>9</sup> Note: clicks and impressions are engagements too.</p>
 
-<sup>10</sup> If you send a server-to-server event, remember to add the appsflyer_id parameter for correct attribution.
+<p id="footnote-10"><sup>10</sup> If you send a server-to-server event, remember to add the appsflyer_id parameter for correct attribution.</p>
 
-<sup>11</sup> You are charged when the user opens the app after clicking on the retargeting campaign. All following openings are not billed.
+<p id="footnote-11"><sup>11</sup> You are charged when the user opens the app after clicking on the retargeting campaign. All following openings are not billed.</p>
 
-<sup>12</sup> Only for install campaigns!
+<p id="footnote-12"><sup>12</sup> Only for install campaigns!</p>
 
-<sup>13</sup> There is no other identifier to do this.
+<p id="footnote-13"><sup>13</sup> There is no other identifier to do this.</p>
 
-<sup>14</sup> [https://support.appsflyer.com/hc/en-us/articles/209680773--raw%20data-reports-available-#reporting-tools%E2%80%94characteristics-and-features](https://support.appsflyer.com/hc/en-us/articles/209680773--raw%20data-reports-available-#reporting-tools%E2%80%94characteristics-and-features)
+<p id="footnote-14"><sup>14</sup> [https://support.appsflyer.com/hc/en-us/articles/209680773--raw%20data-reports-available-#reporting-tools%E2%80%94characteristics-and-features](https://support.appsflyer.com/hc/en-us/articles/209680773--raw%20data-reports-available-#reporting-tools%E2%80%94characteristics-and-features)</p>
 
-<sup>15</sup> If some tables are missing, you need to look at your data streams from [Data Locker](https://support.appsflyer.com/hc/en-us/articles/4410643856657).
+<p id="footnote-15"><sup>15</sup> If some tables are missing, you need to look at your data streams from [Data Locker](https://support.appsflyer.com/hc/en-us/articles/4410643856657).</p>
 
-<sup>16</sup> [https://support.appsflyer.com/hc/en-us/articles/207040506-Assisted-Installs#assisted-installs](https://support.appsflyer.com/hc/en-us/articles/207040506-Assisted-Installs#assisted-installs).
+<p id="footnote-16"><sup>16</sup> [https://support.appsflyer.com/hc/en-us/articles/207040506-Assisted-Installs#assisted-installs](https://support.appsflyer.com/hc/en-us/articles/207040506-Assisted-Installs#assisted-installs).</p>
 
-<sup>17</sup> It is hard to say why AppsFlyer calls it this, but you should treat it like a `“true_media_source”`.
+<p id="footnote-17"><sup>17</sup> It is hard to say why AppsFlyer calls it this, but you should treat it like a `“true_media_source”`.</p>
 
-<sup>18</sup> [https://support.appsflyer.com/hc/en-us/articles/208387843#data-fields-dictionary](https://support.appsflyer.com/hc/en-us/articles/208387843#data-fields-dictionary)
+<p id="footnote-18"><sup>18</sup> [https://support.appsflyer.com/hc/en-us/articles/208387843#data-fields-dictionary](https://support.appsflyer.com/hc/en-us/articles/208387843#data-fields-dictionary)</p>
 
-<sup>19</sup> Can you remember how to check discrepancies between Google Ads clicks and web sessions? It’s easy because you have a referrer for raw data from Google Analytics. You cannot do it for apps – not just because stores don’t share info. with you; the same goes for AppsFlyer too! Sadly, having faith is the only way.
+<p id="footnote-19"><sup>19</sup> Can you remember how to check discrepancies between Google Ads clicks and web sessions? It’s easy because you have a referrer for raw data from Google Analytics. You cannot do it for apps – not just because stores don’t share info. with you; the same goes for AppsFlyer too! Sadly, having faith is the only way.</p>
 
-<sup>20</sup> [https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained](https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained)
+<p id="footnote-20"><sup>20</sup> [https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained](https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained)</p>
 
-<sup>21</sup> [https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained#ios-app-restored-from-icloud-backup](https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained#ios-app-restored-from-icloud-backup)
+<p id="footnote-21"><sup>21</sup> [https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained#ios-app-restored-from-icloud-backup](https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained#ios-app-restored-from-icloud-backup)</p>
 
-<sup>22</sup> [https://support.appsflyer.com/hc/en-us/articles/360015179337-Protect360-raw-data-reports#raw-data-availability-by-tool-type](https://support.appsflyer.com/hc/en-us/articles/360015179337-Protect360-raw-data-reports#raw-data-availability-by-tool-type)
+<p id="footnote-22"><sup>22</sup> [https://support.appsflyer.com/hc/en-us/articles/360015179337-Protect360-raw-data-reports#raw-data-availability-by-tool-type](https://support.appsflyer.com/hc/en-us/articles/360015179337-Protect360-raw-data-reports#raw-data-availability-by-tool-type)</p>
 
-<sup>23</sup> [https://support.appsflyer.com/hc/en-us/articles/360016371077-Double-attribution-of-retargeting-events](https://support.appsflyer.com/hc/en-us/articles/360016371077-Double-attribution-of-retargeting-events)
+<p id="footnote-23"><sup>23</sup> [https://support.appsflyer.com/hc/en-us/articles/360016371077-Double-attribution-of-retargeting-events](https://support.appsflyer.com/hc/en-us/articles/360016371077-Double-attribution-of-retargeting-events)</p>
 
-<sup>24</sup> [https://support.appsflyer.com/hc/en-us/articles/4408933557137#overview%C2%A0](https://support.appsflyer.com/hc/en-us/articles/4408933557137#overview%C2%A0)
+<p id="footnote-24"><sup>24</sup> [https://support.appsflyer.com/hc/en-us/articles/4408933557137#overview%C2%A0](https://support.appsflyer.com/hc/en-us/articles/4408933557137#overview%C2%A0)</p>

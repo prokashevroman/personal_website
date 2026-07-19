@@ -13,44 +13,32 @@ excerpt: "If so, that’s cool, but if it isn’t, we hope that our guide will p
 
 ## Table of contents
 
-- [Introduction](#Introduction)
-- [What is Google Bigquery?](#What is Google Bigquery?)
-- [Queries](#Queries)
-- [SELECT](#SELECT)
-- [FROM](#FROM)
-- [WHERE](#WHERE)
-- [AND / OR](#AND / OR)
-- [GROUP BY](#GROUP BY)
-- [TIMESTAMP AND DATE](#TIMESTAMP AND DATE)
-- [VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH](#VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH)
-- [CASE WHEN... THEN... END](#CASE WHEN... THEN... END)
-- [SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE](SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE)
+- [Introduction](#introduction)
+- [What is Google Bigquery?](#what-is-google-bigquery)
+  - [Terminology](#terminology)
+- [Queries](#queries)
+  - [What is going on in the table?](#what-is-going-on-in-the-table)
+- [SELECT](#select)
+  - [Basics](#basics)
+  - [Querying two tables](#querying-two-tables)
+- [FROM](#from)
+- [WHERE](#where)
+  - [Simple Conditions](#simple-conditions)
+  - [More complex conditions](#more-complex-conditions)
+- [AND / OR](#and-or)
+  - [More and more conditions](#more-and-more-conditions)
+- [GROUP BY](#group-by)
+  - [Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP](#data-types-in-the-column-string-integer-boolean-timestamp)
+- [TIMESTAMP AND DATE](#timestamp-and-date)
+- [VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH](#vlookup-2-0-or-joined-tables-left-join-each-right-join-each)
+- [CASE WHEN... THEN... END](#case-when-then-end)
+- [SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE](#subqueries-with-parsing-substring-merging-two-columns-in-one)
+  - [SUBSTR](#substr)
+  - [Column Parsing](#column-parsing)
+  - [Merge columns](#merge-columns)
+  - [Make SQL do the calculations instead of you – analytical functions](#make-sql-do-the-calculations-instead-of-you-analytical-functions)
 
-Terminology
-
-What is going on in the table?
-
-Basics
-
-Querying two tables
-
-Simple Conditions
-
-More complex conditions
-
-More and more conditions
-
-Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP
-
-SUBSTR
-
-Column Parsing
-
-Merge columns
-
-Make SQL do the calculations instead of you – analytical functions
-
-## Introduction
+<h2 id="introduction">Introduction</h2>
 
 <strong>Hi there! This might be your first guide to SQL and BigQuery. </strong>If so, that’s cool, but if it isn’t, we hope that our guide will provide clear explanations and help you understand things better. The goal of this guide is to help you become more familiar with SQL and BigQuery as quickly as possible so that you can make simple queries by the end of it. With practice, you will be able to carry out difficult and complex data analysis tasks.
 
@@ -58,11 +46,11 @@ We strongly recommend that you write and run the queries in this guide because l
 
 P.S. Feel free to send us constructive feedback. We are keen to make this guide as good as possible.
 
-## What is Google Bigquery?
+<h2 id="what-is-google-bigquery">What is Google Bigquery?</h2>
 
 [Google Bigquery](https://console.cloud.google.com/bigquery) is a cloud-based data warehouse, where you can group collections of data from other databases like SalesForce and data from Google Ads etc. by means of Bigquery <em>datasets</em> and <em>tables</em>.
 
-<strong>Terminology</strong>
+<p id="terminology"><strong>Terminology</strong></p>
 
 - A ‘project’ is just a collection of datasets and is made using the Google Cloud Platform. If you need to stream data from your service to BigQuery, you can do this by using the project’s credentials and API.
 
@@ -88,9 +76,9 @@ Summary:
 
 4\. Tables consist of rows and columns (two-dimensional array).
 
-## Queries
+<h2 id="queries">Queries</h2>
 
-<strong>What is going on in the table?</strong>
+<p id="what-is-going-on-in-the-table"><strong>What is going on in the table?</strong></p>
 
 ![BigQuery project](/images/last-click-city/BigQuery_guide/bigquery-table-schema.png)
 
@@ -116,9 +104,9 @@ The ‘Details’ section has information about the table itself, as follows:
 - Expiration – the date when the table is deleted (generally set as ‘Never’ = ‘Do not delete’)
 - Data location – the region where you want to store your data (EU or US). Remember the stipulations of the GDPR when setting this up.
 
-## SELECT
+<h2 id="select">SELECT</h2>
 
-<strong>Basics</strong>
+<p id="basics"><strong>Basics</strong></p>
 
 ![BigQuery project](/images/last-click-city/BigQuery_guide/select-basics.png)
 
@@ -136,13 +124,13 @@ As you can see, this order is not equal to the order of the query that you write
 
 The syntax for all SQL dialects has pretty much the same structure.
 
-<strong>Querying two tables</strong>
+<p id="querying-two-tables"><strong>Querying two tables</strong></p>
 
 If two tables have identical schema and data types in columns, you can query these two tables at the same time. The result will be data from each table, given sequentially. The data from table 1 will be presented first, and then the data from table 2 will be presented.
 
 ![BigQuery project](/images/last-click-city/BigQuery_guide/Querying-two-tables.png)
 
-## FROM
+<h2 id="from">FROM</h2>
 
 If you want to take something, you should have an address or path where it is stored, and the path is structured as follows: project.dataset.table.
 
@@ -176,13 +164,13 @@ WHERE
   _PARTITIONTIME BETWEEN '1598-01-01' AND '1600-01-01'
 ```
 
-## WHERE
+<h2 id="where">WHERE</h2>
 
 ‘WHERE’ is the main operator you must use in order to have a table with only the data you need. Without this, you’ll either get the same table that you have queried or all data from columns that you chose in SELECT.
 
 It’s not that hard to make conditions. Just write ‘column’ and the value(s) that you want to see in this column.
 
-<strong>Simple Conditions</strong>
+<p id="simple-conditions"><strong>Simple Conditions</strong></p>
 
 Simple conditions are the precise value you want to pick out of the table.
 
@@ -197,7 +185,7 @@ WHERE
 
 ![BigQuery project](/images/last-click-city/BigQuery_guide/simple-query-results.png)
 
-<strong>More complex conditions</strong>
+<p id="more-complex-conditions"><strong>More complex conditions</strong></p>
 
 WHERE really likes the command BETWEEN. This is very useful when you need, for example, to show only those words that have a word_count of more than two but less than four. In other cases, it could be data between dates and timestamps etc.
 
@@ -210,7 +198,7 @@ WHERE
   word_count BETWEEN 2 AND 3
 ```
 
-## AND / OR
+<h2 id="and-or">AND / OR</h2>
 
 ```sql
 SELECT
@@ -234,7 +222,7 @@ WHERE
 
 ‘AND’ takes only data that have both these records in a row. In this case, it will be only those rows, where column ‘word’ contains only ‘meet’ and simultaneously column ‘corpus’ contains only ‘sonnets’. Try this for yourself!
 
-<strong>More and more conditions</strong>
+<p id="more-and-more-conditions"><strong>More and more conditions</strong></p>
 
 You can combine a lot of conditions in WHERE, but remember that it must be readable for you and other users. Use parentheses.
 
@@ -253,7 +241,7 @@ WHERE
 
 Remember: if you have a zero result that seems odd, check the WHERE condition.
 
-## GROUP BY
+<h2 id="group-by">GROUP BY</h2>
 
 From our point of view, this is one of the most complicated functions to explain. Firstly, it is used when you use aggregation functions, and secondly, it groups data. Let’s use SUM word_count of the word ‘QUEEN’ to see the total number of times this word appears in Shakespeare’s poetry.
 
@@ -352,7 +340,7 @@ WHERE
 
 ![BigQuery project](/images/last-click-city/BigQuery_guide/group-by-results-6.png)
 
-<strong>Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP</strong>
+<p id="data-types-in-the-column-string-integer-boolean-timestamp"><strong>Data types in the column: STRING / INTEGER / BOOLEAN / TIMESTAMP</strong></p>
 
 1\. STRING: text data (which must be put in inverted commas in the query)
  2. INTEGER: whole numbers (queried without inverted commas)
@@ -370,19 +358,329 @@ FROM
 
 Now column ‘word_count’ has a STRING data type instead of INTEGER.
 
-## TIMESTAMP AND DATE
+<h2 id="timestamp-and-date">TIMESTAMP AND DATE</h2>
 
 1\. ‘TIMESTAMP’: stores the date and time
  2. ‘DATE’: stores the date only
 
 There are plenty of methods for working with the formats that you can find in official documentation. Most of these are just about conversion from one date format to another.
 
-We want to touch upon the issue where you want to have a date column. Here, it is preferable to either use TIMESTAMP with hours, minutes, seconds and even milliseconds or the INTEGER type, which stores the UNIX (UNIX Epoch) date. For example, for the date January 1, 2018, this could be <strong>1514764801</strong>. What does this number mean? It is the number of seconds that have elapsed since January 1, 1970. If you see this kind of number but with three more digits (e.g., 1514764801<strong><em>000</em>), it is the same but in milliseconds! But is this preferable? The thing is that if you stream data from your website, you could have hits/events every second, but if you store it as Year-Month-Date, you don’t know whether the particular hit of 2018-01-01 was the first result of that day, the last or in the middle. A helpful resource for testing conversion from seconds to the date (and vice versa) can be found at [epochconverter.com](https://www.epochconverter.com/). January 1, 2018 in seconds: ![BigQuery project](/images/last-click-city/BigQuery_guide/january-1-seconds.png)  January 1, 2018 in milliseconds: ![BigQuery project](/images/last-click-city/BigQuery_guide/january-1-milliseconds.png)
- VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH ‘VLOOKUP’ in Excel is good, but if you need to join two tables with 700,000 rows each, it’ll take you a few hours. However, with JOIN in SQL, it takes about five minutes. ‘JOIN’ merges two tables into one using a common column. (Here, we are talking about the data in the table, not the column names.) Moreover, this could be a LEFT, RIGHT, CROSS or INNER JOIN. For example, if this is a LEFT JOIN, then you JOIN everything in the left-hand part of the table. As an example, we will use some other public data, namely data relating to the San Francisco Bikeshare. One table has station id and a number of available bikes. The second one has a public name and station id too. We want to have a table that has station id, the public name of this and the number of available bikes. Remember: 1. Tables must have columns with identical data. (In the example below, station_id is station_id in both tables.)
- 2. Columns must have an identical data type. &lt;code class="language-sql">SELECT t1.station_id, t2.name, t1.num_bikes_available FROM (SELECT station_id, num_bikes_available FROM --HERE WE DEFINED WHICH TABLE WILL BE ON THE LEFT --ADD ALIAS T1 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER. `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_status`) AS t1 LEFT JOIN (SELECT station_id, name FROM --HERE WE DEFINED WHICH TABLE WILL BE ON THE RIGHT --ADD ALIAS T2 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER. `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`) AS t2 --COLUMNS, THAT HAVE IDENTICAL DATA. SOMETIMES, THEY MAY HAVE DIFFERENT NAMES, BUT ONLY DATA WITHIN MATTERS! ON t1.station_id = t2.station_id &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/join-results.png)
- CASE WHEN... THEN... END CASE: This is kind of magic among the functions of SQL, and there are two variants. Let’s take a look at the first one: &lt;code class="language-sql">SELECT is_male, FROM `bigquery-public-data.samples.natality` LIMIT 100 &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/case-results.png)  This is nice, but we want ‘Yes’ or ‘No’ instead of ‘true’ and ‘false’. &lt;code class="language-sql">SELECT CASE WHEN is_male = TRUE THEN 'Yes' WHEN is_male = FALSE THEN 'No' END AS is_male, FROM `bigquery-public-data.samples.natality` LIMIT 100 &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/case-results-2.png)  Variant 2 This is good, but we are told to make separate columns for ‘Male’ and ‘Female’. We don’t know why, but o.k., let’s do it. &lt;code class="language-sql">SELECT CASE WHEN is_male = TRUE THEN 1 ELSE 0 END AS Male, CASE WHEN is_male = FALSE THEN 1 ELSE 0 END AS Female, FROM `bigquery-public-data.samples.natality` LIMIT 100 &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/case-results-3.png)
- SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE SUBQUERIES AND ‘WITH’ STATEMENT are another magic feature of SQL. Remember: every query just makes another NEW table, which we can use to query data with. ![BigQuery project](/images/last-click-city/BigQuery_guide/shakespeare.png)   This table has four columns: word, word_count, corpus and corpus_date. Here, we will just take ‘word’: &lt;code class="language-sql">SELECT word FROM `bigquery-public-data.samples.shakespeare` &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/word-results.png)  We are free to query this for something. Let’s count the total number of words. &lt;code class="language-sql">SELECT COUNT(word) AS total_number_of_words FROM ( SELECT word FROM `bigquery-public-data.samples.shakespeare`) &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/word-results-2.png)  Please note that we query this table just like any other using SELECT FROM, and again we can subquery the result. Say we want to add 100,500 to total_number_of_words and name it ‘madness’. &lt;code class="language-sql">SELECT total_number_of_words + 100500 AS madness FROM ( SELECT COUNT(word) AS total_number_of_words FROM ( SELECT word FROM `bigquery-public-data.samples.shakespeare`)) &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/word-results-3.png)  The query looks stepped. One day, you may need to debug such a query but with many subqueries, so our advice here is to read it from its core. In our case, it is SELECT word FROM `bigquery-public-data.samples.shakespeare'. Subqueries can also be used in SELECT and WHERE. In our example, we got a 1 x 1 table that is itself equal to the value 265,156, which could be used as a condition in WHERE, as follows: &lt;code class="language-sql">SELECT … FROM … WHERE Expression > (SELECT total_number_of_words + 100500 AS madness FROM ( SELECT COUNT(word) AS total_number_of_words FROM ( SELECT word FROM `bigquery-public-data.samples.shakespeare`))) &lt;/code> Another tip is to avoid making such stepped queries altogether because as you can see, it is hard to read. Use WITH statement instead. It essentially does the same thing but is far more readable: &lt;code class="language-sql">WITH Core AS ( SELECT word FROM `bigquery-public-data.samples.shakespeare`), Count AS ( SELECT COUNT(word) AS total_number_of_words FROM Core), Madness AS ( SELECT total_number_of_words + 100500 AS mandess FROM Count) SELECT \* FROM Madness &lt;/code> Each subquery is now made into a separate table (named ‘Core’, ‘Count’, ‘Madness’) within the query, which refers one to another. Our main and final query starts at 17. One thing to mention, though, is that WITH only works in Standard SQL. Using these methods (the last one in particular), the data processing is done without multiplying tables and views.
- SUBSTR SUBSTR is a string method that cuts your string and gives you a new one based on it. We will cut the word ‘QUEEN’, with the aim of having only the first letter (‘Q’) as a result. ![BigQuery project](/images/last-click-city/BigQuery_guide/substr.png)  ![BigQuery project](/images/last-click-city/BigQuery_guide/substr-result.png)  You will want to use it as a marketer if, for example, you want to get a specific part of a URL from website streaming.
- Column Parsing This will be a difficult but useful section. To be able to parse a column by a specific symbol (or delimiter like Text-to-Columns in Excel), we need to use the SPLIT and ARRAY method ‘OFFSET’, giving names to new columns. First of all, let’s look at the result of a query that gives us one column with date/time/time zone. &lt;code class="language-sql">SELECT created_at FROM `bigquery-public-data.samples.github_nested` LIMIT 10 &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/column-parsing-results.png)   In this case, our delimiter will be the space symbol because there is a space between date and time, as well as between time and time zone. Our next step will involve using SPLIT: &lt;code class="language-sql">SELECT SPLIT(created_at, ' ') AS full_date FROM `bigquery-public-data.samples.github_nested` LIMIT 10 &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/column-parsing-results-2.png)  As a result, we get rows with arrays in each. The first row is equal to [2012/03/30, 02:17:15, -0700]. Now we need to parse the array with OFFSET(n). The ‘n’ in parentheses corresponds to an element in the array (index of it), starting from zero. &lt;code class="language-sql">SELECT full_date[OFFSET(0)] AS date, full_date[OFFSET(1)] AS time, full_date[OFFSET(2)] AS timezone FROM (SELECT SPLIT(created_at, ' ') AS full_date FROM `bigquery-public-data.samples.github_nested` LIMIT 10) &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/column-parsing-results-3.png)  That’s all there is to it. Remember: if the index is out of range, for example, OFFSET(3), it will generate an error. A reasonable question to ask is why can’t we do it by SUBSTR? We could, and maybe in some cases it’s preferable, but it often lacks readability.
- Merge columns To merge columns, you need to use CONCAT, but this function only works with a STRING data type. &lt;code class="language-sql">SELECT CONCAT(word, word_count, corpus, corpus_date) FROM `bigquery-public-data.samples.shakespeare` LIMIT 10 &lt;/code>   Before After   ![BigQuery project](/images/last-click-city/BigQuery_guide/before.png) ![BigQuery project](/images/last-click-city/BigQuery_guide/after.png)
- Make SQL do the calculations instead of you – analytical functions SQL can calculate different things by using its analytical functions. &lt;code class="language-sql">SELECT MIN(word_count) AS min_words, MAX(word_count) AS max_words, AVG(word_count) AS average_words FROM `bigquery-public-data.samples.shakespeare` &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/analytical-functions-results.png)  Remember: if you want to calculate values for a specific column, you must use GROUP BY. Let’s use the example of the word ‘QUEEN’ again. &lt;code class="language-sql">SELECT word, SUM(word_count) AS total_word_count FROM `bigquery-public-data.samples.shakespeare` WHERE word = "QUEEN" GROUP BY word &lt;/code> ![BigQuery project](/images/last-click-city/BigQuery_guide/analytical-functions-results.png)  </strong>
+We want to touch upon the issue where you want to have a date column. Here, it is preferable to either use TIMESTAMP with hours, minutes, seconds and even milliseconds or the INTEGER type, which stores the UNIX (UNIX Epoch) date. For example, for the date January 1, 2018, this could be <strong>1514764801</strong>. What does this number mean? It is the number of seconds that have elapsed since January 1, 1970. If you see this kind of number but with three more digits (e.g., 1514764801
+
+<em>000</em>), it is the same but in milliseconds!
+
+But is this preferable? The thing is that if you stream data from your website, you could have hits/events every second, but if you store it as Year-Month-Date, you don’t know whether the particular hit of 2018-01-01 was the first result of that day, the last or in the middle.
+
+A helpful resource for testing conversion from seconds to the date (and vice versa) can be found at [epochconverter.com](https://www.epochconverter.com/).
+
+January 1, 2018 in seconds:
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/january-1-seconds.png)
+
+January 1, 2018 in milliseconds:
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/january-1-milliseconds.png)
+
+<h2 id="vlookup-2-0-or-joined-tables-left-join-each-right-join-each">VLOOKUP 2.0 or joined tables: LEFT-JOIN EACH / RIGHT-JOIN EACH</h2>
+
+‘VLOOKUP’ in Excel is good, but if you need to join two tables with 700,000 rows each, it’ll take you a few hours. However, with JOIN in SQL, it takes about five minutes.
+
+‘JOIN’ merges two tables into one using a common column. (Here, we are talking about the data in the table, not the column names.) Moreover, this could be a LEFT, RIGHT, CROSS or INNER JOIN. For example, if this is a LEFT JOIN, then you JOIN everything in the left-hand part of the table.
+
+As an example, we will use some other public data, namely data relating to the San Francisco Bikeshare. One table has station id and a number of available bikes. The second one has a public name and station id too. We want to have a table that has station id, the public name of this and the number of available bikes.
+
+Remember:
+
+1\. Tables must have columns with identical data. (In the example below, station_id is station_id in both tables.)
+ 2. Columns must have an identical data type.
+
+```sql
+SELECT
+  t1.station_id,
+  t2.name,
+  t1.num_bikes_available
+FROM
+ (SELECT
+  station_id,
+  num_bikes_available
+FROM
+   --HERE WE DEFINED WHICH TABLE WILL BE ON THE LEFT
+   --ADD ALIAS T1 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER.
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_status`) AS t1
+LEFT JOIN
+ (SELECT
+  station_id,
+  name
+FROM
+   --HERE WE DEFINED WHICH TABLE WILL BE ON THE RIGHT
+   --ADD ALIAS T2 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER.
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`) AS t2
+   --COLUMNS, THAT HAVE IDENTICAL DATA. SOMETIMES, THEY MAY HAVE DIFFERENT NAMES, BUT ONLY DATA WITHIN MATTERS!
+ON t1.station_id = t2.station_id
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/join-results.png)
+
+<h2 id="case-when-then-end">CASE WHEN... THEN... END</h2>
+
+CASE: This is kind of magic among the functions of SQL, and there are two variants. Let’s take a look at the first one:
+
+```sql
+SELECT
+  is_male,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT 100
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/case-results.png)
+
+This is nice, but we want ‘Yes’ or ‘No’ instead of ‘true’ and ‘false’.
+
+```sql
+SELECT
+CASE
+  WHEN is_male = TRUE THEN 'Yes'
+  WHEN is_male = FALSE THEN 'No'
+END
+  AS is_male,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT
+  100
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/case-results-2.png)
+
+Variant 2
+
+This is good, but we are told to make separate columns for ‘Male’ and ‘Female’. We don’t know why, but o.k., let’s do it.
+
+```sql
+SELECT
+CASE
+  WHEN is_male = TRUE THEN 1 ELSE 0
+END AS
+  Male,
+CASE
+  WHEN is_male = FALSE THEN 1 ELSE 0
+END AS
+  Female,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT
+  100
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/case-results-3.png)
+
+<h2 id="subqueries-with-parsing-substring-merging-two-columns-in-one">SUBQUERIES, WITH, PARSING, SUBSTRING, MERGING TWO COLUMNS IN ONE</h2>
+
+SUBQUERIES AND ‘WITH’ STATEMENT are another magic feature of SQL. Remember: every query just makes another NEW table, which we can use to query data with.
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/shakespeare.png)
+
+This table has four columns: word, word_count, corpus and corpus_date. Here, we will just take ‘word’:
+
+```sql
+SELECT
+  word
+FROM
+  `bigquery-public-data.samples.shakespeare`
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/word-results.png)
+
+We are free to query this for something. Let’s count the total number of words.
+
+```sql
+SELECT
+  COUNT(word) AS total_number_of_words
+FROM (
+  SELECT
+    word
+  FROM
+    `bigquery-public-data.samples.shakespeare`)
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/word-results-2.png)
+
+Please note that we query this table just like any other using SELECT FROM, and again we can subquery the result. Say we want to add 100,500 to total_number_of_words and name it ‘madness’.
+
+```sql
+SELECT
+  total_number_of_words + 100500 AS madness
+FROM (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM (
+    SELECT
+      word
+    FROM
+      `bigquery-public-data.samples.shakespeare`))
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/word-results-3.png)
+
+The query looks stepped. One day, you may need to debug such a query but with many subqueries, so our advice here is to read it from its core. In our case, it is SELECT word FROM `bigquery-public-data.samples.shakespeare'.
+
+Subqueries can also be used in SELECT and WHERE. In our example, we got a 1 x 1 table that is itself equal to the value 265,156, which could be used as a condition in WHERE, as follows:
+
+```sql
+SELECT
+…
+FROM
+…
+WHERE
+Expression > (SELECT
+  total_number_of_words + 100500 AS madness
+FROM (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM (
+    SELECT
+      word
+    FROM
+      `bigquery-public-data.samples.shakespeare`)))
+```
+
+Another tip is to avoid making such stepped queries altogether because as you can see, it is hard to read. Use WITH statement instead. It essentially does the same thing but is far more readable:
+
+```sql
+WITH
+  Core AS (
+  SELECT
+    word
+  FROM
+    `bigquery-public-data.samples.shakespeare`),
+  Count AS (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM
+    Core),
+  Madness AS (
+  SELECT
+    total_number_of_words + 100500 AS mandess
+  FROM
+    Count)
+SELECT
+  *
+FROM
+  Madness
+```
+
+Each subquery is now made into a separate table (named ‘Core’, ‘Count’, ‘Madness’) within the query, which refers one to another. Our main and final query starts at 17. One thing to mention, though, is that WITH only works in Standard SQL.
+
+Using these methods (the last one in particular), the data processing is done without multiplying tables and views.
+
+<h2 id="substr">SUBSTR</h2>
+
+SUBSTR is a string method that cuts your string and gives you a new one based on it. We will cut the word ‘QUEEN’, with the aim of having only the first letter (‘Q’) as a result.
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/substr.png)
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/substr-result.png)
+
+You will want to use it as a marketer if, for example, you want to get a specific part of a URL from website streaming.
+
+<h2 id="column-parsing">Column Parsing</h2>
+
+This will be a difficult but useful section. To be able to parse a column by a specific symbol (or delimiter like Text-to-Columns in Excel), we need to use the SPLIT and ARRAY method ‘OFFSET’, giving names to new columns. First of all, let’s look at the result of a query that gives us one column with date/time/time zone.
+
+```sql
+SELECT
+  created_at
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/column-parsing-results.png)
+
+In this case, our delimiter will be the space symbol because there is a space between date and time, as well as between time and time zone. Our next step will involve using SPLIT:
+
+```sql
+SELECT
+  SPLIT(created_at, ' ') AS full_date
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/column-parsing-results-2.png)
+
+As a result, we get rows with arrays in each. The first row is equal to [2012/03/30, 02:17:15, -0700].
+
+Now we need to parse the array with OFFSET(n). The ‘n’ in parentheses corresponds to an element in the array (index of it), starting from zero.
+
+```sql
+SELECT
+  full_date[OFFSET(0)] AS date,
+  full_date[OFFSET(1)] AS time,
+  full_date[OFFSET(2)] AS timezone
+FROM
+  (SELECT
+    SPLIT(created_at, ' ') AS full_date
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10)
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/column-parsing-results-3.png)
+
+That’s all there is to it. Remember: if the index is out of range, for example, OFFSET(3), it will generate an error. A reasonable question to ask is why can’t we do it by SUBSTR? We could, and maybe in some cases it’s preferable, but it often lacks readability.
+
+<h2 id="merge-columns">Merge columns</h2>
+
+To merge columns, you need to use CONCAT, but this function only works with a STRING data type.
+
+```sql
+SELECT
+  CONCAT(word, word_count, corpus, corpus_date)
+FROM
+  `bigquery-public-data.samples.shakespeare`
+LIMIT
+  10
+```
+
+Before
+
+After
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/before.png)
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/after.png)
+
+<h2 id="make-sql-do-the-calculations-instead-of-you-analytical-functions">Make SQL do the calculations instead of you – analytical functions</h2>
+
+SQL can calculate different things by using its analytical functions.
+
+```sql
+SELECT
+  MIN(word_count) AS min_words,
+  MAX(word_count) AS max_words,
+  AVG(word_count) AS average_words
+FROM
+  `bigquery-public-data.samples.shakespeare`
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/analytical-functions-results.png)
+
+Remember: if you want to calculate values for a specific column, you must use GROUP BY. Let’s use the example of the word ‘QUEEN’ again.
+
+```sql
+SELECT
+  word,
+  SUM(word_count) AS total_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = "QUEEN"
+GROUP BY
+  word
+```
+
+![BigQuery project](/images/last-click-city/BigQuery_guide/analytical-functions-results.png)
