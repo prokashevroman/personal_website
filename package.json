@@ -13,6 +13,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "new:post": "tsx scripts/new-post.ts",
+    "newsletter": "tsx scripts/newsletter-draft.ts",
     "import:lcc": "tsx scripts/import-last-click-city.ts"
   },
   "dependencies": {

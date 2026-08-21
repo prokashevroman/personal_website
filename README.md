@@ -20,6 +20,7 @@ pnpm lint         # next lint
 pnpm build        # production build
 pnpm start        # run the production build
 pnpm new:post "Title"   # scaffold content/posts/<slug>.mdx
+pnpm newsletter <slug>  # create a Buttondown draft from a published post
 ```
 
 ## Adding a post
@@ -33,10 +34,44 @@ pnpm new:post "Title"   # scaffold content/posts/<slug>.mdx
    path: `![alt text](/images/posts/<slug>/file.png)`.
 4. When ready, flip `published: true` and commit. Pushing to `main`
    triggers a Vercel deploy.
+5. To email it to subscribers, run `pnpm newsletter <slug>` (see
+   [Sending a post to the newsletter](#sending-a-post-to-the-newsletter)).
 
 While `published: false`, the post is visible in `pnpm dev` but hidden in
 the production build (it won't appear in `/`, `/blog`, `/sitemap.xml`,
 `/feed.xml`, or be statically generated).
+
+## Sending a post to the newsletter
+
+Buttondown's RSS-to-email automation is a paid add-on, but API access is
+free on every plan — so `scripts/newsletter-draft.ts` builds the email from
+the post's MDX instead. Subscribers get the full post body rather than just
+the RSS `description`.
+
+```bash
+pnpm newsletter <slug>            # create a draft, then review + send in Buttondown
+pnpm newsletter <slug> --dry-run  # print the email locally; makes no API calls
+pnpm newsletter <slug> --send     # create the draft and queue it for sending
+pnpm newsletter <slug> --force    # allow a second email with the same subject
+```
+
+Normal flow: publish and deploy the post, run `pnpm newsletter <slug>`,
+open the draft link it prints, then hit Send in Buttondown.
+
+The script deliberately refuses to do surprising things:
+
+- Nothing sends unless you pass `--send`; creation is always `draft` first
+  (`--send` then flips the draft to `about_to_send` via a separate PATCH).
+- Unpublished posts are rejected — the post must be live before it's emailed.
+- If Buttondown already has an email with the same subject, it stops rather
+  than creating a duplicate (override with `--force`).
+
+It also normalizes the content for email: root-relative image and link
+targets become absolute URLs against `NEXT_PUBLIC_SITE_URL`, MDX comments
+(`{/* ... */}`) are stripped so they can't leak into the inbox, and a
+"Read this post on the web" footer is appended.
+
+Requires `BUTTONDOWN_API_KEY` and `NEXT_PUBLIC_SITE_URL` in `.env.local`.
 
 ## Environment variables
 
@@ -74,10 +109,14 @@ notice instead of trying to render giscus.
 ### Buttondown (newsletter)
 
 1. Create a Buttondown account.
-2. Settings → API → copy the key into `BUTTONDOWN_API_KEY`.
-3. Settings → RSS-to-email → paste
-   `https://<your-domain>/feed.xml` so new posts are sent
-   automatically to subscribers.
+2. Settings → API → copy the key into `BUTTONDOWN_API_KEY`. API access is
+   included on every plan, including the free tier.
+3. Sending new posts to subscribers — two options:
+   - **Free:** run `pnpm newsletter <slug>` after publishing (see
+     [Sending a post to the newsletter](#sending-a-post-to-the-newsletter)).
+   - **Paid:** Settings → RSS-to-email (a +$9/month add-on) → paste
+     `https://<your-domain>/feed.xml` to have Buttondown poll the feed and
+     draft/send automatically.
 
 ### Resend (contact form)
 
@@ -102,8 +141,10 @@ notice instead of trying to render giscus.
 
 ## Production checklist
 
-- [ ] `NEXT_PUBLIC_SITE_URL` is the public production URL.
-- [ ] Buttondown key + RSS-to-email configured against the live feed.
+- [ ] `NEXT_PUBLIC_SITE_URL` is the public production URL, with no trailing
+      slash or dot (it prefixes every feed/sitemap/newsletter link).
+- [ ] Buttondown key set, and a way to email new posts chosen:
+      `pnpm newsletter` (free) or the RSS-to-email add-on (paid).
 - [ ] Resend domain verified, `CONTACT_FROM_EMAIL` is on that domain,
       and `CONTACT_TO_EMAIL` is monitored.
 - [ ] giscus env vars populated and Discussions enabled on the repo.
