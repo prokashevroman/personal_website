@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { SubscribeForm } from "@/components/SubscribeForm";
 import { getAllPosts } from "@/lib/posts";
+import { JsonLd, canonical, indexable, personSchema, webSiteSchema } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  alternates: canonical("/"),
+  robots: indexable,
+};
 
 export default function HomePage() {
   const posts = getAllPosts().slice(0, 8);
 
   return (
     <div className="space-y-20">
+      <JsonLd schemas={[webSiteSchema(), personSchema()]} />
       <section
         aria-labelledby="hero"
         className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-12"

@@ -10,6 +10,14 @@ export function Footer() {
           &copy; {year} {siteConfig.name}
         </p>
         <ul className="flex flex-wrap items-center gap-6">
+          {/* The archive is indexable but reachable from nowhere else — without
+              this link it is orphaned, and a page with no internal links in is
+              one crawlers deprioritise regardless of the sitemap. */}
+          <li>
+            <Link href="/last-click-city" className="hover:text-ink">
+              Last Click City archive
+            </Link>
+          </li>
           <li>
             <Link href={siteConfig.rssPath} className="hover:text-ink">
               RSS

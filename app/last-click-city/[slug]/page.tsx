@@ -12,6 +12,16 @@ import {
   getCategoryBySlug,
   CATEGORIES,
 } from "@/lib/last-click-city";
+import {
+  JsonLd,
+  absoluteUrl,
+  archiveCollectionSchema,
+  archivePostingSchema,
+  breadcrumbSchema,
+  canonical,
+  personSchema,
+} from "@/lib/seo";
+import { siteConfig } from "@/lib/site-config";
 
 type RouteParams = { slug: string };
 
@@ -26,13 +36,58 @@ export async function generateMetadata({
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  // Self-canonical on both shapes: without it these pages inherited whatever the
+  // parent declared, which used to be the homepage.
   const category = getCategoryBySlug(slug);
-  if (category) return { title: `${category.title} — Last Click City` };
+  if (category) {
+    const title = `${category.title} — Last Click City`;
+    const description = `${category.articleSlugs.length} archived posts on ${category.title} from the Last Click City blog.`;
+    return {
+      title,
+      description,
+      alternates: canonical(`/last-click-city/${category.slug}`),
+      openGraph: {
+        type: "website",
+        siteName: siteConfig.name,
+        locale: siteConfig.locale,
+        title,
+        description,
+        url: absoluteUrl(`/last-click-city/${category.slug}`),
+      },
+      twitter: { card: "summary_large_image", title, description },
+    };
+  }
+
   const post = getArchivePostBySlug(slug);
-  if (!post) return {};
+  if (!post) return { robots: { index: false, follow: false } };
+  const { frontmatter } = post;
+  const url = absoluteUrl(`/last-click-city/${frontmatter.slug}`);
   return {
-    title: post.frontmatter.title,
-    description: post.frontmatter.description,
+    title: frontmatter.title,
+    description: frontmatter.description,
+    // Credit the original author rather than defaulting to the site owner —
+    // 17 of the 40 archived posts were written by a guest.
+    authors: [
+      frontmatter.author
+        ? { name: frontmatter.author, ...(frontmatter.authorUrl ? { url: frontmatter.authorUrl } : {}) }
+        : { name: siteConfig.author.name, url: absoluteUrl("/about") },
+    ],
+    alternates: canonical(`/last-click-city/${frontmatter.slug}`),
+    openGraph: {
+      type: "article",
+      siteName: siteConfig.name,
+      locale: siteConfig.locale,
+      title: frontmatter.title,
+      description: frontmatter.description,
+      url,
+      publishedTime: frontmatter.date,
+      modifiedTime: frontmatter.date,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: frontmatter.title,
+      description: frontmatter.description,
+    },
   };
 }
 
@@ -48,6 +103,16 @@ export default async function ArchiveSlugPage({ params }: { params: Promise<Rout
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
     return (
       <div className="mx-auto max-w-3xl">
+        <JsonLd
+          schemas={[
+            archiveCollectionSchema(category, posts),
+            breadcrumbSchema([
+              { name: "Home", path: "/" },
+              { name: "Last Click City", path: "/last-click-city" },
+              { name: category.title, path: `/last-click-city/${category.slug}` },
+            ]),
+          ]}
+        />
         <ArchiveHero eyebrow="Category" title={category.title} subtitle="From the Last Click City archive." />
         <div className="mt-14">
           {posts.map((post) => (
@@ -71,8 +136,23 @@ export default async function ArchiveSlugPage({ params }: { params: Promise<Rout
   if (!post) notFound();
 
   return (
-    <ArchiveArticleLayout post={post}>
-      <RenderMdx source={post.content} />
-    </ArchiveArticleLayout>
+    <>
+      <JsonLd
+        schemas={[
+          archivePostingSchema(post),
+          // Publisher `@id` on the posting points at the site owner's Person node,
+          // so it has to be declared here too.
+          personSchema(),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Last Click City", path: "/last-click-city" },
+            { name: post.frontmatter.title, path: `/last-click-city/${post.frontmatter.slug}` },
+          ]),
+        ]}
+      />
+      <ArchiveArticleLayout post={post}>
+        <RenderMdx source={post.content} />
+      </ArchiveArticleLayout>
+    </>
   );
 }

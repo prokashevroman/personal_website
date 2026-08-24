@@ -1,14 +1,53 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/ContactForm";
+import {
+  JsonLd,
+  absoluteUrl,
+  breadcrumbSchema,
+  canonical,
+  indexable,
+  personSchema,
+  profilePageSchema,
+} from "@/lib/seo";
+import { siteConfig } from "@/lib/site-config";
+
+const TITLE = "About";
+const DESCRIPTION =
+  "Roman Prokashev builds revenue-generating marketing functions for technical companies: growth strategy, operating models, demand generation, and measurement.";
 
 export const metadata: Metadata = {
-  title: "About",
-  description: "About Roman Prokashev and how to get in touch.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: canonical("/about"),
+  robots: indexable,
+  openGraph: {
+    type: "profile",
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    title: `${TITLE} — ${siteConfig.name}`,
+    description: DESCRIPTION,
+    url: absoluteUrl("/about"),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${TITLE} — ${siteConfig.name}`,
+    description: DESCRIPTION,
+  },
 };
 
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-16">
+      <JsonLd
+        schemas={[
+          profilePageSchema(),
+          personSchema(),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "About", path: "/about" },
+          ]),
+        ]}
+      />
       <section>
         <p className="eyebrow">About</p>
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tightish text-ink">

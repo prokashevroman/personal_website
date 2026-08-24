@@ -3,16 +3,55 @@ import Link from "next/link";
 import { ArchiveCityHero } from "@/components/archive/ArchiveCityHero";
 import { ArchiveCard } from "@/components/archive/ArchiveCard";
 import { getArchivePostsInPillarOrder, CATEGORIES } from "@/lib/last-click-city";
+import {
+  JsonLd,
+  absoluteUrl,
+  archiveBlogSchema,
+  breadcrumbSchema,
+  canonical,
+  personSchema,
+} from "@/lib/seo";
+import { siteConfig } from "@/lib/site-config";
+
+const TITLE = "Last Click City (archive)";
+// Written for search intent: the queries this content can win are about Google
+// Analytics, BigQuery, and attribution, so those terms belong in the description.
+const DESCRIPTION =
+  "Archive of the Last Click City blog (2019–2024): 40 posts on digital analytics, Google Analytics, BigQuery SQL, and attribution modelling.";
 
 export const metadata: Metadata = {
-  title: "Last Click City (archive)",
-  description: "Archive of the Last Click City digital analytics blog (2019–2024).",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: canonical("/last-click-city"),
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    title: TITLE,
+    description: DESCRIPTION,
+    url: absoluteUrl("/last-click-city"),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function ArchiveHome() {
   const posts = getArchivePostsInPillarOrder();
   return (
     <>
+      <JsonLd
+        schemas={[
+          archiveBlogSchema(),
+          personSchema(),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Last Click City", path: "/last-click-city" },
+          ]),
+        ]}
+      />
       <ArchiveCityHero />
 
       <div className="mx-auto max-w-3xl">

@@ -25,9 +25,19 @@ export const metadata: Metadata = {
     template: `%s — ${siteConfig.shortName}`,
   },
   description: siteConfig.description,
+  applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.author.name, url: siteConfig.url }],
+  creator: siteConfig.author.name,
+  publisher: siteConfig.author.name,
+  // NOTE: no `robots` here either. A root-level `index, follow` is both
+  // redundant (indexable is the default) and harmful: app/not-found.tsx can't
+  // export metadata to override it, so the 404 shipped Next's automatic
+  // `noindex` and an inherited `index, follow` side by side. Indexable pages opt
+  // in via `indexable` from lib/seo.tsx instead.
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
+    locale: siteConfig.locale,
     url: siteConfig.url,
     title: siteConfig.name,
     description: siteConfig.description,
@@ -37,8 +47,10 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
   },
+  // NOTE: intentionally no `alternates.canonical` here. Child pages inherit it
+  // verbatim, which would point every route at the homepage. Each page sets its
+  // own canonical via `canonical()` in lib/seo.tsx.
   alternates: {
-    canonical: "/",
     types: {
       "application/rss+xml": [{ url: siteConfig.rssPath, title: `${siteConfig.name} RSS` }],
     },

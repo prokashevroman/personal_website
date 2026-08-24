@@ -7,9 +7,14 @@ import { CATEGORIES, PILLAR_ORDER, type ArchiveCategory } from "@/lib/last-click
 
 /*
  * Isolated read pipeline for the Last Click City archive. Deliberately parallel
- * to lib/posts.ts and NEVER wired into the live posts pipeline: it has no
- * `published` field and no prod/dev filter (the archive is always fully present),
- * and it must not be imported by the homepage, /blog, sitemap, or feed.
+ * to lib/posts.ts and NEVER merged into the live posts pipeline: it has no
+ * `published` field and no prod/dev filter (the archive is always fully present).
+ *
+ * Must not be imported by the homepage, /blog, or the feed — archive posts are a
+ * separate publication and must never appear in a live post listing. `app/sitemap.ts`
+ * is the one deliberate exception: the archive is indexed, so its URLs have to be
+ * submitted, and the sitemap keeps them in their own list rather than concatenating
+ * them into the live posts.
  */
 
 // The archive keeps the original filenames as slugs to match the old og:urls, so

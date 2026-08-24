@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { ArchiveBanner } from "@/components/ArchiveBanner";
+import { indexable } from "@/lib/seo";
 
-// Keep the whole archive out of search indexes for now (reversible: delete this
-// export to let the segment be indexed).
+// The archive is indexed. It is 40 posts of original analytics writing and, since
+// lastclick.city lapsed and was re-registered by an unrelated site, this is now
+// the only place the content exists.
+//
+// Applied at the layout so the whole segment inherits it; the not-found branch in
+// [slug]/generateMetadata overrides it with `noindex` for unresolvable slugs.
 export const metadata: Metadata = {
-  robots: { index: false, follow: false },
+  robots: indexable,
 };
 
 // The archive reuses the site's design system (fonts, colors, prose) so it reads

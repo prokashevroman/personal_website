@@ -7,6 +7,12 @@ export const postFrontmatterSchema = z.object({
     .min(1)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be kebab-case"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD"),
+  // Optional revision date. Surfaces as og:modified_time and schema.org
+  // dateModified so a substantive rewrite can be re-crawled as fresh content.
+  updated: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "updated must be YYYY-MM-DD")
+    .optional(),
   description: z.string().min(1),
   tags: z.array(z.string()).default([]),
   published: z.boolean().default(false),
