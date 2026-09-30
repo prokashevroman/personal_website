@@ -1,22 +1,14 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { RootShell } from "@/components/RootShell";
 import { siteConfig } from "@/lib/site-config";
-import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-fraunces",
-  axes: ["opsz"],
-});
+/*
+ * English root layout. One of two root layouts — app/(es)/layout.tsx is the
+ * Spanish twin. There is deliberately NO app/layout.tsx: with route groups,
+ * each group owns its <html> element (that is what lets /es declare
+ * lang="es"), and a shared root layout would force one lang on both. The
+ * shared body lives in components/RootShell.tsx so the two can't drift.
+ */
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -30,7 +22,7 @@ export const metadata: Metadata = {
   creator: siteConfig.author.name,
   publisher: siteConfig.author.name,
   // NOTE: no `robots` here either. A root-level `index, follow` is both
-  // redundant (indexable is the default) and harmful: app/not-found.tsx can't
+  // redundant (indexable is the default) and harmful: the not-found page can't
   // export metadata to override it, so the 404 shipped Next's automatic
   // `noindex` and an inherited `index, follow` side by side. Indexable pages opt
   // in via `indexable` from lib/seo.tsx instead.
@@ -49,7 +41,7 @@ export const metadata: Metadata = {
   },
   // NOTE: intentionally no `alternates.canonical` here. Child pages inherit it
   // verbatim, which would point every route at the homepage. Each page sets its
-  // own canonical via `canonical()` in lib/seo.tsx.
+  // own canonical via `canonical()` / `localizedAlternates()` in lib/seo.tsx.
   alternates: {
     types: {
       "application/rss+xml": [{ url: siteConfig.rssPath, title: `${siteConfig.name} RSS` }],
@@ -57,22 +49,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
-      <body className="min-h-screen bg-paper font-sans text-ink antialiased">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-paper focus:px-3 focus:py-2 focus:text-sm focus:shadow"
-        >
-          Skip to content
-        </a>
-        <Header />
-        <main id="main" className="mx-auto max-w-5xl px-6 pb-24 pt-8 sm:pt-12">
-          {children}
-        </main>
-        <Footer />
-      </body>
-    </html>
-  );
+export default function EnglishRootLayout({ children }: { children: React.ReactNode }) {
+  return <RootShell locale="en">{children}</RootShell>;
 }

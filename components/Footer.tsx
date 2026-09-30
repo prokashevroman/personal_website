@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { t, type Locale } from "@/lib/i18n";
 import { siteConfig } from "@/lib/site-config";
 
-export function Footer() {
+export function Footer({ locale = "en" }: { locale?: Locale }) {
   const year = new Date().getFullYear();
+  const dict = t[locale].footer;
   return (
     <footer className="mt-24 border-t border-rule">
       <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-10 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
@@ -12,25 +14,21 @@ export function Footer() {
         <ul className="flex flex-wrap items-center gap-6">
           {/* The archive is indexable but reachable from nowhere else — without
               this link it is orphaned, and a page with no internal links in is
-              one crawlers deprioritise regardless of the sitemap. */}
+              one crawlers deprioritise regardless of the sitemap. It stays
+              English-only, so both locales link to the same URL. */}
           <li>
             <Link href="/last-click-city" className="hover:text-ink">
-              Last Click City archive
+              {dict.archiveLabel}
             </Link>
           </li>
           <li>
             <Link href={siteConfig.rssPath} className="hover:text-ink">
-              RSS
+              {dict.rssLabel}
             </Link>
           </li>
           {siteConfig.social.map((item) => (
             <li key={item.href}>
-              <a
-                href={item.href}
-                className="hover:text-ink"
-                target="_blank"
-                rel="noreferrer me"
-              >
+              <a href={item.href} className="hover:text-ink" target="_blank" rel="noreferrer me">
                 {item.label}
               </a>
             </li>

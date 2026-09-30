@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
+import { t, type Locale } from "@/lib/i18n";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -15,10 +16,11 @@ type Fields = {
 
 const empty: Fields = { name: "", email: "", company: "", message: "", website: "" };
 
-export function ContactForm() {
+export function ContactForm({ locale = "en" }: { locale?: Locale }) {
   const [values, setValues] = useState<Fields>(empty);
   const [status, setStatus] = useState<Status>("idle");
   const [feedback, setFeedback] = useState("");
+  const dict = t[locale].contact;
 
   function update<K extends keyof Fields>(key: K, value: Fields[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -37,15 +39,17 @@ export function ContactForm() {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (res.ok) {
         setStatus("success");
-        setFeedback("Thanks — your message is on its way. I'll reply soon.");
+        setFeedback(dict.success);
         setValues(empty);
         return;
       }
       setStatus("error");
-      setFeedback(data.error ?? "Something went wrong. Please try again.");
+      // Server-returned error strings stay English — the API is locale-unaware.
+      // Rare path; noted limitation.
+      setFeedback(data.error ?? dict.genericError);
     } catch {
       setStatus("error");
-      setFeedback("Network error. Please try again.");
+      setFeedback(dict.networkError);
     }
   }
 
@@ -54,7 +58,7 @@ export function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           id="contact-name"
-          label="Name"
+          label={dict.nameLabel}
           required
           value={values.name}
           onChange={(v) => update("name", v)}
@@ -62,7 +66,7 @@ export function ContactForm() {
         />
         <Field
           id="contact-email"
-          label="Email"
+          label={dict.emailLabel}
           type="email"
           required
           value={values.email}
@@ -72,14 +76,14 @@ export function ContactForm() {
       </div>
       <Field
         id="contact-company"
-        label="Company (optional)"
+        label={dict.companyLabel}
         value={values.company}
         onChange={(v) => update("company", v)}
         autoComplete="organization"
       />
       <div>
         <label htmlFor="contact-message" className="block text-sm font-medium text-ink">
-          Message
+          {dict.messageLabel}
         </label>
         <textarea
           id="contact-message"
@@ -91,9 +95,7 @@ export function ContactForm() {
           minLength={20}
           className="mt-2 w-full rounded-md border border-rule bg-white px-3 py-2 text-sm text-ink shadow-sm placeholder:text-ink-soft focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
-        <p className="mt-1.5 text-xs text-ink-soft">
-          A short paragraph is enough — 20+ characters.
-        </p>
+        <p className="mt-1.5 text-xs text-ink-soft">{dict.messageHint}</p>
       </div>
 
       {/* Honeypot */}
@@ -119,7 +121,7 @@ export function ContactForm() {
           "disabled:cursor-not-allowed disabled:opacity-60",
         )}
       >
-        {status === "submitting" ? "Sending…" : "Send message"}
+        {status === "submitting" ? dict.submitting : dict.submit}
       </button>
 
       {status === "success" ? (
@@ -146,15 +148,7 @@ type FieldProps = {
   autoComplete?: string;
 };
 
-function Field({
-  id,
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-  autoComplete,
-}: FieldProps) {
+function Field({ id, label, value, onChange, type = "text", required, autoComplete }: FieldProps) {
   return (
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-ink">

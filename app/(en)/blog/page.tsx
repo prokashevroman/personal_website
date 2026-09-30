@@ -6,8 +6,8 @@ import {
   absoluteUrl,
   blogSchema,
   breadcrumbSchema,
-  canonical,
   indexable,
+  localizedAlternates,
   personSchema,
 } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
@@ -19,7 +19,7 @@ const DESCRIPTION = "Essays on marketing, leadership, and technology.";
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: canonical("/blog"),
+  alternates: localizedAlternates("/blog"),
   robots: indexable,
   // Set explicitly: a page-level `openGraph` is not merged with the root
   // layout's, so without this the /blog share card showed homepage copy.

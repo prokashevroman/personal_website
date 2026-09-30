@@ -69,7 +69,10 @@ export async function generateMetadata({
     // 17 of the 40 archived posts were written by a guest.
     authors: [
       frontmatter.author
-        ? { name: frontmatter.author, ...(frontmatter.authorUrl ? { url: frontmatter.authorUrl } : {}) }
+        ? {
+            name: frontmatter.author,
+            ...(frontmatter.authorUrl ? { url: frontmatter.authorUrl } : {}),
+          }
         : { name: siteConfig.author.name, url: absoluteUrl("/about") },
     ],
     alternates: canonical(`/last-click-city/${frontmatter.slug}`),
@@ -113,7 +116,11 @@ export default async function ArchiveSlugPage({ params }: { params: Promise<Rout
             ]),
           ]}
         />
-        <ArchiveHero eyebrow="Category" title={category.title} subtitle="From the Last Click City archive." />
+        <ArchiveHero
+          eyebrow="Category"
+          title={category.title}
+          subtitle="From the Last Click City archive."
+        />
         <div className="mt-14">
           {posts.map((post) => (
             <ArchiveCard key={post.frontmatter.slug} post={post} />

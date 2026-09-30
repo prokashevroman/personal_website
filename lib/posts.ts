@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import type { Locale } from "@/lib/i18n";
 import { postFrontmatterSchema, type PostFrontmatter } from "@/lib/validation";
 import { readingTime } from "@/lib/reading-time";
 
@@ -17,12 +18,20 @@ function isProd(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
-function listMdxFiles(): string[] {
-  if (!fs.existsSync(POSTS_DIR)) return [];
+// English posts live flat in content/posts/; translations in content/posts/<locale>/.
+// The English listing can't pick up translations because readdir is not
+// recursive (`entry.isFile()` filters the `es` directory out).
+function postsDir(locale: Locale): string {
+  return locale === "en" ? POSTS_DIR : path.join(POSTS_DIR, locale);
+}
+
+function listMdxFiles(locale: Locale = "en"): string[] {
+  const dir = postsDir(locale);
+  if (!fs.existsSync(dir)) return [];
   return fs
-    .readdirSync(POSTS_DIR, { withFileTypes: true })
+    .readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"))
-    .map((entry) => path.join(POSTS_DIR, entry.name));
+    .map((entry) => path.join(dir, entry.name));
 }
 
 function parseFile(filepath: string): Post {
@@ -42,23 +51,23 @@ function parseFile(filepath: string): Post {
   };
 }
 
-export function getAllPosts(): Post[] {
-  const posts = listMdxFiles().map(parseFile);
+export function getAllPosts(locale: Locale = "en"): Post[] {
+  const posts = listMdxFiles(locale).map(parseFile);
   const filtered = isProd() ? posts.filter((p) => p.frontmatter.published) : posts;
   return filtered.sort((a, b) =>
     a.frontmatter.date < b.frontmatter.date ? 1 : a.frontmatter.date > b.frontmatter.date ? -1 : 0,
   );
 }
 
-export function getPublishedSlugs(): string[] {
-  return listMdxFiles()
+export function getPublishedSlugs(locale: Locale = "en"): string[] {
+  return listMdxFiles(locale)
     .map(parseFile)
     .filter((p) => p.frontmatter.published)
     .map((p) => p.frontmatter.slug);
 }
 
-export function getPostBySlug(slug: string): Post | null {
-  const found = listMdxFiles()
+export function getPostBySlug(slug: string, locale: Locale = "en"): Post | null {
+  const found = listMdxFiles(locale)
     .map(parseFile)
     .find((p) => p.frontmatter.slug === slug);
   if (!found) return null;

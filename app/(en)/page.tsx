@@ -4,10 +4,10 @@ import Link from "next/link";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { SubscribeForm } from "@/components/SubscribeForm";
 import { getAllPosts } from "@/lib/posts";
-import { JsonLd, canonical, indexable, personSchema, webSiteSchema } from "@/lib/seo";
+import { JsonLd, indexable, localizedAlternates, personSchema, webSiteSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  alternates: canonical("/"),
+  alternates: localizedAlternates("/"),
   robots: indexable,
 };
 
@@ -26,10 +26,14 @@ export default function HomePage() {
             id="hero"
             className="font-display text-4xl font-semibold leading-[1.1] tracking-tightish text-ink sm:text-5xl"
           >
-            Observations on marketing, leadership, and technology<span className="text-accent">.</span>
+            Observations on marketing, leadership, and technology
+            <span className="text-accent">.</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-ink-muted">
-            Roman Prokashev. Fifteen years in marketing, building effective marketing functions from the ground up and at scale: from two-person businesses to companies with several thousand employees. This is where I write about what I keep noticing, and where you can reach me for selected consulting work.
+            Roman Prokashev. Fifteen years in marketing, building effective marketing functions from
+            the ground up and at scale: from two-person businesses to companies with several
+            thousand employees. This is where I write about what I keep noticing, and where you can
+            reach me for selected consulting work.
           </p>
         </div>
         <Image
@@ -57,7 +61,9 @@ export default function HomePage() {
 
         <aside className="space-y-12 lg:col-span-1">
           <section aria-labelledby="newsletter">
-            <p className="eyebrow" id="newsletter">Newsletter</p>
+            <p className="eyebrow" id="newsletter">
+              Newsletter
+            </p>
             <p className="mt-3 font-display text-xl font-semibold tracking-tightish text-ink">
               New essays, straight to your inbox.
             </p>
@@ -70,13 +76,15 @@ export default function HomePage() {
           </section>
 
           <section aria-labelledby="consulting">
-            <p className="eyebrow" id="consulting">Consulting</p>
+            <p className="eyebrow" id="consulting">
+              Consulting
+            </p>
             <p className="mt-3 font-display text-xl font-semibold tracking-tightish text-ink">
               A small number of engagements each year.
             </p>
             <p className="mt-2 text-sm text-ink-muted">
-              Marketing strategy and organizational design for companies thinking through
-              their next chapter.
+              Marketing strategy and organizational design for companies thinking through their next
+              chapter.
             </p>
             <Link
               href="/about#contact"

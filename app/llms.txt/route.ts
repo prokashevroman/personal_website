@@ -24,6 +24,27 @@ export function GET() {
     )
     .join("\n");
 
+  // Spanish mirror — same pipeline, content/posts/es/. Listed separately and
+  // explicitly marked as translations so agents don't cite them as distinct works.
+  const esPosts = getAllPosts("es").filter((p) => p.frontmatter.published);
+  const esSection =
+    esPosts.length > 0
+      ? `
+
+## En español
+
+The site is mirrored in Spanish at [${absoluteUrl("/es")}](${absoluteUrl("/es")}). The following
+essays are Spanish translations of the English originals above (same slug under /es/blog/):
+
+${esPosts
+  .map(
+    (post) =>
+      `- [${post.frontmatter.title}](${absoluteUrl(`/es/blog/${post.frontmatter.slug}`)}) — ` +
+      `${post.frontmatter.description}`,
+  )
+  .join("\n")}`
+      : "";
+
   const body = `# ${siteConfig.name}
 
 > ${siteConfig.description}
@@ -40,7 +61,7 @@ holds the essays and the details of the consulting work.
 
 ## Essays
 
-${essays || "- No essays published yet."}
+${essays || "- No essays published yet."}${esSection}
 
 ## Optional
 

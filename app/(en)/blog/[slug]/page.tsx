@@ -11,6 +11,7 @@ import {
   breadcrumbSchema,
   canonical,
   indexable,
+  localizedAlternates,
   personSchema,
 } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
@@ -33,12 +34,17 @@ export async function generateMetadata({
   if (!post) return { robots: { index: false, follow: false } };
   const { frontmatter } = post;
   const url = absoluteUrl(`/blog/${frontmatter.slug}`);
+  // Only emit the hreflang cluster when the Spanish twin actually exists —
+  // a future untranslated post must not point hreflang at a 404.
+  const hasSpanishTwin = getPostBySlug(frontmatter.slug, "es") !== null;
   return {
     title: frontmatter.title,
     description: frontmatter.description,
     keywords: [...frontmatter.tags],
     authors: [{ name: siteConfig.author.name, url: absoluteUrl("/about") }],
-    alternates: canonical(`/blog/${frontmatter.slug}`),
+    alternates: hasSpanishTwin
+      ? localizedAlternates(`/blog/${frontmatter.slug}`)
+      : canonical(`/blog/${frontmatter.slug}`),
     robots: indexable,
     openGraph: {
       type: "article",
