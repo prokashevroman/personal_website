@@ -2,17 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import Image from "next/image";
 import Link from "next/link";
+import { formatDate } from "@/lib/format-date";
+import { localePath, t, type Locale } from "@/lib/i18n";
 import type { ArchivePost } from "@/lib/last-click-city";
-
-function formatDate(iso: string): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
 
 // Read PNG/JPEG intrinsic size at build time (same idea as MdxImage) so next/image
 // gets real dimensions and there's no layout shift. Falls back to a 3:2 box.
@@ -50,9 +42,9 @@ function readDimensions(src: string): { width: number; height: number } {
   return FALLBACK;
 }
 
-export function ArchiveCard({ post }: { post: ArchivePost }) {
+export function ArchiveCard({ post, locale = "en" }: { post: ArchivePost; locale?: Locale }) {
   const { title, slug, date, thumbnail, excerptLead, excerpt } = post.frontmatter;
-  const href = `/last-click-city/${slug}`;
+  const href = localePath(`/last-click-city/${slug}`, locale);
   const dims = thumbnail ? readDimensions(thumbnail) : null;
   return (
     <article className="flex flex-col gap-4 border-b border-rule py-8 first:pt-0 last:border-b-0 sm:flex-row sm:items-start sm:gap-6">
@@ -79,7 +71,7 @@ export function ArchiveCard({ post }: { post: ArchivePost }) {
             {title}
           </h2>
         </Link>
-        <p className="mt-1.5 text-sm text-ink-soft">{formatDate(date)}</p>
+        <p className="mt-1.5 text-sm text-ink-soft">{formatDate(date, locale, "long")}</p>
         <p className="mt-3 leading-relaxed text-ink-muted">
           {excerptLead ? <strong className="font-semibold text-ink">{excerptLead}</strong> : null}
           {excerptLead && excerpt ? " " : null}
@@ -89,7 +81,7 @@ export function ArchiveCard({ post }: { post: ArchivePost }) {
             href={href}
             className="whitespace-nowrap font-medium text-accent hover:text-accent-hover"
           >
-            Continue reading
+            {t[locale].archive.continueReading}
           </Link>
         </p>
       </div>

@@ -1,0 +1,82 @@
+---
+title: "Todos y cada uno de los motivos por los que una sesión de Google Analytics vuelve a empezar."
+slug: "every-single-reason-why-a-google-analytics-session-will-start-over"
+date: "2020-07-29"
+description: "Todos y cada uno de los motivos por los que una sesión de Google Analytics vuelve a empezar."
+originalUrl: "https://lastclick.city/every-single-reason-why-a-google-analytics-session-will-start-over.html"
+thumbnail: "/images/last-click-city/For_index_page_29.png"
+excerptLead: "La sesión es un concepto clave de la jerarquía de datos de Google Analytics. Entenderla es imprescindible para cualquier analista web, sea cual sea su nivel."
+excerpt: "En este artículo enumero todos los casos en los que una sesión de GA vuelve a empezar, incluidos algunos poco conocidos."
+---
+
+<strong>La sesión es un concepto clave de la jerarquía de datos de Google Analytics. Entenderla es imprescindible para cualquier analista web, sea cual sea su nivel.</strong> En este artículo enumero todos los casos en los que una sesión de GA vuelve a empezar, incluidos algunos poco conocidos. Reconozco que hacer una lista así de un tirón es bastante difícil, así que es probable que vaya actualizando el artículo. Vamos allá.
+
+<strong>1) 30 minutos de inactividad</strong>
+
+Una sesión de Google Analytics vuelve a empezar tras 30 minutos de inactividad, entendiendo por inactividad que no hubo ningún hit de interacción durante ese periodo. Cada hit de interacción reinicia la cuenta atrás. Treinta minutos es el valor por defecto del tiempo de espera de la sesión. Se puede cambiar en la sección Administrar de tu cuenta de GA: entra en la configuración de la propiedad y luego en Información de seguimiento. El valor máximo es de 4 horas.
+
+<strong>2) Medianoche</strong>
+
+Una sesión de Google Analytics se reinicia a medianoche (según la zona horaria configurada en el país o territorio de tu vista).
+
+![Zona horaria](/images/last-click-city/GA_sessions/Time_zone.png)
+
+<strong>3) El etiquetado automático de Google Ads</strong>
+
+Cada clic único en un anuncio de Google inicia una sesión nueva, porque cada uno lleva un parámetro gclid único. Pero si un usuario hace clic varias veces en el mismo anuncio, esa actividad se registrará como una sola sesión.
+
+<strong>4) Campañas etiquetadas (UTM)</strong>
+
+Un cambio en el valor de cualquiera de estos parámetros de campaña en la URL dispara una sesión nueva: utm_source, utm_medium, utm_term, utm_content, utm_id, utm_campaign. Por tanto, cada clic etiquetado distinto en tu anuncio de pago, tu boletín por correo, un enlace de afiliado, etc., creará una sesión nueva. Ojo: esto incluye cualquier UTM en enlaces internos tanto como en los externos.
+
+<strong>5) Tráfico de buscadores</strong>
+
+Google Analytics reconoce automáticamente los buscadores más populares y les atribuye el tráfico (la lista completa y actualizada de buscadores detectados automáticamente está siempre [aquí](https://support.google.com/analytics/answer/2795821?hl=en#searchEngine)). Cada visita nueva desde un buscador conocido inicia una sesión nueva. (De hecho, desde uno desconocido también la reinicia, porque esos buscadores se marcarán como fuentes de tráfico de referencia.) También puedes configurar tus fuentes de búsqueda orgánica en esa misma subsección de Información de seguimiento del panel de administración.
+
+![Fuentes de búsqueda orgánica](/images/last-click-city/GA_sessions/Organic_search_sources.png)
+
+<strong>6) Referencias</strong>
+
+Todo clic no etiquetado y no directo hacia tu sitio desde otra web (salvo un buscador) se clasificará como referencia, y cada referencia nueva reinicia la sesión. Si no quieres que una referencia concreta inicie una sesión nueva, puedes usar una lista de exclusión de referencias, algo habitual con los distintos proveedores de pago (como paypal.com y otros).
+
+<strong>7) Redes sociales</strong>
+
+Las visitas desde redes sociales son un subtipo de tráfico de referencia y también disparan sesiones nuevas. Google Analytics define la fuente de las redes sociales como referencia, pero clasifica las más populares como Social en el grupo de canales predeterminado.
+
+<strong>8) Fijar el campo sessionControl</strong>
+
+Se iniciarán sesiones nuevas si el valor del campo [sessionControl](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#sessionControl) se fija en «start». Puedes actualizar el control de sesión desde el código de seguimiento de GA (`ga('send', 'pageview', {'sessionControl': 'start'});`) o en Google Tag Manager:
+
+![Reinicio de sesión en una vista de página](/images/last-click-city/GA_sessions/Pageview_session_restart.png)
+
+sessionControl es útil para medir SPA o páginas que se actualizan dinámicamente. Funciona con todos los tipos de hit, pero ten en cuenta que no se puede usar junto con eventos de no interacción. Así que, en el ejemplo siguiente, la configuración de sessionControl no funcionará:
+
+![Reinicio de sesión en un evento](/images/last-click-city/GA_sessions/Event_session_restart.png)
+
+<strong>9) Caducidad de las cookies</strong>
+
+Si un usuario decide borrar sus cookies (o se borran solas por algún motivo) durante la visita a tu sitio, se le asignarán una _ga y un Client ID completamente nuevos. Así que se generarán una sesión nueva y un usuario nuevo.
+
+<strong>10) Problemas con la medición entre dominios</strong>
+
+Si usas el mismo código de seguimiento o contenedor de GTM para varios dominios pero no configuraste bien la [medición entre dominios](https://support.google.com/analytics/answer/1034342?hl=en), se creará una cookie _ga nueva cuando el usuario pase del dominio A al dominio B, con lo que se inicia una sesión nueva en el dominio B. Para evitarlo, asegúrate de haber configurado correctamente la medición entre dominios.
+
+<strong>11) La referencia fantasma (rogue referral)</strong>
+
+Si cambias la URL de forma dinámica sin recargar la página, por ejemplo si usas una aplicación de página única o limpias parámetros de la URL, puedes romper la sesión. Ocurre por el llamado problema de la referencia fantasma. Te lo encontrarás sobre todo al trabajar con campañas de pago etiquetadas y SPA. Imagina esta situación: alguien llega a tu sitio desde un enlace de anuncios de Facebook:
+
+<em>https://lastclick.city/?utm_source=facebook&utm_medium=cpc</em>
+
+Se iniciará una sesión y se enviará a Google Analytics un hit con estos parámetros:
+
+- Document location URL ([dl](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location)) = <em>https://lastclick.city/?utm_source=facebook&utm_medium=cpc</em>
+- Document Referrer ([dr](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#referrer)) = <em>https://www.facebook.com/</em>
+
+Si los parámetros UTM se eliminan dinámicamente y el usuario pasa a otra página, empezará una sesión nueva y estos parámetros se enviarán con el siguiente hit de vista de página:
+
+- Document location URL = <em>https://lastclick.city/every-single-reason-why-a-google-analytics-session-will-start-over.html</em>
+- Document Referrer = <em>https://www.facebook.com/</em>
+
+Google Analytics tratará esos dos hits como dos sesiones, porque el segundo se considerará de referencia: GA no podrá consultar los UTM, pero sí mirará el referrer del documento, que en este ejemplo es facebook.com. Es importante señalar que la fuente de tráfico puede reescribirse como (direct) / (none) si no hay referrer. Pero (direct) / (none) no inicia una sesión nueva, así que verás una fuente de tráfico y un usuario sin sesión:
+
+![Sesión sin sesión](/images/last-click-city/GA_sessions/Session_without_session.png)

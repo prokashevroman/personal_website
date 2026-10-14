@@ -1,0 +1,56 @@
+---
+title: "Desanidar datos clave-valor relativos a objetos en columnas distintas."
+slug: "unnest-key-value-data-relating-to-objects-in-different-columns"
+date: "2021-08-14"
+description: "Desanidar datos clave-valor relativos a objetos en columnas distintas."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/unnest-key-value-data-relating-to-objects-in-different-columns.html"
+thumbnail: "/images/last-click-city/For_index_page_35.png"
+excerptLead: "Si tienes una base de datos con una tabla de datos en bruto"
+excerpt: "en la que la primera columna es el user-id o la fecha y las otras dos son el nombre y el valor de los parámetros de tu URL, tal que así"
+---
+
+<strong>Si tienes una base de datos con una tabla de datos en bruto, </strong>en la que la primera columna es el user-id o la fecha y las otras dos son el nombre y el valor de los parámetros de tu URL, tal que así:
+
+![Tabla con datos en bruto](/images/last-click-city/Unnest_key-value/1.png)
+
+y quieres transformarla en una tabla como esta:
+
+![Tabla transformada](/images/last-click-city/Unnest_key-value/2and9.png)
+
+He preparado soluciones para dos bases de datos: Clickhouse y PostgreSQL. Este artículo se basa en la primera, pero [aquí](https://github.com/SergeyMatrosov/Clickhouse_Make_Columns_from_values_in_Rows/blob/main/query.md) también encontrarás una consulta para PostgreSQL.
+
+Primero tenemos que generar una tabla de datos con una consulta, usando las columnas «userid», «name» y «value», igual que hicimos al escribir los [modelos de atribución sencillos con BigQuery](/es/last-click-city/simple-attributions-via-sql-in-bigquery).
+
+![Modificando la tabla](/images/last-click-city/Unnest_key-value/3.png)
+
+El resultado es una tabla como la de la primera captura. Después hay que usar la construcción CASE...WHEN para convertir la columna «name» en columnas cuyo nombre sean los valores de esa columna. El valor de esas columnas nuevas será el valor de la columna «value».
+
+![Uso de la construcción CASE...WHEN](/images/last-click-city/Unnest_key-value/4.png)
+
+Este es nuestro resultado:
+
+![Modificando la tabla](/images/last-click-city/Unnest_key-value/10.png)
+
+El problema salta a la vista: no solo hay muchas celdas vacías, sino que queríamos una sola fila por usuario. Si has pensado en GROUP BY, vas bien encaminado, pero necesitamos la función adecuada. Primero eché mano de una función de arrays llamada groupArray:
+
+![Uso de la función groupArray](/images/last-click-city/Unnest_key-value/5.png)
+
+No olvides usar la instrucción GROUP BY userid:
+
+![GROUP BY userid](/images/last-click-city/Unnest_key-value/6.png "w=280")
+
+Esta es la tabla ya modificada:
+
+![Tabla modificada](/images/last-click-city/Unnest_key-value/7.png)
+
+Ya casi estamos; la última función es arrayJoin, que desanidará ese array en las filas de siempre.
+
+![Uso de la función arrayJoin](/images/last-click-city/Unnest_key-value/8.png)
+
+Y aquí está:
+
+![resultado final](/images/last-click-city/Unnest_key-value/2and9.png)
+
+Espero que te haya servido. ¡Suerte!

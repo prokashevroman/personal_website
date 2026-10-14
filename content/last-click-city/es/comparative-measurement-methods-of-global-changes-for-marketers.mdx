@@ -1,0 +1,103 @@
+---
+title: "Métodos de medición comparativa de cambios globales para profesionales de marketing."
+slug: "comparative-measurement-methods-of-global-changes-for-marketers"
+date: "2020-08-24"
+description: "Métodos de medición comparativa de cambios globales para profesionales de marketing."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/comparative-measurement-methods-of-global-changes-for-marketers.html"
+thumbnail: "/images/last-click-city/For_index_page_30.png"
+excerptLead: "El test A/B sirve para averiguar si hay algún efecto sobre la audiencia"
+excerpt: "al aplicar ciertos cambios en tu sitio web, tu app, etc. Pero a veces hace falta cambiar de golpe, por ejemplo, el flujo del sitio, afectando a todos los usuarios. O puede que haya que recurrir a una agencia de marketing digital y dejarle el control total de uno o incluso de todos los canales de origen."
+---
+
+<strong>El test A/B sirve para averiguar si hay algún efecto sobre la audiencia </strong>al aplicar ciertos cambios en tu sitio web, tu app, etc. Pero a veces hace falta cambiar de golpe, por ejemplo, el flujo del sitio, afectando a todos los usuarios. O puede que haya que recurrir a una agencia de marketing digital y dejarle el control total de uno o incluso de todos los canales de origen. Para tratarlo como un test necesitaríamos, hablando con propiedad, dos universos paralelos: en uno estaría el flujo anterior del sitio o el equipo de marketing interno de antes, y en el otro el flujo nuevo o la agencia de marketing digital. Como esa opción no está disponible, toca recurrir a otros métodos.
+
+<strong>1. La diferencia de diferencias.</strong>
+
+Es el método más directo y fácil de seguir, pero también el menos preciso. Aun así, quizá te interese usarlo para que los demás te entiendan sin esfuerzo (y, si lo haces, luego puedes pasar a un modelo más sofisticado para evaluar los resultados). Imagina que tienes datos del flujo antiguo de tu sitio o del equipo de marketing anterior del año pasado:
+
+- Abril de 2019: 100 conversiones.
+- Mayo de 2019: 120 conversiones.
+
+Nuestra primera diferencia es:
+mayo de 2019 - abril de 2019 = 120 - 100 = 20 conversiones
+
+Tu empresa empezó un experimento en abril de 2020:
+
+- Abril de 2020: 120 conversiones.
+- Mayo de 2020: 140 conversiones.
+
+Nuestra segunda diferencia es:
+mayo de 2020 - abril de 2020 = 140 - 120 = 20 conversiones.
+
+Nuestra tercera diferencia es la segunda menos la primera = 20 - 20 = 0. Si la tercera diferencia es 0, significa que nuestros cambios no han tenido efecto. Si es > 0, el efecto es positivo; si es &lt; 0, negativo. El siguiente paso es medir el tamaño del efecto, entendido como la magnitud del cambio. Si el impacto no es muy significativo, aunque sea positivo, podríamos interpretarlo como un fracaso, porque invertimos recursos (tiempo y dinero) en rehacer el flujo del sitio o en trabajar con una agencia digital.
+
+<strong>2. Análisis de regresión.</strong>
+
+Es otro método sencillo, pero más preciso que el anterior. También resulta fácil interpretar tanto los resultados como el propio modelo.
+
+Tienes datos diarios de febrero y marzo de 2020 y puedes usarlos para predecir los resultados de cada día de abril y mayo de 2020. Pero hay que validarlos: ¿la distribución del error es normal? ¿Tienen en cuenta los efectos de los días laborables y los fines de semana? ¿Contemplan las fiestas locales, etc.?
+
+Después haces tu predicción, por ejemplo:
+
+- 01 de abril de 2020: 5 conversiones (previstas)
+- 02 de abril de 2020: 6 conversiones (previstas)
+- 03 de abril de 2020: 6 conversiones (previstas)...
+
+Y los datos reales:
+
+- 01 de abril de 2020: 4 conversiones (reales)
+- 02 de abril de 2020: 7 conversiones (reales)
+- 03 de abril de 2020: 6 conversiones (reales)...
+
+De nuevo hay que calcular la diferencia, pero en este caso entre distribuciones:
+01 de abril de 2020 (real) - 01 de abril de 2020 (previsto) = 5 - 4 = 1
+02 de abril de 2020 (real) - 02 de abril de 2020 (previsto) = 7 - 6 = 1
+04 de abril de 2020 (real) - 03 de abril de 2020 (previsto) = 6 - 6 = 0
+...
+
+Este es el resultado de la resta, mostrado también como distribución:
+1, 1, 0...
+
+Si no hay efecto, el centro de esta distribución estará cerca de 0. Si el efecto es positivo, el centro quedará a la derecha de 0; si es negativo, a la izquierda. Y, otra vez, ¡calcula el tamaño del efecto!
+
+<strong>3. Series temporales estructurales bayesianas (BSTS).</strong>
+
+Es muy útil porque ayuda a descubrir las causas (el motivo del éxito o del fracaso) combinando su predicción contrafactual con los datos observados, como si de verdad existieran dos universos. Eso sí, es el método más complicado y muy difícil de explicar de forma sencilla.
+
+BSTS se usa aquí para pronosticar series temporales. Que una serie temporal sea estructural significa que la serie `phi(t)` se compone de (es igual a) varios componentes, supuestos concretos, parecidos por ejemplo a una tendencia lineal global `phi(t)`<sub>1</sub> , otra tendencia lineal local `phi(t)`<sub>2</sub> , un efecto estacional `phi(t)`<sub>3</sub> , etc., de modo que:
+
+`phi(t)`=`phi(t)`<sub>1</sub> `+ phi(t)`<sub>2</sub> `+ phi(t)`<sub>3</sub> `+ ... + phi(t)`<sub>n</sub> `+ epsilon`,`epsilon` ∼ N(0,`sigma` <sup>2</sup>), donde `epsilon` representa un ruido blanco con distribución normal. Para simplificar, puedes considerar ε como el error de nuestra predicción, cuyos valores siguen una distribución normal y son independientes (unos de otros; dicho de otro modo, uno no causa al siguiente). Usando la distribución de ese error podemos simular múltiples realizaciones del futuro dentro de un rango determinado, basado en dicho error.
+
+Para aclararlo: la serie temporal histórica es una única instancia observada en cada momento. A partir de ahí podemos construir una función con predictores y coeficientes finitos, como en el modelo de regresión simple. El problema es que, al usar siempre los mismos valores de los predictores, siempre obtenemos el mismo resultado: igual que `phi(x)=2x` siempre vale 4 cuando `x=2`. Por eso, teniendo los mismos valores y coeficientes de los predictores, usamos la distribución del error, que está implícita de forma natural. Registrada varias veces y sumada a ese resultado (`theta`), nos da un rango de valores posibles de la serie temporal futura, del tipo (`theta+epsilon`<sub>1</sub>,...,`theta+epsilon`<sub>n</sub>) en cada `t`<sub>j</sub>.
+
+Aquí entran Bayes y la inferencia bayesiana sobre la distribución de probabilidad de 1) el resultado y 2) la siguiente serie temporal, dadas las series pasadas. Esto maneja de forma natural los datos ausentes (no conocemos todos los predictores posibles que pueden afectar a nuestro resultado, y por eso el concepto de máxima verosimilitud «nota» su efecto cada vez más con cada actualización) y aporta una cuantificación de la incertidumbre (como máxima verosimilitud).
+
+Veamos ahora nuestro ejemplo. Aquí tienes el [código completo](https://github.com/SergeyMatrosov/Efficiency_of_Digital_Marketing_Agency/blob/master/Efficiency%20of%20Digital%20Marketing%20Agency.ipynb). Hice este modelo para evaluar el rendimiento de una agencia de marketing digital durante cinco meses en una empresa que decidió trabajar con esa agencia en lugar de con un equipo interno. El objetivo era predecir los resultados del equipo interno como si siguiera llevando el marketing digital de la empresa (variable A) y fijar, a partir de esa predicción, unos KPI para la agencia (B) que tuvieran significación estadística, 𝛼 = 0.05. El modelo intenta tener en cuenta los fines de semana, la inflación de la inversión progresiva y el presupuesto mensual como factores aparte, no incluidos en la estimación del BSTM.
+
+Imaginemos que la agencia empezó con mejoras en Search, tomando como conversión base la compra o el pago.
+
+![Medición comparativa](/images/last-click-city/Comparative_Measurement/1.png)
+
+Azul: datos anteriores, es decir, los resultados del equipo interno antes de que la agencia empezara a trabajar.
+
+Naranja: datos reales observados. Es el resultado del trabajo de la agencia.
+
+Verde: predicción de los resultados del equipo interno (predicción contrafactual). Fíjate bien: no se limita a intervalos, sino que abarca la distribución de las medias de cada distribución de conversión generada a partir de la predicción del BSTS.
+
+Rojo: también es una distribución de medias de la distribución de conversión. Se compara la distribución de conversiones que resulta estadísticamente significativa según los estándares de un A/B con la distribución de conversión prevista para el equipo interno. Si los resultados de la agencia (línea naranja) quedan por encima del intervalo verde, podemos considerar que no han llegado por casualidad (la probabilidad de que así sea es muy baja).
+
+La metodología:
+
+1. A partir de los datos, se predice el intervalo de conversiones con la librería de Python de BSTS. Abajo se ve la curva de las conversiones diarias anteriores (en negro), el intervalo que resulta de usar esa librería y, en azul, la curva de las conversiones reales hasta la fecha.
+2. Usando el parámetro de la media del intervalo previsto, modelamos una distribución normal (varianza A) de las conversiones posibles que podría haber logrado el equipo interno.
+3. A partir de esa distribución se puede generar otra (varianza B) ajustando ligeramente hiperparámetros como mu y sigma, de modo que la media sea más alta que en la distribución base y se obtengan resultados estadísticamente significativos en el test A/B, con un tamaño del efecto pequeño (>0.2).
+4. Cuando consigas resultados significativos, toma la media de ambas distribuciones.
+5. Repite los pasos 1-4 x veces para cada mes. Nada del otro mundo: bootstrapping clásico. Cuantas más pruebas hagas, más precisos serán los datos. En mi caso hice 300 pruebas durante cinco meses = 1500 pruebas, lo que llevó muchísimo tiempo de cálculo.
+6. El resultado es una distribución de las medias de cada mes: tanto la prevista como otra que puede considerarse eficaz según los estándares del test A/B. Calcula la media de esas medias en ambas listas.
+7. ¡Visualízalo! Obtendrás casi la misma visualización que te he enseñado antes, pero con tus datos.
+
+![Medición comparativa](/images/last-click-city/Comparative_Measurement/2.jpg)
+
+El resultado es contradictorio: los datos reales (línea naranja) muestran que los resultados no solo están dentro del rango previsto, como si fueran los del equipo interno, sino por debajo de su media. Si la agencia hubiera quedado por encima del intervalo verde, podríamos considerar que de verdad ayudó al negocio a lograr mejores resultados y que su estrategia fue la causa del éxito. Los KPI se habrían implantado y el equipo interno tendría que aprender de ellos. Pero ¿qué pasa si los resultados de los cinco meses están por encima de la media del intervalo verde pero aún dentro de él? ¿O cerca de su límite superior? ¿O solo un poco por encima? No hay una respuesta exacta: todo eso tienen que discutirlo el negocio y la agencia hasta llegar a un acuerdo.

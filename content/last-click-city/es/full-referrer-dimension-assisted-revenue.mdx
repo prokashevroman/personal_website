@@ -1,0 +1,91 @@
+---
+title: "Dimensión de referencia completa: medir los ingresos asistidos."
+slug: "full-referrer-dimension-assisted-revenue"
+date: "2019-06-03"
+description: "Dimensión de referencia completa: medir los ingresos asistidos."
+originalUrl: "https://lastclick.city/full-referrer-dimension-assisted-revenue.html"
+thumbnail: "/images/last-click-city/For_index_page_6.png"
+excerptLead: "Imaginemos que alguien"
+excerpt: "ha publicado unos cuantos artículos que llevan a tu sitio web y puedes encontrar los datos de esa fuente de tráfico en la sección /referral (porque, por suerte, los enlaces publicados son https)."
+---
+
+<strong>Imaginemos que alguien </strong>ha publicado unos cuantos artículos que llevan a tu sitio web y puedes encontrar los datos de esa fuente de tráfico en la sección /referral (porque, por suerte, los enlaces publicados son https). Estás pensando en colaborar más a fondo con los dueños de ese sitio, pero quieres comprobar los ingresos que han traído esos artículos para saber cuáles han funcionado mejor. El único problema es que Google no ofrece los datos de ingresos asistidos con la información de referencia completa. ![Conversiones asistidas. Dimensión de referencia completa](/images/last-click-city/Full_referrer/No_fullreferrer.png)
+
+Como ves en esta captura, la dimensión «full referrer» no está disponible en el informe de conversiones asistidas. Así que, si tienes más de un artículo publicado en un mismo sitio, no puedes repartir los ingresos entre las piezas de contenido y, por tanto, no puedes saber si un contenido concreto funciona o no. Por suerte, BigQuery acude al rescate. Mira la consulta de abajo.
+
+```sql
+SELECT
+    revenue,
+    hits.transaction.transactionId,
+    trafficSource.referralPath,
+    MIN(lookback_window) as lookback_window
+FROM (SELECT
+    visitor_ID_pageviews,
+    visitor_ID_purchases,
+    revenue,
+    trafficSource.referralPath,
+    hits.transaction.transactionId,
+    hit.timestamp_transaction,
+    DATEDIFF(hit.timestamp_transaction,hit.timestamp) as lookback_window
+FROM (SELECT
+    fullVisitorId as visitor_ID_pageviews, visitID, visitNumber, trafficSource.referralPath,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime),"%Y-%m-%d %H:%M:%S") as hit.visitStartTime,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime + hits.time/1000),"%Y-%m-%d %H:%M:%S") as hit.timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2019-01-01'), TIMESTAMP('2019-06-01'))
+WHERE
+    trafficSource.medium CONTAINS "referral" AND hits.hitNumber = 1 AND trafficSource.source CONTAINS "website_hostname"
+GROUP BY
+    visitor_ID_pageviews,
+    visitNumber, visitID,
+    trafficSource.referralPath,
+    hit.timestamp,
+    hit.visitStartTime)
+AS table_with_visits
+INNER JOIN
+(SELECT
+    fullVisitorId as visitor_ID_purchases,
+    totals.totalTransactionRevenue/1000000 AS revenue,
+    hits.transaction.transactionId,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime),"%Y-%m-%d %H:%M:%S") as hit.visitStartTime,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime + hits.time/1000),"%Y-%m-%d %H:%M:%S") as hit.timestamp_transaction
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2019-01-01'), TIMESTAMP('2019-06-01'))
+WHERE
+    totals.transactions > 0
+GROUP BY
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId,
+    hit.timestamp_transaction,
+    hit.visitStartTime)
+AS table_with_transactions
+ON
+    table_with_visits.visitor_ID_pageviews = table_with_transactions.visitor_ID_purchases
+WHERE
+    hits.transaction.transactionId != 'null' AND hit.timestamp_transaction > hit.timestamp
+ORDER BY
+    revenue)
+WHERE
+    lookback_window < 91
+GROUP BY
+    visitor_ID_pageviews,
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId,
+    trafficSource.referralPath
+```
+
+La estructura de la consulta es parecida a la que ya comentamos en [este artículo](/es/last-click-city/assisted-conversions-report-bigquery). Pero hay algunas diferencias. Veámoslas de cerca, paso a paso.
+
+1\) Primero seleccionamos la audiencia de usuarios que llegaron a nuestro sitio desde una fuente de referencia concreta. Esos datos forman una tabla llamada «table_with_visits» y contienen a todos los que hicieron clic en los enlaces a nuestro sitio dentro de los artículos. En esa misma consulta seleccionamos el campo trafficSource.referralPath, que equivale a la dimensión de referencia completa de Google Analytics.
+
+2\) Después unimos esos datos con la segunda tabla («table_with_transactions»), que contiene todas las transacciones del periodo elegido. Usamos fullVisitorId como clave para cruzar ambas tablas. Es importante señalar que solo seleccionamos las transacciones que ocurrieron después de la visita desde el enlace de referencia.
+
+3\) En el siguiente paso calculamos la ventana de conversión retroactiva. Para ello usamos otra sentencia SELECT y la función SQL DATEDIF (`DATEDIFF(hit.timestamp_transaction,hit.timestamp) as lookback_window`).
+
+4\) Como último paso seleccionamos los ingresos, el ID de transacción, la ruta de referencia y la ventana de conversión mínima. El resultado tiene más o menos este aspecto:
+
+![Dimensión de referencia completa en GA](/images/last-click-city/Full_referrer/result_full_referrer.png)
+
+Eso es todo lo que necesitas para obtener los ingresos por la dimensión de referencia completa. Si lo necesitas, puedes modificar la ventana de conversión retroactiva y obtener los ingresos de un periodo concreto (incluido uno de más de 90 días, otra gran ventaja de BigQuery). Gracias por tu atención, espero que te resulte útil.

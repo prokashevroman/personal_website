@@ -1,0 +1,76 @@
+---
+title: "Extraer la siguiente página que visitan los usuarios nuevos en Google BigQuery."
+slug: "pulling-out-the-next-page-visited-by-new-users-in-google-bigquery"
+date: "2019-06-28"
+description: "Extraer la siguiente página que visitan los usuarios nuevos en Google BigQuery."
+originalUrl: "https://lastclick.city/pulling-out-the-next-page-visited-by-new-users-in-google-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_9.png"
+excerptLead: "Supongamos que tienes una página de destino concreta"
+excerpt: "en tu sitio web y quieres entender cómo funciona con los usuarios nuevos: con qué frecuencia abandonan el sitio tras visitarla o, los que siguen, qué páginas visitan después. Podrías intentar encontrar esos datos en Google Analytics: parece que el informe de resumen de navegación se inventó justo para eso y, hasta cierto punto, es verdad."
+---
+
+<strong>Supongamos que tienes una página de destino concreta </strong>en tu sitio web y quieres entender cómo funciona con los usuarios nuevos: con qué frecuencia abandonan el sitio tras visitarla o, los que siguen, qué páginas visitan después. Podrías intentar encontrar esos datos en Google Analytics: parece que el informe de resumen de navegación se inventó justo para eso y, hasta cierto punto, es verdad. Puedes entrar en el resumen de navegación, elegir la página de la que quieres información, añadir el segmento de usuarios nuevos y ya está:
+
+![Extraer la siguiente página que visitan los usuarios nuevos en Google BigQuery](/images/last-click-city/Pulling_out_the_next_page/Navigation_summary.png)
+
+Pero el informe de GA tiene varios inconvenientes.
+
+1\) Si quieres analizar el comportamiento de los usuarios nuevos, no podrás evitar los segmentos. Y los segmentos solo se pueden usar durante un periodo de tres meses, lo que supone una limitación importante si quieres analizar periodos más largos, de un año o más.
+
+2\) El informe de resumen de navegación usa la métrica de vistas de página, y no puedes construirlo con sesiones o usuarios. Y, sin embargo, un análisis basado en sesiones puede ser más relevante, porque las vistas de página pueden incluir varios clics dentro de una misma sesión (del mismo usuario). Así que el número de vistas de página puede ser mayor que el de sesiones, y no hay forma de saberlo con certeza desde la interfaz de Google Analytics.
+
+3\) No puedes añadir con facilidad una dimensión secundaria al informe. Eso significa que resulta comparativamente difícil segmentar los datos si hace falta.
+
+Veamos ahora cómo extraer la siguiente página visitada con BigQuery.
+
+<strong>Actualización del 5 de julio de 2020</strong>: en el ejemplo de abajo se usa SQL estándar. Si necesitas la implementación en SQL antiguo, la tienes [aquí.](https://github.com/prokashev/bigquery-sql/blob/master/next_visited_page_legacy_sql.sql)
+
+```sql
+SELECT
+    t.page_path,
+    t.second_page_path,
+    count(sessionId) AS total_sessions
+FROM (SELECT
+    CONCAT(fullvisitorID, "-", visitId) AS sessionId,
+    hits.hitNumber,
+    visitNumber,
+    hits.page.pagePath AS page_path,
+    LEAD(hits.page.pagePath) OVER (PARTITION BY fullVisitorId, visitStartTime ORDER BY hits.hitNumber) AS second_page_path
+FROM
+    `pro-tracker-id.ga_sessions_*`,
+        UNNEST(hits) AS hits
+    WHERE
+    _TABLE_SUFFIX BETWEEN "20190101" AND "20190601"
+AND
+    hits.type="PAGE" AND
+    visitNumber = 1) t
+WHERE
+    hitNumber=1 AND page_path = "/page/"
+GROUP BY
+    t.page_path,
+    t.second_page_path
+ORDER BY
+    total_sessions DESC
+```
+
+Aquí va un repaso rápido de la consulta.
+
+1\) Lo primero, en la subconsulta creamos un Session ID, que es la combinación de los atributos fullVisitorId y visitStartTime: `CONCAT(fullvisitorID, "-", visitId) AS sessionId`. Ese campo se usará después para calcular el número de sesiones de cada página siguiente visitada.
+
+2\) La otra parte importante es la función LEAD, que nos ayuda a crear el campo second_page_path. LEAD es una potente función de ventana que devuelve el valor de la línea siguiente respecto a la actual. Con cualquier función de ventana hay que usar la expresión OVER, que puede combinarse con tres componentes opcionales.
+
+<strong>PARTITION BY </strong>: define qué atributo se usará para dividir los datos. En nuestro caso usamos fullVisitorId y visitStartTime.
+
+<strong>ORDER BY </strong>: controla el orden de las filas dentro del subconjunto. En el ejemplo anterior las ordenamos por el campo hits.hitNumber.
+
+<strong>WINDOW FRAME </strong>: define qué grupo de filas se procesará. No lo usamos en nuestra subconsulta.
+
+3\) Fíjate en la condición `WHERE … visitNumber = 1`. Es lo que nos permite analizar solo a los usuarios nuevos.
+
+4\) En la consulta de nivel superior seleccionamos únicamente las sesiones en las que la visita a esa página fue el primer hit, para considerar solo los casos en que el usuario entró al sitio por esa página (`hitNumber=1`).
+
+5\) Por último, en esa misma consulta de nivel superior contamos el número de sesiones.
+
+![Resultado de la consulta de la página siguiente](/images/last-click-city/Pulling_out_the_next_page/result.png)
+
+¡Gracias por tu atención y reutiliza la consulta sin problema!

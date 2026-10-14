@@ -1,0 +1,105 @@
+---
+title: "Ruta de página inversa en Google BigQuery."
+slug: "reverse-page-path-in-google-bigquery"
+date: "2020-05-07"
+description: "Ruta de página inversa en Google BigQuery"
+originalUrl: "https://lastclick.city/reverse-page-path-in-google-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_23.png"
+excerptLead: "La exportación de Google Analytics a BigQuery es una de las herramientas más potentes"
+excerpt: "y puede mostrarte hasta tres de los pasos previos a la consecución de un objetivo. Pero, para mi sorpresa, no existe la opción de obtener un informe similar que muestre las principales rutas inversas hacia una página concreta. Sin duda, informes así resultan útiles en muchos casos en los que hay que analizar el recorrido del usuario hasta una página determinada. Vamos a construirlo con BigQuery."
+---
+
+<strong>La exportación de Google Analytics a BigQuery es una de las herramientas más potentes, </strong> y puede mostrarte hasta tres de los pasos previos a la consecución de un objetivo. Pero, para mi sorpresa, no existe la opción de obtener un informe similar que muestre las principales rutas inversas hacia una página concreta. Sin duda, informes así resultan útiles en muchos casos en los que hay que analizar el recorrido del usuario hasta una página determinada. Vamos a construirlo con BigQuery.
+
+<strong>Paso 1. Seleccionar todos los hits para agruparlos después.</strong>
+
+Primero seleccionamos todos los hits necesarios. Fíjate en que solo elegimos las vistas de página, porque vamos a hacer un análisis a nivel de página. Todos los hits se agrupan por fullvisitorID y se ordenan por la marca de tiempo del hit.
+
+```sql
+    SELECT
+      fullvisitorID,
+      FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64))) AS hit_timestamp,
+      hits.page.pagePath AS pagePath,
+    FROM
+      `pro-tracker-id.ga_sessions_*`,
+      UNNEST(hits) AS hits
+    WHERE
+      hits.type = "PAGE"
+    ORDER BY
+      fullvisitorID,
+      hit_timestamp
+```
+
+<strong>Paso 2. Seleccionar la segunda y la tercera vista de página del recorrido del usuario.</strong>
+
+En la segunda consulta usamos la función LEAD … OVER para crear columnas nuevas que muestren la segunda y la tercera página visitadas. PARTITION BY fullvisitorID ayuda a insertar «null» cuando no hay una página siguiente; en ese caso, la fila siguiente empezará con el recorrido del usuario siguiente. Las filas también se ordenan por hit_timestamp.
+
+```sql
+  SELECT
+    fullvisitorID,
+    hit_timestamp,
+    pagePath,
+    LEAD (pagePath, 1) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS second_pagePath,
+    LEAD (pagePath, 2) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS third_pagePath
+  FROM (
+    SELECT
+      fullvisitorID,
+      FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64))) AS hit_timestamp,
+      hits.page.pagePath AS pagePath,
+    FROM
+      `pro-tracker-id.ga_sessions_*`,
+      UNNEST(hits) AS hits
+    WHERE
+      hits.type = "PAGE"
+    ORDER BY
+      fullvisitorID,
+      hit_timestamp)
+  ORDER BY
+    fullvisitorID,
+    hit_timestamp
+```
+
+<strong>Paso 3. Calcular las principales rutas hasta la página objetivo.</strong>
+
+En el último paso seleccionamos la primera, la segunda y la tercera página visitadas y calculamos las rutas más populares hasta la página analizada con ayuda de la función COUNT. La consulta final quedaría así:
+
+```sql
+SELECT
+  pagePath,
+  second_pagePath,
+  third_pagePath,
+  COUNT(*) AS count
+FROM (
+  SELECT
+    fullvisitorID,
+    hit_timestamp,
+    pagePath,
+    LEAD (pagePath, 1) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS second_pagePath,
+    LEAD (pagePath, 2) OVER (PARTITION BY fullvisitorID ORDER BY hit_timestamp) AS third_pagePath
+  FROM (
+    SELECT
+      fullvisitorID,
+      FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64))) AS hit_timestamp,
+      hits.page.pagePath AS pagePath,
+    FROM
+      `pro-tracker-id.ga_sessions_*`,
+      UNNEST(hits) AS hits
+    WHERE
+      hits.type = "PAGE"
+    ORDER BY
+      fullvisitorID,
+      hit_timestamp)
+  ORDER BY
+    fullvisitorID,
+    hit_timestamp)
+WHERE
+  third_pagePath = "/idea/"
+GROUP BY
+  pagePath,
+  second_pagePath,
+  third_pagePath
+ORDER BY
+  count DESC
+```
+
+Agradezco cualquier comentario, así que si tienes algo que aportar sobre la solución propuesta, no dudes en dejarlo en la sección de comentarios.

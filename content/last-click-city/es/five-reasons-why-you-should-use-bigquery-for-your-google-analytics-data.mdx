@@ -1,0 +1,36 @@
+---
+title: "Cinco razones para usar BigQuery con tus datos de Google Analytics."
+slug: "five-reasons-why-you-should-use-bigquery-for-your-google-analytics-data"
+date: "2020-05-06"
+description: "Cinco razones para usar BigQuery con tus datos de Google Analytics"
+originalUrl: "https://lastclick.city/five-reasons-why-you-should-use-bigquery-for-your-google-analytics-data.html"
+thumbnail: "/images/last-click-city/For_index_page_22.png"
+excerptLead: "La exportación de Google Analytics a BigQuery es una de las herramientas más potentes"
+excerpt: "que puedes usar para entender tus datos y sacarles el máximo partido de cara a tomar buenas decisiones de marketing y de negocio. Pero ¿qué hace que BigQuery sea tan impresionante? ¿Y por qué deberías invertir tu valioso tiempo y esfuerzo en configurar la exportación?"
+---
+
+<strong>La exportación de Google Analytics a BigQuery es una de las herramientas más potentes</strong> que puedes usar para entender tus datos y sacarles el máximo partido de cara a tomar buenas decisiones de marketing y de negocio. Pero ¿qué hace que BigQuery sea tan impresionante? ¿Y por qué deberías invertir tu valioso tiempo y esfuerzo en configurar la exportación? Abajo enumero mis cinco razones principales para empezar a usar BigQuery con tus datos de analítica desde ya, y las ventajas que obtendrás.
+
+<strong>1. Flexibilidad en los informes</strong>
+
+La primera ventaja de usar BigQuery es una flexibilidad increíble en los informes. Con BigQuery puedes crear cualquier informe que te atrevas a imaginar. Por ejemplo, puedes incluir tantas dimensiones como quieras y pueden ser de ámbitos distintos. Se pueden aplicar segmentos de cualquier tipo, y además más flexibles (olvídate del límite de 90 días en los segmentos basados en usuarios y úsalos para casos como [calcular la intersección de audiencias](/es/last-click-city/calculating-audience-intersection-in-google-bigquery)). En BigQuery es posible ampliar la funcionalidad de muchos informes estándar de Google Analytics. Por ejemplo, puedes deshacerte sin esfuerzo de las restricciones del [informe de conversiones asistidas](/es/last-click-city/assisted-conversions-report-bigquery) e incluir [más dimensiones en tus informes](/es/last-click-city/full-referrer-dimension-assisted-revenue).
+
+<strong>2. Sin muestreo</strong>
+
+El muestreo es una limitación importante de Google Analytics, pero solo se aplica cuando trabajas en la interfaz web de GA. En BigQuery tienes acceso a los datos en bruto a nivel de hit, así que ninguno de los informes que construyas tendrá muestreo por defecto.
+
+<strong>3. Velocidad de los informes</strong>
+
+Además de no muestrear los datos, BigQuery es extremadamente rápido. Incluso la gran mayoría de informes sin muestrear (si eres usuario de 360) tardan bastante más en calcularse que en BigQuery, que es casi instantáneo.
+
+Gracias a la rápida infraestructura en la nube de Google, BigQuery puede recorrer miles de millones de filas y devolver un resultado exacto en segundos. Si guardas algunas de tus consultas habituales y las ejecutas de forma automática (con ayuda de Google Apps Script, por ejemplo), puedes guardar el resultado en una tabla que se actualice sola y visualizarlo con Data Studio. A las herramientas de visualización de datos siempre les resulta más fácil construir gráficos a partir de tablas. Por eso este enfoque suele ser una alternativa más rápida y cómoda que los informes habituales de GA.
+
+![Resultado de la consulta](/images/last-click-city/Five_reasons_BQ/Query.png)
+
+<strong>4. Integración con otras fuentes de datos</strong>
+
+Enriquecer y combinar tus datos de Google Analytics con otras fuentes es, sin duda, una gran idea. Tener tus datos en BigQuery te permitirá cruzarlos con los de tu CRM, con las estadísticas de uso del producto o con tus costes de marketing y publicidad. Eso, a su vez, te da la oportunidad de construir un sistema sólido de analítica de extremo a extremo, que se convertirá en la piedra angular de las decisiones basadas en datos.
+
+<strong>5. Entender mejor los datos</strong>
+
+Si empiezas a usar BigQuery, sin duda ganarás conocimiento nuevo y entenderás mejor cómo se estructuran y se almacenan los datos de Google Analytics. Hay una diferencia notable entre los informes web basados en sesiones y los datos a nivel de hit del almacén. Ser consciente de esa diferencia te fortalece como analista digital y, con el tiempo, podrás aprovechar tus datos al máximo. Trabajar con BigQuery también exige escribir consultas SQL y entender algunos conceptos propios de BQ (como los [campos anidados y repetidos](https://cloud.google.com/bigquery/docs/nested-repeated)), que al principio cuestan. Tómate tu tiempo: cuando lo pilles, serás un usuario de datos mucho más sólido, capaz de sacar mucho más partido a la analítica web y digital en general.

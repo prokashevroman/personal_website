@@ -1,0 +1,53 @@
+---
+title: "El valor de Shapley en la atribución basada en datos: cómo funciona."
+slug: "the-shapley-value-in-data-driven-attribution"
+date: "2019-10-02"
+description: "El valor de Shapley en la atribución basada en datos: cómo funciona."
+originalUrl: "https://lastclick.city/the-shapley-value-in-data-driven-attribution.html"
+thumbnail: "/images/last-click-city/For_index_page_13.png"
+excerptLead: "Para evaluar con precisión el esfuerzo de marketing,"
+excerpt: "una atribución correcta es fundamental. Hoy los proveedores proponen enfoques cada vez más diversos para ayudar a los anunciantes a entender mejor cómo contribuyen los distintos puntos de contacto, canales y campañas al resultado global de marketing."
+---
+
+<strong>Para evaluar con precisión el esfuerzo de marketing, una atribución correcta es fundamental. </strong>Hoy los proveedores proponen enfoques cada vez más diversos para ayudar a los anunciantes a entender mejor cómo contribuyen los distintos puntos de contacto, canales y campañas al resultado global de marketing. Una de esas soluciones es la [atribución basada en datos](https://support.google.com/google-ads/answer/6394265?hl=en) de Google.
+
+El modelo de atribución basada en datos se apoya en un concepto de solución de la teoría de juegos cooperativos: el valor de Shapley. Para entender exactamente cómo funciona este modelo, veamos el siguiente ejemplo: supongamos que conocemos la tasa de conversión de tres canales de marketing, búsqueda orgánica, búsqueda de pago y display:
+
+búsqueda orgánica: 20 %
+ búsqueda de pago: 11 %
+ display: 1 %
+
+Supongamos también que sabemos cómo funcionan las combinaciones de esos canales. Algo parecido se puede ver en el informe de principales rutas de conversión de Google Analytics, aunque allí solo hay un número limitado de conversiones (no tasas de conversión).
+
+Búsqueda de pago + display = 13 %
+ Orgánica + búsqueda de pago = 35 %
+ Display + orgánica = 23 %
+ Display + orgánica + búsqueda de pago = 37 %
+
+Para calcular el valor de Shapley hay que 1) crear todas las combinaciones posibles de interacción entre canales (rutas de conversión); 2) sumar los valores de la aportación de cada canal; y 3) dividir cada suma entre seis (el número de rutas de conversión analizadas). Veamos cada paso con más detalle.
+
+Primero, enumeremos todas las rutas de conversión posibles y calculemos el valor de cada interacción para cada canal. Para ver cómo se calcula ese valor, mira este ejemplo:
+
+![Cálculo del valor de Shapley](/images/last-click-city/Shapley_value/Shapley_value_calculation_1.png)
+
+Usemos este método para calcular el valor de la aportación de cada canal:
+
+![Cálculo del valor de Shapley](/images/last-click-city/Shapley_value/Shapley_value_calculation_2.png)
+
+El siguiente paso es sumar los valores de cada canal y dividir el resultado entre seis. Por ejemplo, en el caso de la búsqueda orgánica sería (20+20+24+24+26+22)/6 = 22,66 %.
+
+El valor de Shapley de cada canal, por tanto, quedaría así:
+
+búsqueda orgánica = 22,66 % (+13,33 % frente al modelo de último clic)
+ búsqueda de pago = 12,5 % (+25 %)
+ campaña de display = 1,83 % (+83 %)
+
+Algunas notas importantes sobre el modelo de atribución basada en datos:
+
+1\) Algunos canales no aportarán valor, y eso es absolutamente normal. El ejemplo anterior solo incluye datos con impacto positivo para ilustrar con más claridad cómo funciona el modelo. De hecho, la atribución basada en datos ayuda a detectar canales o puntos de contacto que aportan poco valor o ninguno.
+
+2\) La atribución basada en datos no puede responder a todas las preguntas. Por ejemplo, es muy probable que la búsqueda de pago de marca esté entre los canales mejor valorados por el DDM. Pero es imprescindible entender que hay muchos factores que pueden influir en la búsqueda de marca, y a menudo son difíciles de detectar.
+
+3\) Es importante alcanzar y mantener el umbral mínimo de conversiones para que el modelo siga funcionando. Hoy la atribución basada en datos está disponible para los usuarios de Google Analytics 360 y para todos los usuarios de Google Ads. Ambas plataformas tienen varios requisitos antes de poder activar el modelo. Por ejemplo, para usarlo en Google Ads necesitas al menos 15.000 clics en la Búsqueda de Google y una acción de conversión con al menos 600 conversiones en 30 días.
+
+¡Gracias por tu atención!

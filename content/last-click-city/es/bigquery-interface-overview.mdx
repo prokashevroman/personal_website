@@ -1,0 +1,100 @@
+---
+title: "Un recorrido por la interfaz de BigQuery."
+slug: "bigquery-interface-overview"
+date: "2019-07-02"
+description: "Un recorrido por la interfaz de BigQuery. Lo básico para trabajar con BigQuery: proyectos, tablas y consultas."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/bigquery-interface-overview.html"
+thumbnail: "/images/last-click-city/For_index_page_10.png"
+excerptLead: "Estas instrucciones te ayudarán a dar tus primeros pasos"
+excerpt: "con la interfaz de BigQuery. Lo único que necesitas para probarlo es una cuenta de Google: nada más. BigQuery, en pocas palabras, es un almacenamiento en la nube que puede reunir datos de muchas fuentes, como Google Analytics, Google Ads, Salesforce, etc."
+---
+
+<strong>Estas instrucciones te ayudarán a dar tus primeros pasos </strong>con la interfaz de BigQuery. Lo único que necesitas para probarlo es una cuenta de Google: nada más.
+
+BigQuery, en pocas palabras, es un almacenamiento en la nube que puede reunir datos de muchas fuentes, como Google Analytics, Google Ads, Salesforce, etc. Esta es la versión nueva:
+
+![Nueva interfaz de BigQuery](/images/last-click-city/BigQuery_interface/1_BigQuery_new_interface.png)
+
+Empecemos por los proyectos.
+
+![Proyectos de BigQuery](/images/last-click-city/BigQuery_interface/2_BigQuery_projects.jpg)
+
+Un proyecto es un espacio de nombres que agrupa distintos tipos de datos. En nuestro caso, el proyecto es «bigquery-overview». Los datos del proyecto se organizan en conjuntos de datos, que se guardan como tablas de datos y consultas SQL. En nuestro caso, un ejemplo de conjunto de datos es «just_some_data», que tiene una tabla llamada «logs» y una consulta SQL llamada «logs_sql». Puedes distinguir una tabla de una consulta por el icono que tienen al lado, aunque el sufijo «_sql» está puesto precisamente para facilitarlo.
+
+A la consulta SQL también se la llama «vista» en BigQuery. Dicho de otro modo, puedes pensar en una vista como en una consulta guardada, pero no son entidades equivalentes (lo veremos más adelante). La consulta tiene solo dos objetivos principales:
+
+● Calcular los datos (normalmente actualizados con regularidad) que se guardarán en la tabla.
+
+● Calcular datos sobre la marcha. Por ejemplo, puede que necesites saber algo cada semana pero sin importancia, así que no hace falta guardarlo en la tabla.
+
+En nuestro ejemplo nos interesa el primer objetivo (de cómo actualizar la tabla hablaremos en otro artículo). Tenemos la vista «logs_sql», que forma la tabla «logs». Una tabla no tiene por qué tener una vista SQL; por ejemplo, si almacena datos solo para archivarlos, si se actualiza directamente desde la fuente (como Google Ads a través de Google Ads Scripts) o mediante el servicio de transferencia de datos de BQ (lo veremos luego).
+
+Cada tabla tiene un esquema, unos detalles y una vista previa. La vista previa muestra los datos en sí. Lo más importante son el esquema y la vista previa. Echemos un vistazo a «unique_keys»:
+
+![Vista previa de BigQuery](/images/last-click-city/BigQuery_interface/3_BigQuery_preview.png)
+
+Si quieres crear una tabla nueva a partir de otra existente, siempre necesitas saber tres cosas: qué coger (por eso hay que rellenar la «Description», a diferencia de mi ejemplo), el nombre de la entidad («Field name») y su tipo («Type»), para manejarla correctamente. El esquema te los muestra todos.
+
+![Información de la tabla en BigQuery](/images/last-click-city/BigQuery_interface/4_BigQuery_table_info.png)
+
+«Details» te permite saber cuándo se modificó la tabla por última vez. Es importante, porque algunas tablas pueden contener datos inválidos (dicho de otro modo, la tabla está abandonada). El Table ID también resulta útil: igual que los datos del esquema, te ayudará en la consulta. El resto de datos, desde mi punto de vista, son menos importantes, sobre todo para el marketing.
+
+Veamos ahora cómo consultar. Podemos hacerlo a nivel de tabla o a nivel de vista. Empecemos por la tabla. Entra en una de tus tablas y pulsa el botón «query table»:
+
+![Consultar tabla en BigQuery](/images/last-click-city/BigQuery_interface/5_BigQuery_query_table.png)
+
+En el campo de código obtendrás esto:
+
+![Consulta por defecto en BigQuery](/images/last-click-city/BigQuery_interface/6_BigQuery_default_query.png)
+
+Verás el aviso de la línea 1. Es un validador que comprueba tu consulta y te dice si hay algún error. Haz clic en la esquina derecha del aviso y te mostrará qué falla.
+
+![Error de sintaxis en BigQuery](/images/last-click-city/BigQuery_interface/7_BigQuery_syntax_error.png)
+
+En nuestro ejemplo nos dice que no elegimos ningún campo de la tabla «logs» y que, por tanto, no podíamos componer una tabla o vista nueva. El validador también estima el número de bytes leídos, algo muy útil si quieres calcular el coste de la consulta.
+
+![Consulta válida en BigQuery](/images/last-click-city/BigQuery_interface/8_BigQuery_valid_query.png)
+
+Ahora todo tiene buena pinta. ¡Vamos a ejecutarla!
+
+![Resultados de la consulta en BigQuery](/images/last-click-city/BigQuery_interface/9_BigQuery_Query_results.png)
+
+Genial, ya tenemos resultados. Ahora podríamos guardarlos, por ejemplo, como tabla.
+
+![Guardar como tabla en BigQuery](/images/last-click-city/BigQuery_interface/10_BigQuery_save_as_table.png)
+
+Los siguientes pasos son fáciles de seguir, así que los omitimos.
+
+Otra forma de componer una consulta es usando la vista. La única diferencia con la consulta sobre tabla es que primero se compone la vista (y obtienes una tabla como resultado) y después arranca tu consulta (basada en esa tabla). El objetivo principal de esta secuencia es configurar una actualización automática de la tabla con Google Apps Scripts, sobre todo si usas funciones dinámicas en tu vista, como «Current_Date()». Sí, también se podría hacer con la opción «Scheduled queries», <em>pero esa hay que escribirla en SQL estándar.</em>
+
+Además, puedes dar formato a tu consulta para que se lea mejor.
+
+![Consulta formateada en BigQuery](/images/last-click-city/BigQuery_interface/11_BigQuery_formated_query.png)
+
+Así queda una consulta con formato:
+
+![Consulta formateada en BigQuery](/images/last-click-city/BigQuery_interface/12_BigQuery_formated_query.jpg)
+
+En «Query Settings» <em>eliges el dialecto de SQL</em>, defines el destino de los resultados de la consulta (escribir si está vacía, añadir o sobrescribir la tabla), etc.
+
+Otra cosa que mencionar es el menú de la interfaz en la esquina izquierda.
+
+![Interfaz de BigQuery](/images/last-click-city/BigQuery_interface/13_BigQuery_UI.jpg)
+
+«Query history» guarda <em>temporalmente</em> todas tus consultas: las que tienen errores y las que no.
+
+Lo de «saved queries» se explica solo, pero ¿recuerdas lo que dijimos de la vista? Es como una consulta guardada, con la diferencia de que la consulta guardada <em>solo la ves tú</em>, mientras que la vista está abierta al resto de participantes del proyecto.
+
+«Job history» también es evidente. Para entenderlo del todo basta con saber que los jobs son acciones relacionadas con cargar, exportar, copiar y consultar datos.
+
+«Transfers» contiene las opciones para activar la transferencia de datos desde sistemas como Amazon S3, Google Ads, Google Cloud Storage, Google Play, DoubleClick Campaign Manager (DCM), Google Ad Manager (DFP, DoubleClick For Publishers), Redshift y Teradata, y desde canales y propietarios de contenido de YouTube.
+
+Como decíamos, «Scheduled queries» puede ayudarte a actualizar tablas automáticamente, pero hay que escribirlas en SQL estándar. Quien prefiera el SQL antiguo tiene la opción de Google Apps Scripts.
+
+«BI Engine» es una función nueva de BigQuery que acelera muchísimo tus consultas (para que puedas hacer analítica en tiempo real, de forma interactiva). Cuesta dinero, por supuesto.
+
+La última es «Resources». Puedes añadir a tu panel otros proyectos de tu empresa o explorar conjuntos de datos públicos gratis.
+
+Ahora te toca a ti. Ve a «Resources» -> «Add Data» -> «Explore public datasets». Elige lo que quieras ¡y a empezar! Si no sabes usar SQL no pasa nada: hay montones de tutoriales en internet. ¡Suerte!

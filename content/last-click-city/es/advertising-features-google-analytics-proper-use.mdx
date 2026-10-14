@@ -1,0 +1,41 @@
+---
+title: "Funciones de publicidad en Google Analytics: cómo usarlas bien."
+slug: "advertising-features-google-analytics-proper-use"
+date: "2020-10-17"
+description: "Funciones de publicidad en Google Analytics: cómo usarlas bien."
+originalUrl: "https://lastclick.city/advertising-features-google-analytics-proper-use.html"
+thumbnail: "/images/last-click-city/For_index_page_31.png"
+excerptLead: "Las funciones de publicidad amplían mucho lo que puedes hacer en GA"
+excerpt: "y son imprescindibles si quieres tener la opción de hacer remarketing con los visitantes de tu sitio a partir de los datos de Google Analytics. Estas son sus principales ventajas:"
+---
+
+<strong>Las funciones de publicidad amplían mucho lo que puedes hacer en GA</strong> y son imprescindibles si quieres tener la opción de hacer remarketing con los visitantes de tu sitio a partir de los datos de Google Analytics. Estas son sus principales ventajas:
+
+- El remarketing con Google Analytics te permite crear audiencias de usuarios de tu sitio web y dirigirles anuncios relevantes en las redes de Búsqueda y de Display (incluido el inventario de DV360 para los usuarios de GA360).
+- Datos demográficos y de intereses en los informes de Google Analytics: con las funciones de publicidad activadas, los datos de edad, sexo, categorías de afinidad, segmentos de mercado y otras categorías pasan a estar disponibles en los informes correspondientes (que encontrarás en la sección Audiencia). Estas características de la audiencia también se pueden usar al crear segmentos y listas de remarketing.
+- Las integraciones con Campaign Manager y Display & Video 360 permiten a los clientes de Analytics 360 ver y analizar los datos de esas fuentes desde la interfaz de Google Analytics (sección Adquisición).
+- Los informes de impresiones de la Red de Display de Google (GDN) permiten a los anunciantes de Google medir el impacto de las impresiones de display no clicadas sobre el comportamiento y las conversiones de los usuarios del sitio.
+
+Antes había que activar las funciones de publicidad por separado, en la sección Administrar de Google Analytics. Hoy, en cambio, al habilitar Google Signals se activan también las funciones de publicidad.
+
+![Google Signals](/images/last-click-city/Advertising_features/Google_Signals.png)
+
+Ten en cuenta que el RGPD, la CCPA y otras normas similares han cambiado mucho las cosas en cuanto a la práctica de usar las funciones de publicidad en Google Analytics. Han aparecido restricciones que prestan más atención a los datos personales y a la privacidad. La principal es la obligación de obtener el consentimiento del usuario cuando se usan sus datos sensibles. Este y otros requisitos están recogidos en un [artículo específico de la ayuda de Google Analytics:](https://support.google.com/analytics/answer/2700409?hl=en)
+
+> No identificarás a los usuarios ni facilitarás la combinación de información de identificación personal con información no identificable recogida a través de cualquier producto o función publicitaria de Google, salvo que hayas informado de forma clara y hayas obtenido el consentimiento afirmativo previo (es decir, opt-in) del usuario para esa identificación o combinación, y estés utilizando una función de Google Analytics que admita expresamente dicha identificación o combinación. Con independencia del consentimiento de los usuarios, no debes intentar desagregar los datos que Google presenta de forma agregada.
+
+Por tanto, la forma recomendada hoy de usar las funciones de publicidad es mantenerlas activadas solo para los usuarios que dan su consentimiento explícito. Dejar Google Signals activado sin decir nada ya no es una opción. Una de las formas de desactivar las funciones de publicidad es apagarlas desde Google Tag Manager. Se hace con esta configuración:
+
+![allowAdfeatures con valor false](/images/last-click-city/Advertising_features/allowAdfeatures_false.png)
+
+Esta configuración anula los ajustes de la propiedad activados en la interfaz de Google Analytics.
+
+También es posible configurar las funciones de publicidad de forma dinámica en Google Tag Manager y activarlas solo cuando se recibe el consentimiento del usuario.
+
+![allowAdfeatures configurado dinámicamente](/images/last-click-city/Advertising_features/allowAdfeatures_dynamically_set.png)
+
+En el ejemplo anterior mantenemos AllowAdfeatures en false mientras no se reciba el consentimiento del usuario y se transmita mediante una cookie.
+
+![allowAdfeatures configurado dinámicamente](/images/last-click-city/Advertising_features/Javascript.png)
+
+Ten en cuenta que existen [otras maneras](https://support.google.com/analytics/answer/9050852?hl=en&ref_topic=2611283) de desactivar las funciones de publicidad además de Google Tag Manager, pero diría que hacerlo en GTM es preferible y resulta lo más cómodo.

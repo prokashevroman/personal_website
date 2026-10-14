@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { t, type Locale } from "@/lib/i18n";
 
+// One key for both locales on purpose: dismissing the banner is a statement about
+// the reader, not about the language they read it in.
 const DISMISS_KEY = "lcc-banner-dismissed";
 
 // Full-width sticky ribbon shown at the top of every /last-click-city/ page (via
 // the segment layout). Green accent + white text to match the site; a dismiss
 // button lets the reader hide it after the first screen. Client component because
 // the hide/persist behavior needs the browser.
-export function ArchiveBanner() {
+export function ArchiveBanner({ locale = "en" }: { locale?: Locale }) {
+  const dict = t[locale].archive;
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -39,14 +43,11 @@ export function ArchiveBanner() {
       style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
     >
       <div className="mx-auto flex max-w-5xl items-center gap-3 px-6 py-2.5">
-        <p className="flex-1 text-center text-sm leading-relaxed text-white">
-          This is an archive of the Last Click City blog, which was published at
-          lastclick.city from 2019 to 2024.
-        </p>
+        <p className="flex-1 text-center text-sm leading-relaxed text-white">{dict.bannerBody}</p>
         <button
           type="button"
           onClick={hide}
-          aria-label="Hide this banner"
+          aria-label={dict.bannerDismiss}
           className="-mr-1 shrink-0 rounded p-1 text-white/70 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
         >
           <svg

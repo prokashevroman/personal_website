@@ -1,0 +1,67 @@
+---
+title: "Cómo configurar correctamente los eventos en Google Analytics 4 (GA4)."
+slug: "how-to-set-up-events-in-google-analytics-4-correctly"
+date: "2022-04-15"
+description: "Desanidar datos clave-valor relativos a objetos en columnas distintas."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/how-to-set-up-events-in-google-analytics-4-correctly.html"
+thumbnail: "/images/last-click-city/For_index_page_38.png"
+excerptLead: "A partir del 1 de julio de 2023, Google ha anunciado que Universal Analytics (UA) dejará de existir."
+excerpt: "En su lugar tendrás que usar Google Analytics for Firebase o, abreviando, GA4. Si acabas de llegar a la analítica web o estás migrando los eventos de UA a GA4, te recomendamos seguir estas instrucciones sencillas, teniendo en cuenta las principales restricciones de GA4."
+---
+
+<strong>A partir del 1 de julio de 2023, [Google ha anunciado](https://support.google.com/analytics/answer/11583528) que Universal Analytics (UA) dejará de existir. </strong>En su lugar tendrás que usar Google Analytics for Firebase o, abreviando, GA4.
+
+Si acabas de llegar a la analítica web o estás migrando los eventos de UA a GA4, te recomendamos seguir estas instrucciones sencillas, teniendo en cuenta las principales restricciones de GA4:
+
+1. solo puedes tener [500](https://support.google.com/analytics/answer/9267744?hl=en&ref_topic=9756175) nombres de evento únicos distintos.
+2. lo mismo ocurre con las [dimensiones personalizadas](https://support.google.com/analytics/answer/10075209?hl=en#limits&zippy=%2Cin-this-article): 50 parámetros personalizados de ámbito de evento y 25 propiedades personalizadas de ámbito de usuario. Ahora importa más que nunca.
+
+Si envías un evento clásico de UA cuando un visitante de tu sitio hace clic en la sección «Contactos» del menú, en la página principal, hay varias maneras de mandarlo:
+
+| Propiedades del evento | Var – 1 | Var – 2[[1]](#footnote-1) |
+| --- | --- | --- |
+| Categoría del evento | Menú principal | Principal |
+| Acción del evento | Clic | Clic |
+| Etiqueta del evento | Contactos | Contactos |
+| Valor | (Null) | (Null) |
+
+Hay más formas de enviarlo; suele depender de la convención de envío de eventos de cada empresa, pero en nuestra opinión Var-1 es la mejor de todas, porque la estructura del evento es lo bastante completa como para usarla por sí sola en la analítica de usuarios.
+
+Sin embargo, ya no es posible enviar eventos así a GA4, por culpa de la primera restricción. Con las convenciones de nomenclatura de GA4 (minúsculas y «_» en lugar de espacio), este evento aparecería como «main_menu_contact_click» y ocuparía uno de los 500 eventos únicos de la propiedad de GA4.
+
+Por eso conviene seguir estas recomendaciones:
+
+1. ten presente que GA4 no es solo analítica basada en eventos; es, ante todo, <strong>analítica basada en acciones</strong>. Es decir, antes Event.Action era una propiedad de Event.Category y ahora es la categoría la que es una propiedad o parámetro de la acción (lo veremos más adelante). Además, todos los eventos recogidos automáticamente —click, page_view, scroll, etc.— son acciones.
+2. intenta usar al máximo los [eventos](https://support.google.com/analytics/answer/9234069?hl=en&ref_topic=9756175) y [parámetros](https://support.google.com/analytics/answer/11396839?hl=en) recogidos automáticamente: piensa en la cantidad de eventos que tendrás tras años de crecimiento del negocio. Si no cuidas la arquitectura de eventos, hay riesgo de topar con los límites muy pronto.
+3. si quieres usar eventos personalizados, mira primero estas [recomendaciones](https://support.google.com/analytics/answer/9267735?hl=en&ref_topic=9756175) de Google para ventas, juegos, etc.
+4. el nombre de un evento nuevo debe ser <strong>una acción</strong>, y esa <strong>acción debe ser muy habitual</strong> (= de uso frecuente) en tu negocio. Si no, procura usar eventos recogidos automáticamente.
+5. los parámetros de evento, igual que las propiedades de usuario, <strong>también deben usarse con regularidad en distintos tipos de evento</strong>. Si no, usa lo que se recoge automáticamente o no lo midas (si solo lo necesitas para dos o tres eventos dentro de tu infinito flujo de eventos).
+
+¿Por qué decimos que GA4 es analítica basada en acciones? Fíjate en los nombres de los eventos recogidos automáticamente: click, page_view, submit, first_open. Aquí lo que manda es la acción.
+
+Así que, para recoger nuestro evento del menú, hay que reescribirlo usando el evento recogido automáticamente «click» y unos parámetros:
+
+| Nombre del evento | click |   |
+| --- | --- | --- |
+| Parámetros del evento | page_title | Principal |
+| Content | Menú |   |
+| button_title[[2]](#footnote-2) | Contactos |   |
+
+Aunque hacer clic en el menú sea algo especial para tu negocio, la acción integrada «click» basta para cubrirlo.
+
+Si quieres un ejemplo de acción personalizada especial que sí tenga sentido medir y destacar dentro del flujo de eventos, podría ser «activate», por ejemplo cuando un usuario marca casillas en la configuración de la política de cookies. Estamos de acuerdo en que eso puede medirse con «activate» en lugar de con «click»[[3]](#footnote-3).
+
+Y, por último, para ponértelo más fácil:
+
+- [aquí](https://docs.google.com/spreadsheets/d/1XiX2Dmm9-t9AMnGWOl8v9-OZAjI-GPstHWvBFFbEFu0/edit#gid=2042573202) tienes posibles especificaciones de acciones (con especificaciones personalizadas) y de parámetros.
+- además, hay un [ejemplo](https://docs.google.com/spreadsheets/d/1XiX2Dmm9-t9AMnGWOl8v9-OZAjI-GPstHWvBFFbEFu0/edit#gid=0) de registro de los eventos que mides en tu negocio.
+
+¡Escríbenos si necesitas una consultoría especializada!
+
+<p id="footnote-1">[1] Con la URL de la página puedes saber dónde se produjo el evento.</p>
+
+<p id="footnote-2">[2] Parámetro personalizado; button_title es un tipo de dimensión personalizada muy útil, porque la web y la app tienen un montón de botones distintos.</p>
+
+<p id="footnote-3">[3] También puedes usar este evento para la confirmación de registro por correo, etc., lo que lo convierte en un evento universal.</p>

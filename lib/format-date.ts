@@ -6,11 +6,10 @@ const DATE_LOCALES: Record<Locale, string> = {
 };
 
 /**
- * Shared date formatter for post cards, article headers, and OG images.
+ * Shared date formatter for post cards, article headers, and OG images —
+ * live posts and the Last Click City archive alike.
  * Always UTC: frontmatter dates are plain YYYY-MM-DD, and a local timezone
  * would shift them by a day for readers west of Greenwich.
- * (Archive components keep their own formatter on purpose — the archive is
- * English-only and outside the locale system.)
  */
 export function formatDate(
   iso: string,

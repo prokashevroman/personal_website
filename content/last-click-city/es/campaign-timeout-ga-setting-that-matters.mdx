@@ -1,0 +1,38 @@
+---
+title: "Tiempo de espera de campaña: un ajuste de Google Analytics que importa"
+slug: "campaign-timeout-ga-setting-that-matters"
+date: "2019-08-16"
+description: "Tiempo de espera de campaña: un ajuste de Google Analytics que importa. Cómo puede influir en tus datos de conversión."
+originalUrl: "https://lastclick.city/campaign-timeout-ga-setting-that-matters.html"
+thumbnail: "/images/last-click-city/For_index_page_11.png"
+excerptLead: "Implementar Google Analytics suele implicar unos cuantos pasos,"
+excerpt: "como probar la etiqueta, configurar los ajustes del panel de administración y dar de alta todos los permisos e integraciones necesarios. Es bastante fácil —sobre todo si acabas de llegar a GA— pasar por alto algo importante."
+---
+
+<strong>Implementar Google Analytics suele implicar unos cuantos pasos, </strong> como probar la etiqueta, configurar los ajustes del panel de administración y dar de alta todos los permisos e integraciones necesarios. Es bastante fácil —sobre todo si acabas de llegar a GA— pasar por alto algo importante que puede afectar a cómo se presentan tus datos. Una de esas cosas pequeñas pero muy significativas es el ajuste del tiempo de espera de campaña.
+
+Para encontrarlo, ve al panel de administración de Google Analytics -> Información de seguimiento (se configura a nivel de propiedad) -> Configuración de sesión -> Tiempo de espera de campaña.
+
+![Tiempo de espera de campaña en el panel de administración de GA](/images/last-click-city/Campaign_timeout/Google_Analytics_Admin_panel.png)
+
+La duración de una sesión y de una campaña depende de las particularidades de tu sitio y de tu negocio. El tiempo de espera de campaña no puede superar los dos años. Pero ¿qué significa eso exactamente?
+
+Veamos este ejemplo. El tiempo de espera de campaña está fijado en seis meses (que es, por cierto, el valor por defecto). Alguien llegó a tu sitio a través de una campaña concreta y después no volvió durante cuatro meses seguidos. Pasado ese tiempo, ese usuario volvió a tu sitio mediante un enlace directo y acabó comprando. Como el tiempo de espera de campaña está en seis meses, en todos los informes salvo los de la sección de embudos multicanal verás esa compra atribuida a la campaña.
+
+![Tiempo de espera de campaña. Influencia en la atribución.](/images/last-click-city/Campaign_timeout/Scheme.png)
+
+\* en informes que no son de MCF
+
+Casos así suelen ser el motivo de que veas compras atribuidas a campañas que terminaron hace mucho y ya no traen visitantes nuevos. Por ejemplo, mira esta captura.
+
+![Sin clics pero con compras.](/images/last-click-city/Campaign_timeout/No_clicks_but_purchases.png)
+
+El número de clics es cero, pero hubo sesiones y compras. Vemos esas compras por el ajuste del tiempo de espera de campaña.
+
+El tiempo de espera de campaña no puede superar los dos años porque ese es exactamente el tiempo que [vive la cookie ga](https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage) (la que sirve para distinguir usuarios). Está claro que una compra se atribuye a una campaña concreta por el ajuste del tiempo de espera solo si la cookie sigue existiendo.
+
+Otra cosa importante que recordar es que no verás en el informe de conversiones asistidas las compras que ocurran pasados tres meses. La ventana de conversión retroactiva máxima en cualquier informe de MCF (incluidos los de conversiones asistidas) es de 90 días, así que a veces es posible ver en los informes estándar una compra que ocurre cuatro meses después del clic en la campaña, pero no hay forma de encontrarla en los informes de MCF. Puede parecer raro, pero es normal según funcionan los informes de Google Analytics.
+
+La pregunta clave es: ¿qué valor de tiempo de espera de campaña conviene usar? No hay una única respuesta. Todo depende de las particularidades de tu negocio. Si tu ciclo de compra es corto —por ejemplo, vendes pizza por internet—, tiene sentido fijarlo en el valor mínimo, quizá menos de un día. Pero si tu ciclo de compra es muy largo e incluye una prueba prolongada, con una decisión de compra que se toma a lo largo de meses, tiene sentido fijarlo en el número de meses que corresponda.
+
+Si tienes alguna duda, no dudes en preguntar en los comentarios. ¡Gracias por tu atención!

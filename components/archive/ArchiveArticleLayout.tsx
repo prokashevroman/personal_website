@@ -1,39 +1,36 @@
 import Link from "next/link";
+import { ClaudeMark } from "@/components/ClaudeMark";
+import { formatDate } from "@/lib/format-date";
+import { localePath, t, type Locale } from "@/lib/i18n";
 import type { ArchivePost } from "@/lib/last-click-city";
-
-function formatDate(iso: string): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
 
 type Props = {
   post: ArchivePost;
+  locale?: Locale;
   children: React.ReactNode;
 };
 
 // Article shell for the archive — same shape as the site's ArticleLayout so the
 // prose reads identically. No "AI helps polish" disclaimer and no comments; this
-// is preserved historical writing.
-export function ArchiveArticleLayout({ post, children }: Props) {
+// is preserved historical writing. Translations do carry a disclosure note.
+export function ArchiveArticleLayout({ post, locale = "en", children }: Props) {
   const { frontmatter, readingMinutes } = post;
   const { title, date, author, authorUrl } = frontmatter;
+  const dict = t[locale];
   return (
     <article className="mx-auto max-w-2xl">
       <header className="mb-12">
         <p className="eyebrow flex flex-wrap items-center gap-x-3 gap-y-1">
-          <time dateTime={date}>{formatDate(date)}</time>
+          <time dateTime={date}>{formatDate(date, locale, "long")}</time>
           <span aria-hidden="true" className="text-ink-soft">·</span>
-          <span>{readingMinutes} min read</span>
+          <span>
+            {readingMinutes} {dict.article.minRead}
+          </span>
           {author ? (
             <>
               <span aria-hidden="true" className="text-ink-soft">·</span>
               <span>
-                By{" "}
+                {dict.archive.by}{" "}
                 {authorUrl ? (
                   <a
                     href={authorUrl}
@@ -56,11 +53,17 @@ export function ArchiveArticleLayout({ post, children }: Props) {
       </header>
       <div className="prose prose-stone max-w-none">{children}</div>
       <div className="mt-12 border-t border-rule pt-6">
+        {dict.article.translatedNote ? (
+          <p className="mb-6 flex items-center gap-1.5 text-sm italic leading-relaxed text-ink-muted">
+            <ClaudeMark className="shrink-0" />
+            {dict.article.translatedNote}
+          </p>
+        ) : null}
         <Link
-          href="/last-click-city"
+          href={localePath("/last-click-city", locale)}
           className="text-sm font-medium text-accent hover:text-accent-hover"
         >
-          ← Back to Last Click City
+          {dict.archive.backToArchive}
         </Link>
       </div>
     </article>

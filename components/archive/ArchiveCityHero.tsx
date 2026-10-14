@@ -1,8 +1,10 @@
+import { t, type Locale } from "@/lib/i18n";
+
 // Pillar hero recreating the old lastclick.city header: a full-width light-gray
 // band with the black-and-white skyline (transparent-top PNG) anchored at the
 // bottom, and the title/subtitle centered above it. Used only on the archive
 // pillar page; category pages keep the plain ArchiveHero.
-export function ArchiveCityHero() {
+export function ArchiveCityHero({ locale = "en" }: { locale?: Locale }) {
   return (
     <div
       className="mb-14 flex flex-col items-center bg-[#ececec] px-6 pb-[28%] pt-16 text-center sm:pt-24"
@@ -16,11 +18,12 @@ export function ArchiveCityHero() {
         backgroundSize: "100% auto",
       }}
     >
+      {/* The h1 is the brand name — not translated, in either locale. */}
       <h1 className="font-sans text-4xl font-extrabold uppercase tracking-tight text-ink sm:text-6xl">
         Last Click City
       </h1>
       <p className="mt-3 text-lg font-normal text-ink-muted sm:text-2xl">
-        Digital analytics blog
+        {t[locale].archive.cityHeroTagline}
       </p>
     </div>
   );

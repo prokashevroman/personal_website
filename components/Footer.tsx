@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { t, type Locale } from "@/lib/i18n";
+import { localePath, t, type Locale } from "@/lib/i18n";
 import { siteConfig } from "@/lib/site-config";
 
 export function Footer({ locale = "en" }: { locale?: Locale }) {
@@ -14,10 +14,10 @@ export function Footer({ locale = "en" }: { locale?: Locale }) {
         <ul className="flex flex-wrap items-center gap-6">
           {/* The archive is indexable but reachable from nowhere else — without
               this link it is orphaned, and a page with no internal links in is
-              one crawlers deprioritise regardless of the sitemap. It stays
-              English-only, so both locales link to the same URL. */}
+              one crawlers deprioritise regardless of the sitemap. Each locale
+              links to its own mirror of it. */}
           <li>
-            <Link href="/last-click-city" className="hover:text-ink">
+            <Link href={localePath("/last-click-city", locale)} className="hover:text-ink">
               {dict.archiveLabel}
             </Link>
           </li>

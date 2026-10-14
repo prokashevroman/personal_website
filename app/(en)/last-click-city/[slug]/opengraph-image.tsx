@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format-date";
 import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "@/lib/og-image";
 import {
   CATEGORIES,
@@ -13,15 +14,6 @@ export const contentType = OG_CONTENT_TYPE;
 
 export function generateStaticParams() {
   return [...getArchiveSlugs(), ...CATEGORIES.map((c) => c.slug)].map((slug) => ({ slug }));
-}
-
-function formatDate(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
 }
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
@@ -46,6 +38,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   return renderOgImage({
     eyebrow: "Last Click City · Archive",
     headline: frontmatter.title,
-    meta: `${formatDate(frontmatter.date)} · ${readingMinutes} min read${byline}`,
+    meta: `${formatDate(frontmatter.date, "en", "long")} · ${readingMinutes} min read${byline}`,
   });
 }

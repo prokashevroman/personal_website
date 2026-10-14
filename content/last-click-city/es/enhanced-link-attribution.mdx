@@ -1,0 +1,48 @@
+---
+title: "Atribución de enlaces mejorada en Google Analytics y Google Tag Manager"
+slug: "enhanced-link-attribution"
+date: "2020-04-08"
+description: "Guía breve para configurar el complemento de atribución de enlaces mejorada en Google Analytics y Google Tag Manager"
+originalUrl: "https://lastclick.city/enhanced-link-attribution.html"
+thumbnail: "/images/last-click-city/For_index_page_19.png"
+excerptLead: "Google Analytics no ofrece mapas de calor,"
+excerpt: "pero sí permite analizar el comportamiento de los visitantes de un sitio con el complemento Page Analytics para Google Chrome. Page Analytics no es un mapa de calor, pero muestra cómo se reparten los clics entre los distintos enlaces de la página analizada."
+---
+
+<strong>Google Analytics no ofrece mapas de calor, </strong>pero sí permite analizar el comportamiento de los visitantes de un sitio con el [complemento Page Analytics para Google Chrome](https://chrome.google.com/webstore/detail/page-analytics-by-google/fnbdnhhicmebfgdgglcdacdapkcihcoh?hl=en). Page Analytics no es un mapa de calor, pero muestra cómo se reparten los clics entre los distintos enlaces de la página analizada. Una vez instalado y en marcha, el complemento Page Analytics muestra estos datos: ![Complemento Page Analytics](/images/last-click-city/Enhanced_Link_Attribution/page_Analytics.jpg)
+
+Para que los datos de Page Analytics sean más precisos hay que activar la atribución de enlaces mejorada en Google Analytics, algo que se puede hacer en la propia etiqueta de Google Analytics o desde Google Tag Manager. Veamos las dos opciones. Lo primero, para que la atribución de enlaces mejorada funcione, es activarla en el panel de administración de Google Analytics (sección «Configuración de la propiedad»):
+
+![Panel de administración de GA](/images/last-click-city/Enhanced_Link_Attribution/Admin_panel.png)
+
+Después, para configurarlo todo en la etiqueta de Google Analytics, modifica el código de cada página para que cargue el complemento de atribución de enlaces mejorada (llamado "linkid").
+
+Este código muestra cómo cargar el complemento de atribución de enlaces mejorada:
+
+```javascript
+ga('create', 'UA-XXXXX-Y', 'auto');
+ga('require', 'linkid');
+ga('send', 'pageview');
+```
+
+El complemento se puede personalizar. La atribución de enlaces mejorada distingue entre enlaces a una misma URL comprobando el ID del elemento padre, y tú puedes controlar hasta dónde mira el complemento.
+
+Este ejemplo explica cómo personalizar las opciones de configuración al usar el complemento de atribución de enlaces mejorada:
+
+```javascript
+ga('create', 'UA-XXXXX-Y', 'auto');
+ga('require', 'linkid', {
+  'cookieName': '_ela',
+  'duration': 45,
+  'levels': 5
+});
+ga('send', 'pageview');
+```
+
+«Levels» es el ajuste más importante: le indica al complemento el número máximo de niveles del DOM que debe comprobar. El valor por defecto es «3».
+
+Cómo configurar la atribución de enlaces mejorada en Google Tag Manager.
+
+Para activarla en Google Tag Manager tienes que ir a tu variable de configuración de Google Analytics, seleccionar «Más opciones» y después «Configuración avanzada». Pon «Habilitar la atribución de enlaces mejorada» en true y listo. Ten en cuenta que, aunque lo configures todo en GTM, sigue siendo necesario tener la ELA activada en el panel de administración de Google Analytics.
+
+![ELA en Google Tag Manager](/images/last-click-city/Enhanced_Link_Attribution/Google_Tag_Manager.png)

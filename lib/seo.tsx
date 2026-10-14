@@ -12,7 +12,7 @@ import { fillMetadataSegment } from "next/dist/lib/metadata/get-metadata-route";
 // erased at compile time, so the archive pipeline is never pulled into the
 // homepage or /blog bundle.
 import type { ArchivePost } from "@/lib/last-click-city";
-import { ES_INDEXABLE, localePath, type Locale } from "@/lib/i18n";
+import { ES_INDEXABLE, archiveCategoryTitle, localePath, type Locale } from "@/lib/i18n";
 import type { Post } from "@/lib/posts";
 import { siteConfig } from "@/lib/site-config";
 
@@ -199,6 +199,19 @@ export function blogSchema(posts: Post[], locale: Locale = "en"): Schema {
   };
 }
 
+/**
+ * `translator` on a Spanish posting — the machine-readable half of the visible
+ * "Traducido del inglés con Claude" note. Deliberately NOT `author`: the
+ * translation was produced with Claude, but the post is still its author's work,
+ * and for the 17 guest-written archive posts saying otherwise would reassign a
+ * real person's byline.
+ */
+const TRANSLATOR: Schema = {
+  "@type": "Organization",
+  name: "Anthropic",
+  url: "https://claude.com",
+};
+
 export function blogPostingSchema(post: Post, locale: Locale = "en"): Schema {
   const enUrl = absoluteUrl(`/blog/${post.frontmatter.slug}`);
   const url = absoluteUrl(localePath(`/blog/${post.frontmatter.slug}`, locale));
@@ -230,7 +243,10 @@ export function blogPostingSchema(post: Post, locale: Locale = "en"): Schema {
     // A translated post declares its English original, which ties the two
     // articles together for search engines without a shared @id.
     ...(locale === "es"
-      ? { translationOfWork: { "@type": "BlogPosting", "@id": `${enUrl}#article` } }
+      ? {
+          translationOfWork: { "@type": "BlogPosting", "@id": `${enUrl}#article` },
+          translator: TRANSLATOR,
+        }
       : {}),
   };
 }
@@ -256,17 +272,24 @@ export function profilePageSchema(locale: Locale = "en"): Schema {
 // collapsing the two would misrepresent both.
 // ---------------------------------------------------------------------------
 
-const ARCHIVE_BLOG_ID = `${siteConfig.url}/last-click-city#blog`;
+const ARCHIVE_BLOG_DESCRIPTION: Record<Locale, string> = {
+  en: "Archive of the Last Click City blog: digital analytics, Google Analytics, BigQuery, and attribution modelling, originally published at lastclick.city.",
+  es: "Archivo del blog Last Click City: analítica digital, Google Analytics, BigQuery y modelos de atribución, publicado originalmente en lastclick.city.",
+};
 
-export function archiveBlogSchema(): Schema {
+function archiveBlogId(locale: Locale): string {
+  return `${absoluteUrl(localePath("/last-click-city", locale))}#blog`;
+}
+
+export function archiveBlogSchema(locale: Locale = "en"): Schema {
   return {
     "@type": "Blog",
-    "@id": ARCHIVE_BLOG_ID,
-    url: absoluteUrl("/last-click-city"),
+    "@id": archiveBlogId(locale),
+    url: absoluteUrl(localePath("/last-click-city", locale)),
+    // The publication's name, not a phrase — the same in both locales.
     name: "Last Click City",
-    description:
-      "Archive of the Last Click City blog: digital analytics, Google Analytics, BigQuery, and attribution modelling, originally published at lastclick.city.",
-    inLanguage: siteConfig.language,
+    description: ARCHIVE_BLOG_DESCRIPTION[locale],
+    inLanguage: locale,
     publisher: { "@id": PERSON_ID },
   };
 }
@@ -286,8 +309,9 @@ function archiveAuthor(post: ArchivePost): Schema {
   };
 }
 
-export function archivePostingSchema(post: ArchivePost): Schema {
-  const url = absoluteUrl(`/last-click-city/${post.frontmatter.slug}`);
+export function archivePostingSchema(post: ArchivePost, locale: Locale = "en"): Schema {
+  const enUrl = absoluteUrl(`/last-click-city/${post.frontmatter.slug}`);
+  const url = absoluteUrl(localePath(`/last-click-city/${post.frontmatter.slug}`, locale));
   const { frontmatter, readingMinutes } = post;
   return {
     "@type": "BlogPosting",
@@ -298,18 +322,27 @@ export function archivePostingSchema(post: ArchivePost): Schema {
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     datePublished: frontmatter.date,
     dateModified: frontmatter.date,
-    inLanguage: siteConfig.language,
+    inLanguage: locale,
     wordCount: post.content.trim().split(/\s+/).length,
     timeRequired: `PT${readingMinutes}M`,
     image: {
       "@type": "ImageObject",
-      url: ogImageUrl("/(en)/last-click-city/[slug]", { slug: frontmatter.slug }),
+      url: ogImageUrl(
+        locale === "en" ? "/(en)/last-click-city/[slug]" : "/(es)/es/last-click-city/[slug]",
+        { slug: frontmatter.slug },
+      ),
       width: 1200,
       height: 630,
     },
     author: archiveAuthor(post),
     publisher: { "@id": PERSON_ID },
-    isPartOf: { "@id": ARCHIVE_BLOG_ID },
+    isPartOf: { "@id": archiveBlogId(locale) },
+    ...(locale === "es"
+      ? {
+          translationOfWork: { "@type": "BlogPosting", "@id": `${enUrl}#article` },
+          translator: TRANSLATOR,
+        }
+      : {}),
   };
 }
 
@@ -317,15 +350,16 @@ export function archivePostingSchema(post: ArchivePost): Schema {
 export function archiveCollectionSchema(
   category: { slug: string; title: string },
   posts: ArchivePost[],
+  locale: Locale = "en",
 ): Schema {
-  const url = absoluteUrl(`/last-click-city/${category.slug}`);
+  const url = absoluteUrl(localePath(`/last-click-city/${category.slug}`, locale));
   return {
     "@type": "CollectionPage",
     "@id": `${url}#collection`,
     url,
-    name: `${category.title} — Last Click City`,
-    inLanguage: siteConfig.language,
-    isPartOf: { "@id": ARCHIVE_BLOG_ID },
+    name: `${archiveCategoryTitle(category, locale)} — Last Click City`,
+    inLanguage: locale,
+    isPartOf: { "@id": archiveBlogId(locale) },
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: posts.length,
@@ -333,7 +367,7 @@ export function archiveCollectionSchema(
         "@type": "ListItem",
         position: index + 1,
         name: post.frontmatter.title,
-        url: absoluteUrl(`/last-click-city/${post.frontmatter.slug}`),
+        url: absoluteUrl(localePath(`/last-click-city/${post.frontmatter.slug}`, locale)),
       })),
     },
   };

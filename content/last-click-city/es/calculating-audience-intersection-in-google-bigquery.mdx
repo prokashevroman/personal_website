@@ -1,0 +1,70 @@
+---
+title: "Calcular la intersección de audiencias en Google BigQuery."
+slug: "calculating-audience-intersection-in-google-bigquery"
+date: "2019-02-24"
+description: "Calcular la intersección de audiencias en Google BigQuery"
+originalUrl: "https://lastclick.city/calculating-audience-intersection-in-google-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_5.png"
+excerptLead: "Imaginemos que necesitamos analizar"
+excerpt: "el número de usuarios que han visitado dos páginas concretas durante el último año. Queremos saber cuántos han visitado la página A, cuántos la página B y cuántos han visitado ambas durante ese periodo."
+---
+
+<strong>Imaginemos que necesitamos analizar </strong>el número de usuarios que han visitado dos páginas concretas durante el último año. Queremos saber cuántos han visitado la página A, cuántos la página B y cuántos han visitado ambas durante ese periodo. Puede sorprender, pero hasta hace poco este análisis tan básico no se podía hacer con un solo informe de Google Analytics. Por suerte, no hace mucho llegó la nueva sección de análisis avanzado, que incluye una función realmente buena: el solapamiento de segmentos. Para crearlo hay que definir dos segmentos (por ejemplo, «Visitó la página A» y «Visitó la página B»), importarlos al análisis avanzado y ejecutar «Comparación de segmentos». ![Informe de análisis avanzado](/images/last-click-city/Audience_intersection/Advanced_Analysis.png)
+
+Pero sigue en pie una limitación importante: los segmentos basados en usuarios tienen un intervalo máximo de 90 días (hay información detallada sobre los segmentos [aquí](https://support.google.com/analytics/answer/3123951?hl=en)). Te topas con esa limitación en cualquier informe de Google Analytics donde quieras usar ese tipo de segmento, y también al crear un solapamiento de segmentos en la sección de análisis avanzado. Si intentas hacer un informe de un periodo superior a tres meses, verás este mensaje:
+
+![Intervalo de fechas no válido](/images/last-click-city/Audience_intersection/Invalid_date_range.png)
+
+¿Y si necesitamos información sobre la intersección en un periodo más largo? En ese caso, BigQuery acude al rescate. Calculemos la intersección de usuarios de un año. Para conseguirlo necesitamos ejecutar dos consultas SQL y después visualizar los datos.
+
+Vamos por partes. Mira primero la consulta n.º 1:
+
+```sql
+SELECT
+    SUM(Group_A) AS visited_Page_A, SUM(Group_B) AS visited_Page_B
+FROM (SELECT
+    fullVisitorId,
+CASE
+    WHEN hits.page.pagePath CONTAINS '/pageA/' THEN 1
+    ELSE 0
+    END AS Group_A,
+CASE
+    WHEN hits.page.pagePath CONTAINS '/pageB/' THEN 1
+    ELSE 0
+    END AS Group_B,
+FROM
+    TABLE_DATE_RANGE( [pro-tracker-id.ga_sessions_], TIMESTAMP('2018-01-01'), TIMESTAMP('2018-12-31') )
+WHERE
+    hits.page.pagePath CONTAINS '/pageA/' OR hits.page.pagePath CONTAINS '/pageB/'
+GROUP BY
+    fullVisitorId, Group_A, Group_B)
+```
+
+En esta consulta seleccionamos a los usuarios que han visitado /pageA/ o /pageB/, los agrupamos en el grupo A y el grupo B (con ayuda de sentencias CASE) y calculamos cuántos hay en cada uno. El resultado es algo así:
+
+![Resultado de la primera consulta SQL](/images/last-click-city/Audience_intersection/First_query_result.png)
+
+El objetivo de la segunda consulta es obtener el número que representa la intersección en sí:
+
+```sql
+SELECT
+    COUNT(fullVisitorId) AS visited_both_pages
+FROM (SELECT
+    fullVisitorId
+FROM
+    TABLE_DATE_RANGE( [pro-tracker-id.ga_sessions_], TIMESTAMP('2018-01-01'), TIMESTAMP('2018-12-31') )
+WHERE
+    hits.page.pagePath CONTAINS '/pageA/' OR hits.page.pagePath CONTAINS '/pageB/'
+GROUP BY
+    fullVisitorId
+HAVING
+    COUNT(CASE WHEN hits.page.pagePath CONTAINS '/pageA/' THEN 1 END) > 0
+    AND
+    COUNT(CASE WHEN hits.page.pagePath CONTAINS '/pageB/' THEN 1 END) > 0)
+```
+
+Ya tenemos tres números, pero hay que visualizarlos de algún modo. No hay forma de insertar un diagrama de Venn en Microsoft Office ni en Google Spreadsheets, pero sí hay muchas herramientas gratuitas que lo hacen. Prueba por ejemplo [esta](https://www.meta-chart.com/venn). El resultado final debería ser algo así:
+
+![Resultado final](/images/last-click-city/Audience_intersection/End_result.png)
+
+En resumen: en cualquier informe de Google Analytics (incluido el análisis avanzado), los segmentos basados en usuarios tienen un intervalo máximo de 90 días, lo que en algunos casos resulta una restricción incómoda. Por suerte, BigQuery ayuda a superar esas limitaciones y nos da los datos de un periodo más largo.

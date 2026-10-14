@@ -1,0 +1,252 @@
+---
+title: "BigQuery: funciones definidas por el usuario."
+slug: "bigquery-user-defined-functions"
+date: "2020-03-08"
+description: "BigQuery: funciones definidas por el usuario. Guía completa para sacar el máximo partido a las funciones definidas por el usuario en BigQuery, con ejemplos en SQL antiguo y estándar."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/bigquery-user-defined-functions.html"
+thumbnail: "/images/last-click-city/For_index_page_17.png"
+excerptLead: "BigQuery tiene una opción llamada funciones definidas por el usuario, que permite tratar los datos como quieras, fila a fila, usando JavaScript."
+excerpt: "Solo te interesará usarla cuando no puedas hacer algo con los datos mediante los métodos estándar de BQ."
+---
+
+<strong>BigQuery tiene una opción llamada funciones definidas por el usuario, que permite tratar los datos como quieras, fila a fila, usando JavaScript. </strong>Solo te interesará usarla cuando no puedas hacer algo con los datos mediante los métodos estándar de BQ.
+
+Las funciones se escriben aquí:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-0.JPG)
+
+¿Cómo funciona? Pasas columnas de una tabla a una función, y esa función actúa sobre ellas fila a fila y devuelve una tabla nueva. Imaginemos una pseudoconsulta en la que Col1 (inputA) y Col2 (inputB) son los valores:
+
+```sql
+SELECT
+  outputA,
+  outputB
+  customFunction(
+  SELECT
+    Col1 AS inputA,
+    Col2 AS inputB
+  FROM
+    Table1)
+```
+
+La función:
+
+```javascript
+function customFunction(row, emit) {
+  emit({outputA: row.inputA, outputB: row.inputB});
+}
+```
+
+function: la palabra clave de función en JavaScript;
+
+customFunction: el nombre de la función, que describe lo que hace:
+ - addPlusTwo
+ - makeStuff
+ - goOutOfHere
+ - etc.
+
+Row: nuestro valor
+
+Emit: lo que devolvemos.
+
+row.inputA y row.inputB son los valores de alguna fila de inputA (= Col1) e inputB (= Col2).
+
+La función recibe valores STRING, así que tus métodos y propiedades por defecto son los del [tipo STRING](https://www.w3schools.com/jsref/jsref_obj_string.asp). Te lo enseño con un ejemplo. Vamos [aquí](http://storage.googleapis.com/bigquery-udf-test-tool/testtool.html).
+
+Verás los datos de la tabla como JSON. «A» es el nombre de la columna y los datos que hay al lado son los de la fila.
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-1.png)
+
+La primera fila es «Enter your query data».
+
+La segunda, «here, as JSON».
+
+La tercera, «and click “Evaluate” to run your function over the data rows!».
+
+| Número de fila | a |
+| --- | --- |
+| 1 | Enter your query data |
+| 2 | here, as JSON, |
+| 3 | and click ‘Evaluate’ to run your function over the data rows! |
+
+Debajo verás la función.
+
+Pulsa el botón Evaluate y obtendrás datos como en BigQuery:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-2.png)
+
+O bien:
+
+| Número de fila | len |
+| --- | --- |
+| 1 | 21 |
+| 2 | 14 |
+| 3 | 61 |
+
+¿Pero qué está pasando aquí? Mira la función definida por el usuario. Verás que usa la [propiedad «length»](https://www.w3schools.com/jsref/jsref_length_string.asp) junto a «a», que cuenta la longitud de la cadena.
+
+Reescribamos la función así (donde «replace» es el [método de cadenas](https://www.w3schools.com/jsref/jsref_replace.asp)):
+
+```javascript
+function customFunction(row, emit) {
+  emit({new: r.a.replace("JSON", "STRING")});
+}
+```
+
+Evaluate:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-3.png)
+
+O bien:
+
+| Número de fila | <strong>new</strong> |
+| --- | --- |
+| 1 | Enter your query data |
+| 2 | here, as <strong>STRING</strong>, |
+| 3 | and click ‘Evaluate’ to run your function over the data rows! |
+
+La palabra «JSON» se ha convertido en «STRING».
+
+Hagamos ahora algo más interesante. Cambiemos los datos de entrada así:
+ [&#123;a: “1234”&#125;,
+ &#123;a: “5678”&#125;,
+ &#123;a: “101010”&#125;]
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-4.png)
+
+y escribamos la nueva función «Square», que eleva al cuadrado la entrada de cada fila:
+
+```javascript
+function Square(r, emit) {
+  var value = r.a; // assign row value to var value
+  var square = value ** 2; // square value and assign to var square
+  emit({square: square}); // save var square to column named “square”
+}
+```
+
+Y obtenemos esto:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-5.png)
+
+O bien:
+
+| fila | <strong>square</strong> |
+| --- | --- |
+| 1 | 1522756 |
+| 2 | 32239684 |
+| 3 | 10203020100 |
+
+Hagámoslo ahora en la nueva interfaz de BigQuery. Casi todo lo dicho hasta aquí se refiere al SQL antiguo (Legacy SQL), así que primero lo haremos con ese dialecto en la interfaz vieja de BigQuery y después lo reescribiremos con SQL estándar.
+
+```sql
+SELECT
+  word,
+  corpus
+FROM
+  [bigquery-public-data:samples.shakespeare]
+LIMIT
+  10
+```
+
+El resultado es:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-6.png)
+
+Ahora haz clic en UDF Editor:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-0.JPG)
+
+Lo siguiente es definir tu función (el prototipo) en BigQuery. La plantilla ya viene dada en el UDF Editor:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-7.png)
+
+Nuestra función será bastante sencilla:
+
+```javascript
+function changeWordsAndCorpus(row, emit) {
+  var word = row.word;
+  var corpus = row.corpus;
+
+  if (word == 'treason') {
+     word = 'TRAITOR';
+  }
+
+  if (corpus == 'sonnets') {
+    corpus = 'SONNETS';
+  }
+  emit({modified_word: word, modified_corpus: corpus});
+}
+
+bigquery.defineFunction(
+  'changeWordsAndCorpus',                          // Name of the function exported to SQL
+  ['word', 'corpus'],                              // Names of input columns
+  [{'name': 'modified_word', 'type': 'string'},    // Output schema
+   {'name': 'modified_corpus', 'type': 'string'}],
+  changeWordsAndCorpus                             // Reference to JavaScript UDF
+);
+```
+
+Después reescribimos la consulta:
+
+```sql
+SELECT
+  modified_word,
+  modified_corpus
+FROM
+  changeWordsAndCorpus(
+  SELECT
+    word,
+    corpus
+  FROM
+    [bigquery-public-data:samples.shakespeare]
+  LIMIT
+    10)
+```
+
+Al ejecutar la consulta, este es el resultado:
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-8.png)
+
+Toca ahora hacerlo con SQL estándar en la nueva interfaz de BigQuery. Tiene algo de truco.
+
+```sql
+CREATE TEMP FUNCTION
+  changeWord(word STRING)
+  RETURNS STRING
+  LANGUAGE js AS """
+  if (word == 'treason') {
+     word = 'TRAITOR';
+  }
+  return word;
+""";
+CREATE TEMP FUNCTION
+  changeCorpus(corpus STRING)
+  RETURNS STRING
+  LANGUAGE js AS """
+  if (corpus == 'sonnets') {
+     corpus = 'SONNETS';
+  }
+  return corpus;
+""";
+SELECT
+  changeWord(word) AS modified_word,
+  changeCorpus(corpus) AS modified_corpus
+FROM (
+  SELECT
+    word,
+    corpus
+  FROM
+    `bigquery-public-data.samples.shakespeare`
+  LIMIT
+    10)
+```
+
+El resultado es el mismo.
+
+![Funciones definidas por el usuario en BigQuery](/images/last-click-city/BigQuery_User_defined_functions/bq-js-9.png)
+
+Sí, podrías escribirlo con una sola función que devolviera un array para desanidarlo en la propia consulta. Pero, por simplicidad, lo he hecho con dos. También puedes usar los métodos del propio SQL para manipular los datos en lugar de JavaScript cuando crees tus funciones.
+
+Eso es todo. ¡Suerte!

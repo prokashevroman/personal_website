@@ -1,3 +1,4 @@
+import { ClaudeMark } from "@/components/ClaudeMark";
 import { formatDate } from "@/lib/format-date";
 import { t, type Locale } from "@/lib/i18n";
 import type { Post } from "@/lib/posts";
@@ -31,6 +32,14 @@ export function ArticleLayout({ post, locale = "en", children }: Props) {
       <p className="mt-12 border-t border-rule pt-6 text-sm italic leading-relaxed text-ink-muted">
         {dict.aiDisclaimer}
       </p>
+      {/* Translation disclosure — nothing renders in the locale the post was
+          written in, which keeps English output untouched. */}
+      {dict.translatedNote ? (
+        <p className="mt-2 flex items-center gap-1.5 text-sm italic leading-relaxed text-ink-muted">
+          <ClaudeMark className="shrink-0" />
+          {dict.translatedNote}
+        </p>
+      ) : null}
     </article>
   );
 }

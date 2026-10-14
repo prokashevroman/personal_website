@@ -1,0 +1,90 @@
+---
+title: "Dimensiones personalizadas en Google Analytics."
+slug: "custom-dimensions-in-google-analytics"
+date: "2020-02-22"
+description: "Dimensiones personalizadas en Google Analytics. Todo lo que necesitas saber para empezar con las dimensiones personalizadas en GA."
+originalUrl: "https://lastclick.city/custom-dimensions-in-google-analytics.html"
+thumbnail: "/images/last-click-city/For_index_page_16.png"
+excerptLead: "Google Analytics nos da un montón de dimensiones útiles que ayudan a entender lo que pasa en el sitio web."
+excerpt: "Pero para aprovechar GA al máximo conviene usar dimensiones personalizadas. Solo ellas te permiten obtener muchos datos que no se miden automáticamente; por ejemplo, puedes exportar información de tu CRM o añadir dimensiones propias de tu negocio."
+---
+
+<strong>Google Analytics nos da un montón de dimensiones útiles que ayudan a entender lo que pasa en el sitio web.</strong> Pero para aprovechar GA al máximo conviene usar dimensiones personalizadas. Solo ellas te permiten obtener muchos datos que no se miden automáticamente; por ejemplo, puedes exportar información de tu CRM o añadir dimensiones propias de tu negocio.
+
+Cada propiedad dispone de 20 índices para distintas dimensiones personalizadas; las cuentas 360 tienen 200. Ten en cuenta que las dimensiones personalizadas no se pueden borrar, pero sí desactivar.
+
+Crear una dimensión personalizada es un proceso de dos pasos: primero hay que crearla en tu propiedad de Google Analytics y después configurar la recogida de datos. En este artículo veremos tres formas de recogerlos.
+
+Empecemos configurando lo necesario en la sección Administrar de tu propiedad. Entra en Administrar en Google Analytics y, en la configuración de la propiedad, elige la sección de definiciones personalizadas. Ahí selecciona dimensiones personalizadas y haz clic en el botón «Nueva». Al crear una dimensión personalizada hay que indicar su nombre y su ámbito.
+
+![Crear una dimensión personalizada en la interfaz de Google Analytics](/images/last-click-city/Custom_dimensions/1.custom_dimension_setting.png)
+
+> El ámbito determina qué hits se asociarán con un valor concreto de la dimensión personalizada. Hay cuatro niveles de ámbito: producto, hit, sesión y usuario:
+>
+> Producto: el valor se aplica al producto para el que se haya establecido (solo comercio electrónico mejorado).
+>
+> Hit: el valor se aplica al único hit para el que se haya establecido.
+>
+> Sesión: el valor se aplica a todos los hits de una misma sesión.
+>
+> Usuario: el valor se aplica a todos los hits de la sesión actual y de las futuras, hasta que cambie el valor o se desactive la dimensión personalizada.
+
+Hay más información sobre el ámbito en este [artículo de ayuda de Google Analytics](https://support.google.com/analytics/answer/2709828?hl=en&ref_topic=2709827#scope).
+
+Al definir el ámbito de tu dimensión personalizada, piensa de antemano con qué frecuencia cambiará su valor; esa información te ayudará a elegir bien. Cuanto más a menudo cambie, más granular tendrá que ser el ámbito.
+
+Veamos tres ejemplos de cómo enviar los datos a la dimensión personalizada:
+
+1\) Enviar los datos con el código de seguimiento
+
+Enviar una dimensión personalizada con el código de seguimiento de Google Analytics es bastante sencillo. Si usas analytics.js estándar, basta con este código:
+
+```javascript
+ga('send', 'pageview', {
+  'dimension1':  'My Custom Dimension'
+});
+```
+
+Si usas gtag.js, tienes que mapear tu parámetro de GA con tu dimensión personalizada mediante el parámetro custom_map.
+
+Para enviar una dimensión personalizada a Google Analytics, actualiza la configuración de tu propiedad para fijar el parámetro custom_map de la dimensión y luego usa el parámetro personalizado para enviar su valor:
+
+```javascript
+// Configures custom dimension <Index> to use the custom parameter
+// 'dimension_name' for 'GA_MEASUREMENT_ID', where <Index> is a number
+// representing the index of the custom dimension.
+gtag('config', 'GA_MEASUREMENT_ID', {
+  'custom_map': {'dimension<Index>': 'dimension_name'}
+});
+
+// Sends the custom dimension to Google Analytics.
+gtag('event', 'any_event_name', {'dimension_name': dimension_value});
+```
+
+2\) Enviar los datos con Google Tag Manager
+
+Google Tag Manager hace facilísimo enviar datos a una dimensión personalizada. Veamos este ejemplo: en mi blog quiero poder marcar las sesiones con mucha interacción con mi contenido. Quiero distinguirlas y filtrarlas fácilmente en cualquier informe de Google Analytics. Para ello he creado una dimensión personalizada «High engagement» en mi cuenta de Google Analytics:
+
+![Crear una dimensión personalizada en la interfaz de Google Analytics](/images/last-click-city/Custom_dimensions/2.adding_custom_dimension.png)
+
+Después he creado una etiqueta de Google Analytics que se dispara cuando el usuario ha hecho scroll hasta el 50 % de la página y pasa al menos 30 segundos en ella. Fíjate en la configuración de la etiqueta: cada vez que se dispara, envío también el dato a la dimensión personalizada «High engagement»:
+
+![Dimensión personalizada en la etiqueta de GTM](/images/last-click-city/Custom_dimensions/3.GA_tag.png)
+
+Una vez recogidos los datos, esta dimensión queda disponible sin esfuerzo desde cualquier informe de Google Analytics:
+
+![Dimensión personalizada en el informe de Google Analytics](/images/last-click-city/Custom_dimensions/4.Custom_dimension_in_GA_report.png)
+
+En el ejemplo anterior se envía a Google Analytics el mismo valor en cada evento, pero con GTM también puedes pasar cualquier variable dinámica de la capa de datos:
+
+![Variable dinámica en una dimensión personalizada](/images/last-click-city/Custom_dimensions/5.dynamic_variable_in_custom_dimension.png)
+
+3\) Enviar los datos con el Measurement Protocol
+
+La tercera forma de enviar una dimensión personalizada que veremos hoy es a través del Measurement Protocol. Puede ser útil si, por ejemplo, envías transacciones a Google Analytics y quieres añadirles algún parámetro adicional. En su forma más simple, tu hit del measurement protocol puede tener este aspecto:
+
+```javascript
+v=1&t=transaction&tid=...&cid=...&ti=T12345&pa=purchase&tr=79.99&cd2=new_customer
+```
+
+Si tienes alguna duda, ¡no dudes en preguntar en los comentarios!

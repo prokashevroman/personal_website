@@ -1,0 +1,45 @@
+---
+title: "Mitos sobre el porcentaje de rebote."
+slug: "myths-about-bounce-rate"
+date: "2020-06-30"
+description: "Mitos sobre el porcentaje de rebote."
+originalUrl: "https://lastclick.city/myths-about-bounce-rate.html"
+thumbnail: "/images/last-click-city/For_index_page_28.png"
+excerptLead: "Antes de evaluar la eficacia de tu sitio con el porcentaje de rebote, define bien los objetivos del sitio."
+excerpt: "¿Tu objetivo implica visitar varias páginas o lanzar eventos (es decir, varias peticiones a los servidores de GA)? Si no es así, lo más probable es que un porcentaje de rebote alto sea aceptable."
+---
+
+<strong>Mito n.º 1: el porcentaje de rebote indica qué proporción de usuarios no encontró nada útil.</strong>
+
+Para desmontar el primer mito, veamos la definición de porcentaje de rebote del centro de ayuda de Google:
+
+> Un rebote es una sesión de una sola página en tu sitio. En Analytics, un rebote se calcula concretamente como una sesión que lanza una única petición al servidor de Analytics, como cuando un usuario abre una sola página de tu sitio y después sale sin lanzar ninguna otra petición al servidor de Analytics durante esa sesión.
+
+Así que, en realidad, el porcentaje de rebote no dice nada sobre la eficacia del sitio. Solo indica el número de sesiones con una única petición a los servidores de Google Analytics (GA). Y ese hecho lleva a dos conclusiones importantes:
+
+1\) Antes de evaluar la eficacia de tu sitio con el porcentaje de rebote, define bien los objetivos del sitio. ¿Tu objetivo implica visitar varias páginas o lanzar eventos (es decir, varias peticiones a los servidores de GA)? Si no es así, lo más probable es que un porcentaje de rebote alto sea aceptable. Una única vista de página puede ser lo normal en blogs pequeños o en la promoción de contenido, cuando quieres que la gente lea algo pero no esperas que siga navegando por el sitio.
+
+2\) Si el objetivo de tu sitio incluye interacciones dentro de una visita a una sola página, revisa cómo tienes organizada la medición. Si todas las acciones valiosas del usuario ocurren en la misma página y se miden como eventos (u otros tipos de hit), comprueba que no se envíen como [hits de no interacción](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction), porque solo los hits de interacción influyen en el porcentaje de rebote. Si no, no influirán y seguirás viendo un porcentaje de rebote alto.
+
+![Porcentaje de rebote](/images/last-click-city/Bounce_rate/scheme.png)
+
+<strong>Mito n.º 2: un porcentaje de rebote bajo es señal de éxito.</strong>
+
+Este mito está muy ligado al primero. De nuevo, antes de considerar un éxito un porcentaje de rebote bajo, define los objetivos de tu sitio. Quizá tu objetivo sea dar al usuario una respuesta rápida; por ejemplo, si llevas un centro de ayuda donde los visitantes resuelven sus dudas y se marchan (idealmente, cuanto antes mejor). En ese caso, un porcentaje de rebote bajo (cuando los usuarios tienen que ir pasando páginas) podría verse como algo indeseable.
+
+<strong>Mito n.º 3: el porcentaje de rebote viene predefinido en GA. </strong>
+
+El porcentaje de rebote no es algo igual para todos. Como decíamos antes, el rebote no es más que una sesión con un solo hit de interacción. Por tanto, eres tú quien decide qué hits envías en tus páginas y cuáles de ellos serán de interacción. Por ejemplo, en este blog sí envío eventos de medición del scroll como hits de interacción, así que sé que mis rebotes no son simplemente sesiones de una página, sino sesiones en las que además no hubo ningún scroll.
+
+![Hit de interacción](/images/last-click-city/Bounce_rate/interaction_hit.png)
+
+<strong>Mito n.º 4: en BigQuery no hay porcentaje de rebote.</strong>
+
+Es cierto que el porcentaje de rebote no forma parte de la exportación estándar a BigQuery. Pero se puede calcular con facilidad. Mira la consulta de abajo, en la que exportamos el porcentaje de rebote por dimensión personalizada.
+
+```sql
+SELECT COUNT(totals.bounces)/COUNT(totals.visits) AS bounceRate
+FROM `pro-tracker-id.ga_sessions_`
+```
+
+¡Gracias por leer! ¡Tus comentarios son bienvenidos!

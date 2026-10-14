@@ -1,0 +1,276 @@
+---
+title: "Modelo de atribución por cadenas de Markov."
+slug: "markov-chain-attribution-model"
+date: "2020-04-10"
+description: "Modelo de atribución por cadenas de Markov. Guía completa para implementar el modelo de atribución de cadenas de Markov con Python."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/markov-chain-attribution-model.html"
+thumbnail: "/images/last-click-city/For_index_page_20.png"
+excerptLead: "Una atribución precisa es fundamental para el marketing y para el negocio."
+excerpt: "Hoy vamos a implementar el modelo de atribución por cadenas de Markov con Python, para evaluar cuánto aporta el rendimiento de cada canal al conjunto de la actividad de marketing."
+---
+
+<strong>Una atribución precisa es fundamental para el marketing y para el negocio.</strong> Hoy vamos a implementar el modelo de atribución por cadenas de Markov con Python, para evaluar cuánto aporta el rendimiento de cada canal al conjunto de la actividad de marketing.
+
+Una cadena de Markov es una secuencia de eventos aleatorios con un número finito o numerable de resultados, caracterizada por este postulado: si el presente está fijado, el futuro es independiente del pasado. Un ejemplo de proceso de Markov: imagina que tu próximo paso depende del resultado de lanzar una moneda. Cara: avanzas. Cruz: retrocedes.
+
+1\. Lanzas la moneda, sale cara, das un paso adelante.
+
+2\. Tu siguiente paso depende del lanzamiento actual. Es decir, el paso futuro es independiente del pasado (el paso 1).
+
+Terminología:
+
+- <strong>Modelo de atribución</strong>: una regla o un conjunto de reglas que define cómo se reparte el valor entre los canales en el camino hacia una conversión.
+
+- <strong>Canal</strong>: el estado de una cadena de Markov en un momento dado; en el caso de los canales de marketing, equivale a la llegada desde un correo, un anuncio de pago o la visita a una página del blog.
+
+- <strong>Acción objetivo</strong>: según la tarea, puede ser una conversión a registro, una actividad o un primer pago.
+
+- <strong>Lista de eventos</strong>: una tabla donde todos los canales del usuario están ordenados por tiempo junto con la acción objetivo.
+
+Aquí tienes el [código completo](https://github.com/SergeyMatrosov/MarkovChain_Attribution_Model), donde también encontrarás la tabla con el reparto de valor entre tres canales (organic, blog, ppc) para tres usuarios (esta tabla se comparte a través de GitHub):
+
+Nuestra tabla tiene este aspecto:
+
+![tabla](/images/last-click-city/Markov_Chain_Attribution_Model/table.png)
+
+Importemos pandas y traigamos esta tabla desde nuestro archivo de Excel para empezar a trabajar con ella:
+
+```python
+import pandas as pd
+user_streaming = pd.read_excel("YOUR_PATH_TO\\WebsiteUserStreaming.xlsx", header=2)
+user_streaming
+```
+
+1\) Lo primero es comprobar si hay alguna conversión. Si no hay conversiones, no hay nada que atribuir.
+
+```python
+conversions = user_streaming['event'][user_streaming['event'] == 'CONVERSION'].count()
+if(conversions == 0):
+    print('Nothing to count, wait for at least 1 conversion')
+```
+
+2\) A continuación hay que construir la cadena de todos los canales visitados por cada usuario, según el momento en que el usuario visitó el canal correspondiente (se basa en la lista de eventos). Para los usuarios que no convirtieron añadimos un valor NULL. También añadimos un canal «START» para cada usuario. El resultado son las siguientes cadenas de transición por usuario:
+
+![cadena de transición](/images/last-click-city/Markov_Chain_Attribution_Model/transition_chain.png)
+
+```python
+chains = []
+for i, userid in enumerate(user_streaming['userid']):
+    if (i == 0):
+        user_path = user_streaming[user_streaming['userid'] == userid]
+        chain = 'START'
+        for path in user_path['source']:
+            chain += '-' + path
+        chain += '-' + user_path['event'].iloc[-1]
+        chains.append(chain)
+        prev_user = userid
+    else:
+        if(userid == prev_user):
+            continue;
+        else:
+            user_path = user_streaming[user_streaming['userid'] == userid]
+            chain = 'START'
+            for path in user_path['source']:
+                chain += '-' + path
+            chain += '-' + user_path['event'].iloc[-1]
+            chains.append(chain)
+            prev_user = userid
+```
+
+3\) Después transformamos las cadenas de transición en una matriz de transición. La matriz define la probabilidad de pasar de un canal a otro, del canal START al segundo canal y del segundo canal a NULL o a CONVERSION. El esquema está más abajo:
+
+```python
+chains_transitions = []
+for chain in chains:
+    transitions = chain.split('-')
+    for cur, nxt in zip (transitions, transitions[1:] ):
+        chains_transitions.append(cur+'-'+nxt)
+chains_transitions.sort()
+channels_from = []
+channels_to = []
+num_transitions = []
+total_from = []
+for i, chain in enumerate(chains_transitions):
+    num = chains_transitions.count(chain)
+    num_transitions.append(num)
+    channel_from = chain[:chain.index('-')]
+    channels_from.append(channel_from)
+    channel_to = chain[chain.index('-')+1:]
+    channels_to.append(channel_to)
+
+for channel in channels_from:
+    total_from.append(channels_from.count(channel))
+
+transition_matrix = pd.DataFrame(list(zip(channels_from, channels_to, num_transitions, total_from)),
+                                 columns =['channels_from', 'channels_to', 'num_transitions', 'total_from'])
+transition_matrix.drop_duplicates(subset=None, keep='first', inplace=True)
+transition_matrix['probability'] = round(transition_matrix['num_transitions']/transition_matrix['total_from'], 2)
+transition_matrix['from-to'] = transition_matrix['channels_from'] + '-' + transition_matrix['channels_to']
+```
+
+Las cadenas se descomponen en transiciones («START -> organic», «blog -> ppc») y contamos su frecuencia (columna num_transitions). Después contamos la suma de transiciones desde cada canal en channel_from (columna total_channel). Con estos dos valores obtenemos la probabilidad de pasar de un canal a otro (columna probability).
+
+![probabilidad de una transición](/images/last-click-city/Markov_Chain_Attribution_Model/probability_of_a_transition.png)
+
+La forma más sencilla de mostrar la matriz de transición es mediante un grafo, también llamado modelo gráfico probabilístico. Los vértices del grafo son los canales y las aristas son las probabilidades de transición. En nuestro ejemplo, el grafo queda así:
+
+![grafo de transiciones](/images/last-click-city/Markov_Chain_Attribution_Model/transition_graph.png)
+
+4\) Una vez que tenemos la matriz de transición, podemos evaluar la probabilidad de conversión en el recorrido de nuestros usuarios. Esa probabilidad es la suma de todas las cadenas posibles que han terminado en una conversión. La probabilidad de una cadena se define como el producto de las probabilidades de transición tomadas de la matriz de transición.
+
+Normalmente hay muchas variantes de cadena. Por ejemplo, si hay 2 canales, A y B, y las transiciones a -> b y b -> a tienen probabilidades NO NULAS, podemos considerar las siguientes cadenas:
+
+![variantes de cadena](/images/last-click-city/Markov_Chain_Attribution_Model/chain_variants.png)
+
+etcétera.
+
+Así pues, la probabilidad es:
+
+Prob = Prob(C1) + Prob(C2) + Prob(C3) + Prob(C4) + Prob(C5) + Prob(C6) + ...
+
+Cuanto más larga es la cadena, menor es la probabilidad, porque la probabilidad de la cadena es un producto de factores >= 1 y la probabilidad del modelo (Prob_model) se estabiliza.
+
+Según nuestro ejemplo en el grafo, solo vemos dos cadenas con éxito:
+
+- <strong>seq1:</strong> START ­> ppc ­> blog ­> organic ­> CONVERSION
+
+- <strong>seq2:</strong> START ­> blog ­> organic ­> CONVERSION
+
+```python
+def rec_seq(keyword, string, channel_list, end='-CONVERSION'):
+    successful_channels = transition_matrix['channels_from'].loc[transition_matrix['channels_to'].isin([keyword])]
+    for channel in successful_channels:
+        if(channel == 'START'):
+            for i in reversed(channel_list):
+                string += '-' + i
+            new_string = string + end
+            successful_chains.append(new_string)
+            string = 'START'
+        else:
+            channel_list.append(channel)
+            rec_seq(channel, string, channel_list)
+start = 'START'
+channel_list = []
+successful_chains = []
+success = 'CONVERSION'
+rec_seq(success, start, channel_list)
+```
+
+- Prob = Prob(seq1) + Prob(seq2)
+
+- Prob = 0.66 \* 0.5 \* 1 \* 0.5 + 0.33 \* 1 \* 0.5
+
+- Prob = 0.16 + 0.16 = 0.33
+
+```python
+model_probability = []
+for sequence in successful_chains:
+    seq_probability = []
+    for chain in transition_matrix['from-to']:
+        if(sequence.__contains__(chain)):
+            value = transition_matrix['probability'].loc[transition_matrix['from-to'].isin([chain])]
+            value = value.values.tolist()
+            value = value[0]
+            seq_probability.append(value)
+        else:
+            continue
+    print(seq_probability)
+    result = 1
+    for prob in seq_probability:
+         result = result * prob
+    model_probability.append(result)
+print(model_probability)
+result = 0
+for prob in model_probability:
+    result = result + prob
+model_probability = result
+```
+
+5\) Una vez hallada la probabilidad del modelo, tenemos que encontrar el <strong>coeficiente de normalización de cada canal</strong> (efecto de eliminación, o removal effect).
+
+Esto significa averiguar cuánto baja (en %) la probabilidad del modelo si excluimos el canal. Para ello hay que calcular la probabilidad de que la cadena (el camino del usuario hasta la conversión) convierta a nuestro usuario sin un canal concreto (excluyendo todas las cadenas con ese canal) y dividirla por la probabilidad general del modelo. También puede hacerse eliminando el vértice de ese canal en el grafo.
+
+En nuestro ejemplo, los coeficientes de normalización de cada canal son los siguientes:
+
+- RE_ppc = Prob(seq2) / Prob(model) = 0.16 / 0.33 = 0.5
+
+- RE_blog = 1
+
+- RE_organic = 1
+
+```python
+re_model_probability = []
+re_sources = {}
+sources = list(user_streaming['source'].drop_duplicates(inplace=False))
+for source in sources:
+    re_sources[source] = 0
+    involve = 0
+    for sequence in successful_chains:
+        if (sequence.__contains__(source)):
+            involve += 1
+            if(involve == len(successful_chains)):
+                re_sources[source] = 1
+            continue
+        else:
+            seq_probability = []
+            for chain in transition_matrix['from-to']:
+                if(sequence.__contains__(chain)):
+                    value = transition_matrix['probability'].loc[transition_matrix['from-to'].isin([chain])]
+                    value = value.values.tolist()
+                    value = value[0]
+                    seq_probability.append(value)
+                else:
+                    continue
+            result = 1
+            for prob in seq_probability:
+                 result = result * prob
+            re_model_probability.append(result)
+    if (re_sources[source] == 1):
+        continue
+    else:
+        result = 0
+        for prob in re_model_probability:
+            result = result + prob
+        re_model_probability = result
+        re_sources[source] = round(re_model_probability/model_probability, 2)
+re_sources
+```
+
+En este caso, el coeficiente de normalización de organic y de blog es igual a 1, porque sin esos canales no habría ninguna cadena que pudiera terminar en conversión.
+
+6\) El último paso es contar las conversiones por canal. Para ello, el coeficiente de normalización del canal se divide entre la suma de todos los coeficientes de normalización y se multiplica por la suma de todas las conversiones. El reparto queda así:
+
+1\. Num_cnv(ppc) = 0.5 / (0.5 + 1 + 1) \* 1 = 0.2
+
+2\. Num_cnv(organic) = 1 / (0.5 + 1 + 1) \* 1 = 0.4
+
+3\. Num_cnv(blog) = 1 / (0.5 + 1 + 1) \* 1 = 0.4
+
+```python
+num_cnv = {}
+for source, coef_norm in re_sources.items():
+    coef_sum = 0
+    for values in re_sources.values():
+        coef_sum += values
+    num_cnv[source] = round(float(coef_norm/coef_sum*conversions), 2)
+num_cnv
+table_for_report = pd.DataFrame(num_cnv, index=[0])
+```
+
+<strong>Ventajas del modelo</strong>
+
+Es una evaluación mucho más justa de la aportación de cada canal que la de los modelos tradicionales; se explica porque la evaluación se basa tanto en los canales que tuvieron éxito como en los que no.
+
+<strong>Desventajas del modelo</strong>
+
+El modelo no es aditivo; es decir, si transformamos (o dividimos) un canal en dos canales (subcanales o una separación), por ejemplo blog -> <em>blog_article1</em> + <em>blog_article2</em>, veremos que la suma de las conversiones del blog como canal difiere de la de <em>blog_article1</em> + <em>blog_article2</em> como canales.
+
+<strong>Información adicional</strong>
+
+<em>1. Un problema al añadir canales nuevos a un modelo de atribución.</em> Un modelo de atribución debe verse como un esquema de reparto de beneficios; al añadir canales nuevos, los datos antiguos dejan de ser válidos y pierden relevancia. Esto le ocurre a todos los modelos de atribución.
+
+<em>2. Problemas al distinguir subcanales.</em>El primer problema es que el modelo (tal y como se ha mostrado más arriba) no es aditivo, así que la suma de conversiones por subcanales no coincidirá con la del canal.
+
+El segundo problema es que vamos a dividir los canales en un número mayor de subcanales. Con ello conseguiremos que el coeficiente de normalización de cada canal tienda a 0, de modo que todos los subcanales tendrán aproximadamente el mismo número de conversiones.

@@ -1,0 +1,28 @@
+---
+title: "Obtener el valor de los parámetros UTM con SQL."
+slug: "get-the-value-of-utm-parameters-using-sql"
+date: "2021-07-28"
+description: "Obtener el valor de los parámetros UTM con SQL."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/get-the-value-of-utm-parameters-using-sql.html"
+thumbnail: "/images/last-click-city/For_index_page_34.png"
+excerptLead: "Analizar HTML con expresiones regulares es una idea pésima,"
+excerpt: "pero si usas una plantilla de seguimiento en tus anuncios, seguro que tu URL tiene parámetros UTM bien definidos y estructurados. Así que en este caso el método sí se puede usar."
+---
+
+<strong>Analizar HTML con expresiones regulares es una idea pésima, </strong>pero si usas una plantilla de seguimiento en tus anuncios, seguro que tu URL tiene parámetros UTM bien definidos y estructurados. Así que en este caso el método sí se puede usar. Aquí va un truco rápido para obtener el valor de los parámetros UTM con SQL y REGEXP:
+
+El patrón es ‘<em>utm_parameter=([^&]\*)</em>‘. Tomará todo lo que venga después del signo igual ‘=’ que sigue a ‘parameter’, hasta el ampersand ‘&’.
+
+![obtener parámetros UTM con SQL](/images/last-click-city/Get_the_value_using_SQL/с1.JPG)
+
+![obtener parámetros UTM con SQL](/images/last-click-city/Get_the_value_using_SQL/с2.JPG "w=360")
+
+Lo mejor de esta extracción es que el orden de los parámetros UTM no importa en absoluto, así que si reescribimos el referrer como:
+ <em>this_is_referrer/?&utm_medium=cpc&utm_campaign=TEST&utm_source=google</em>
+ el resultado de nuestra consulta será el mismo.
+
+Esto significa que si alguien cambia el orden de los UTM, a propósito o por error, la consulta no necesitará arreglo alguno.
+
+El código completo está [aquí](https://github.com/SergeyMatrosov/Get_value_of_UTM_parameters_via_SQL/blob/main/GetValue.md).

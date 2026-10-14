@@ -1,0 +1,86 @@
+---
+title: "Embudo de eventos por usuario de Google Analytics en BigQuery."
+slug: "google-analytics-user-based-events-funnel-in-bigquery"
+date: "2020-04-24"
+description: "Embudo de eventos por usuario de Google Analytics en BigQuery"
+originalUrl: "https://lastclick.city/google-analytics-user-based-events-funnel-in-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_21.png"
+excerptLead: "Hay varias formas de crear un embudo de eventos en Google Analytics."
+excerpt: "La primera es el informe de flujo de eventos predeterminado, pero cualquiera que lo haya probado sabe que solo sirve para el análisis superficial de sitios pequeños. Cuando trabajas con un volumen de datos considerable es imposible evitar el muestreo y, por tanto, resulta difícil analizar determinados eventos."
+---
+
+<strong>Hay varias formas de crear un embudo de eventos en Google Analytics. </strong>La primera es el informe de flujo de eventos predeterminado, pero cualquiera que lo haya probado sabe que solo sirve para el análisis superficial de sitios pequeños. Cuando trabajas con un volumen de datos considerable es imposible evitar el muestreo y, por tanto, resulta difícil analizar determinados eventos. Además, el flujo de eventos se basa en sesiones (como la mayoría de informes de GA), así que no se puede hacer un análisis a nivel de usuario. Y lo más importante: al informe le falta la posibilidad de filtrar por categoría, acción o etiqueta de evento, lo que implica que solo se puede usar el conjunto de dimensiones predeterminado. ![Informe de flujo de eventos](/images/last-click-city/User_based_funnel/Events_flow.png)
+
+La segunda opción para crear el embudo tiene que ver con la flamante propiedad Web + App. Contiene informes impresionantes y prometedores, como el [análisis de embudos](https://support.google.com/analytics/answer/9327974?hl=en) o el [análisis de rutas](https://support.google.com/analytics/answer/9317498?hl=en). Por desgracia, a día de hoy (abril de 2020) estos informes tampoco permiten filtrar por los parámetros clásicos de los eventos de GA, lo que significa que, al empezar a trabajar con ellos, tendrás que añadir parámetros personalizados a tus eventos, algo que puede exigir mucho tiempo y esfuerzo para reunir los datos.
+
+![Análisis de embudos](/images/last-click-city/User_based_funnel/funnel_analysis.png)
+
+Otra opción para crear un embudo no es un informe, sino… un segmento. Los segmentos de secuencia te mostrarán el número de usuarios en cada paso según los vas creando. La ventaja de este enfoque es que puedes filtrar por categoría, acción o etiqueta de evento. Los inconvenientes: los segmentos basados en usuarios solo muestran los datos de los primeros tres meses del periodo elegido y los datos no se pueden mostrar en un informe aparte, así que si necesitas actualizarlo tendrás que volver a crear la secuencia una y otra vez.
+
+![Segmento de secuencia](/images/last-click-city/User_based_funnel/sequence_segment.png)
+
+También hay un informe que hace exactamente lo que necesitamos: el embudo de la sección de informes personalizados. Puedes elegir todos los eventos necesarios y montar sin esfuerzo un embudo basado en usuarios. El informe funciona y visualiza los datos. El único problema es que [solo está disponible en la versión 360](https://support.google.com/analytics/answer/6180923?hl=en).
+
+![Informe de embudo personalizado](/images/last-click-city/User_based_funnel/custom_funnel.png)
+
+Pero, aunque no tengas 360, el embudo se puede reconstruir con BigQuery. Mira la consulta de abajo y luego la repasamos paso a paso, empezando por la subconsulta más anidada. Obtendremos los datos con SQL estándar.
+
+```sql
+SELECT
+  COUNT(DISTINCT funnel_1) AS f1_users,
+  COUNT(DISTINCT funnel_2) AS f2_users
+FROM (
+  SELECT
+  IF
+    (event_category_and_action = "event_category_event_label_1",
+      fullVisitorId,
+      NULL) AS funnel_1,
+  IF
+    (event_category_and_action = "event_category_event_label_1"
+      AND next_event = "event_category_event_label_2",
+      fullVisitorId,
+      NULL) AS funnel_2
+  FROM (
+    SELECT
+      event_category_and_action,
+      fullVisitorId,
+      hit_timestamp,
+      LEAD(event_category_and_action, 1) OVER (PARTITION BY fullVisitorId ORDER BY hit_timestamp) AS next_event
+    FROM (
+      SELECT
+        CONCAT(CAST(hits.eventInfo.eventCategory AS string), "_", CAST(hits.eventInfo.eventAction AS string)) AS event_category_and_action,
+        fullVisitorId,
+        FORMAT_TIMESTAMP("%Y-%m-%d %H:%M:%S", TIMESTAMP_SECONDS(SAFE_CAST(visitStartTime+hits.time/1000 AS INT64)), "America/Los_Angeles") AS hit_timestamp,
+      FROM
+        `pro-tracker-id.ga_sessions_20*`,
+        UNNEST(hits) AS hits
+      WHERE
+        (_TABLE_SUFFIX BETWEEN '200101'AND '200415'
+          AND REGEXP_CONTAINS (hits.eventInfo.eventCategory, r'^event_category')
+          AND REGEXP_CONTAINS (hits.eventInfo.eventAction, r'^event_label_1|event_label_2'))
+      GROUP BY
+        fullVisitorId,
+        event_category_and_action,
+        hit_timestamp
+      ORDER BY
+        2,
+        3)))
+```
+
+En la primera subconsulta seleccionamos cuatro campos: categoría del evento, acción del evento, fullVisitorId y marca de tiempo del hit. Fíjate en que he unido la categoría y la acción del evento en una sola columna por comodidad; puedes saltarte ese paso, aunque a mí me resulta práctico trabajar con un nombre de evento único.
+
+En la siguiente subconsulta usamos la función LEAD, que nos permite obtener el campo next_event con los eventos posteriores de cada registro. LEAD toma dos argumentos: `LEAD (value_expression[, offset [, default_expression]])`. Value_expression define la columna cuyo valor debe devolverse. Offset es un entero positivo que indica cuántas filas hay que avanzar desde la fila actual para acceder a los datos. El valor por defecto es «1», así que podría haberlo omitido como argumento, pero he preferido dejarlo porque así resulta más fácil ilustrar cómo obtener el tercer evento si hiciera falta:
+
+```sql
+LEAD (event_category_and_action, 2) OVER (PARTITION BY fullVisitorId ORDER BY hit_timestamp) AS third_event
+```
+
+El campo fullVisitorId sirve para dividir los datos.
+
+La tercera consulta contiene dos sentencias IF que ayudan a filtrar el número de eventos considerados como primer y segundo paso del embudo, respectivamente.
+
+En la cuarta (y última) consulta calculamos el número de usuarios únicos con ayuda de la función COUNT.
+
+![Resultado de la consulta](/images/last-click-city/User_based_funnel/result.png)
+
+Si tienes cualquier duda, no dudes en preguntar en la sección de comentarios de abajo.

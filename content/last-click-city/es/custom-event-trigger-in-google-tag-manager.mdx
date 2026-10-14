@@ -1,0 +1,52 @@
+---
+title: "El activador de evento personalizado en Google Tag Manager: dos formas de usarlo en un mismo ejemplo."
+slug: "custom-event-trigger-in-google-tag-manager"
+date: "2019-01-24"
+description: "El activador de evento personalizado en Google Tag Manager: dos formas de usarlo en un mismo ejemplo."
+originalUrl: "https://lastclick.city/custom-event-trigger-in-google-tag-manager.html"
+thumbnail: "/images/last-click-city/For_index_page_3.png"
+excerptLead: "Hoy vamos a hablar del activador de evento personalizado"
+excerpt: "a partir de uno de nuestros casos, en el que usamos un evento personalizado de Google Tag Manager para medir la interacción del usuario con un juego promocional sencillo en una de nuestras páginas de destino."
+---
+
+<strong>Hoy vamos a hablar del activador de evento personalizado </strong>a partir de uno de nuestros casos, en el que usamos Google Tag Manager (y, en concreto, un [evento personalizado](https://support.google.com/tagmanager/answer/7679219?hl=en)) para medir la interacción del usuario con un juego promocional sencillo en una de nuestras páginas de destino.
+
+Todo empezó cuando publicamos una página con un juego básico de teclado y decidimos que estaría bien medir en Google Analytics cuándo un usuario 1) empieza a jugar y 2) consigue 150 puntos (momento en el que recibe un descuento). Esa información podía ayudarnos a entender el nivel de interacción de la audiencia con el juego y a decidir si tenía sentido planear acciones de marketing parecidas en el futuro.
+
+Así que la tarea se dividió en dos partes; la primera era medir cuándo un usuario empieza a jugar.
+
+<strong>1. El usuario empieza a jugar:</strong>
+
+En el juego solo se usan dos botones para controlar al personaje: la flecha izquierda y la flecha derecha. Dicho de otro modo, pulsar cualquiera de ellas puede considerarse el comienzo de una partida. Como medir pulsaciones concretas del teclado no es algo que traigan de serie Google Analytics ni Google Tag Manager, tuvimos que empezar añadiendo un escuchador de eventos de teclado personalizado:
+
+![Etiqueta de JavaScript personalizado](/images/last-click-city/Custom_event/Custom_JS.png)
+
+Como ves, es una etiqueta de HTML personalizado con código JavaScript que envía un evento a la capa de datos cuando se pulsa por primera vez la flecha izquierda o la derecha, haciendo que el personaje se mueva en la dirección correspondiente.
+
+Quizá te hayas fijado en que el keyCode de la flecha izquierda es 37 (y 39 el de la derecha). Si necesitas medir la pulsación de otro botón, encontrarás fácilmente su número [aquí](https://css-tricks.com/snippets/javascript/javascript-keycodes/).
+
+Después solo hay que crear una etiqueta de Google Analytics que se dispare con este evento personalizado:
+
+![Etiqueta del primer evento](/images/last-click-city/Custom_event/Tag_first_event.png)
+
+Y listo. Este proceso de dos pasos sirve para convertir rápidamente cualquier pulsación de teclado en un evento de Google Analytics.
+
+Vamos al siguiente paso.
+
+<strong>2) El usuario consigue 150 puntos:</strong>
+
+Cuando el usuario consigue 150 puntos aparece un mensaje de felicitación, pero la URL no cambia:
+
+![Mensaje de felicitación](/images/last-click-city/Custom_event/Congratulations_message.png)
+
+Hay varias opciones para medir eventos así en Google Analytics. Una de ellas pasa por usar vistas de página virtuales; no es el mejor enfoque, entre otras cosas porque infla el número de vistas de página y hace menos fiables algunos informes (como el resumen de navegación). Así que decidimos generar un evento datalayer.push desde el servidor cada vez que un usuario consigue 150 puntos:
+
+```javascript
+dataLayer.push({event: ‘150Points’});
+```
+
+De nuevo, el segundo paso es bastante parecido al primero: solo había que crear una etiqueta de evento disparada por ese evento personalizado:
+
+![Etiqueta del segundo evento](/images/last-click-city/Custom_event/Tag_second_event.png)
+
+<em>En resumen:</em> puede que generar eventos personalizados de dos formas distintas en un mismo proyecto no sea la solución más cómoda. Pero este ejemplo ilustra estupendamente que, con un activador de evento personalizado y un poco de código, puedes medir sin dificultad las interacciones de los usuarios a partir de eventos de teclado o de servidor, y no solo de clics de ratón.

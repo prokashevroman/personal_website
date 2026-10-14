@@ -1,0 +1,106 @@
+---
+title: "Más allá de los límites del informe de conversiones asistidas con los datos a nivel de hit de BigQuery."
+slug: "assisted-conversions-report-bigquery"
+date: "2019-01-19"
+description: "Más allá de los límites del informe de conversiones asistidas con los datos a nivel de hit de BigQuery. Cómo usar la dimensión de página en el informe de conversiones asistidas."
+originalUrl: "https://lastclick.city/assisted-conversions-report-bigquery.html"
+thumbnail: "/images/last-click-city/Assisted_for_index_page_2.png"
+excerptLead: "Las conversiones asistidas pueden ser una métrica bastante valiosa"
+excerpt: "en varios casos en los que hay que determinar si una pieza de contenido o una campaña de marketing online ha contribuido a un camino de conversión largo. Pero el informe de conversiones asistidas tiene unas cuantas limitaciones."
+---
+
+<strong>Las conversiones asistidas pueden ser una métrica bastante valiosa </strong>en varios casos en los que hay que determinar si una pieza de contenido o una campaña de marketing online ha contribuido a un camino de conversión largo. Google define las conversiones asistidas así ([artículo de ayuda de Google Analytics](https://support.google.com/analytics/answer/1665189?hl=en&ref_topic=3205717)):
+
+> Es el número (y el valor monetario) de las ventas y conversiones en las que ha asistido el canal. Si un canal aparece en cualquier punto de un camino de conversión, salvo como última interacción, se considera una asistencia para esa conversión. Cuanto más altas sean estas cifras, más importante es el papel asistente del canal.
+
+Pero el informe de conversiones asistidas tiene unas cuantas limitaciones. Abajo veremos cómo superarlas con la exportación de los datos de Google Analytics a BigQuery.
+
+Veamos un ejemplo: supongamos que queremos comprobar cuántas conversiones asistidas (compras, en nuestro caso) se pueden atribuir a una página concreta:
+
+![Informe de conversiones asistidas](/images/last-click-city/Assisted_BigQuery1.1.png)
+
+Está claro que, si queremos atribuir las compras a una página concreta, deberíamos elegir «Página» como dimensión principal. Pero no es tan fácil, y ahí está la primera limitación. Google no permite usar «Página» como dimensión principal en el informe, sino que propone «URL de la página de destino», es decir, la página por la que los visitantes entran al sitio. Así que la conversión no se atribuirá a una página si alguien la visitó (y compró después) pero entró al sitio por otra. Como no tenemos alternativa, en la interfaz de Google Analytics toca elegir «URL de la página de destino».
+
+La segunda limitación es la ventana de conversión retroactiva: su valor máximo es de 90 días. Por suerte, esas limitaciones solo existen en la interfaz de Google Analytics. En BigQuery podemos dejarlas atrás sin problema.
+
+Veamos cómo hacerlo exactamente. Primero intentemos reproducir el informe en BigQuery. Mira la consulta de abajo:
+
+<strong>Actualización del 18 de julio de 2020</strong>: en el ejemplo de abajo se usa SQL antiguo. Si necesitas la implementación en SQL estándar, la tienes [aquí.](https://github.com/prokashev/bigquery-sql/blob/master/assisted_conversions_standard_sql.sql)
+
+```sql
+SELECT
+    revenue,
+    hits.transaction.transactionId,
+    MIN(lookback_window) as lookback_window
+FROM (SELECT
+    visitor_ID_pageviews,
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId,
+    hit.timestamp_transaction,
+    DATEDIFF(hit.timestamp_transaction,hit.timestamp) as lookback_window
+FROM (SELECT
+    fullVisitorId as visitor_ID_pageviews, visitID, visitNumber, hits.page.pagePath,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime + hits.time/1000),"%Y-%m-%d %H:%M:%S") as hit.timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-09-03'), TIMESTAMP('2018-12-07'))
+WHERE
+    hits.page.pagePath CONTAINS "/page_url/" AND hits.hitNumber = 1
+GROUP BY
+    visitor_ID_pageviews,
+    visitNumber, visitID,
+    hits.page.pagePath,
+    hit.timestamp)
+AS table_with_visits
+INNER JOIN
+(SELECT
+    fullVisitorId as visitor_ID_purchases,
+    totals.totalTransactionRevenue/1000000 AS revenue,
+    hits.transaction.transactionId,
+    STRFTIME_UTC_USEC(SEC_TO_TIMESTAMP(visitStartTime + hits.time/1000),"%Y-%m-%d %H:%M:%S") as hit.timestamp_transaction
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-12-03'), TIMESTAMP('2018-12-07'))
+WHERE
+    totals.transactions > 0
+GROUP BY
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId,
+    hit.timestamp_transaction)
+AS table_with_transactions
+ON
+    table_with_visits.visitor_ID_pageviews = table_with_transactions.visitor_ID_purchases
+WHERE
+    hits.transaction.transactionId != 'null' AND hit.timestamp_transaction > hit.timestamp
+ORDER BY
+    revenue)
+WHERE
+    lookback_window < 91
+GROUP BY
+    visitor_ID_pageviews,
+    visitor_ID_purchases,
+    revenue,
+    hits.transaction.transactionId
+```
+
+Repaso rápido de lo que hacemos en la consulta:
+
+1\) En la primera subconsulta seleccionamos a los visitantes de esa página concreta. Es importante señalar que esta consulta debe incluir a los usuarios de los 90 días anteriores al periodo cuyas compras queremos analizar. Eso es lo que permite reproducir una ventana de conversión retroactiva de hasta 90 días.
+
+2\) Hay que incluir la condición `hits.number = 1` en la subconsulta. Significa que solo contaremos las entradas, y es exactamente la forma de recrear la dimensión «URL de la página de destino».
+
+3\) El siguiente paso es unir esta subconsulta con la segunda mediante la columna fullvisitorID. La segunda subconsulta contiene los datos de compras del periodo elegido.
+
+Es imprescindible tener esta condición WHERE: `hit.timestamp_transaction > hit.timestamp`, para que solo se incluyan las compras posteriores a la vista de página. Si no, existe el riesgo de incluir compras anteriores a la visita.
+
+5\) También es muy importante especificar `lookback_window < 91`. Así se reproduce el mismo límite de ventana de conversión retroactiva que hay en la interfaz de Google Analytics.
+
+Y eso es todo lo que hace falta.
+
+Mientras leías la estructura de la consulta seguramente ya has deducido cómo superar las limitaciones, pero hablemos de ellas con algo de detalle.
+
+La primera (la de la URL de la página de destino) se resuelve simplemente eliminando la condición `hits.number = 1`. Después se contarán todos los visitantes de esa página, no solo los que entraron al sitio por ella. Así podemos usar la dimensión «Página», que no existe en la interfaz de Google Analytics.
+
+La segunda limitación, la de la ventana de conversión retroactiva, también se resuelve rápido: basta con cambiar el número de aquí: `lookback_window < 91`. Por ejemplo, ponlo en 100 y verás las conversiones que ocurren entre uno y cien días después de la vista de página. Eso sí, ten en cuenta que solo funcionará si cambias a la vez el intervalo de fechas de la primera subconsulta. Así que, en el ejemplo actual, tendrías que cambiar 2018-09-03 por 2018-08-24 para ampliar la ventana a 100 días.
+
+<em>En resumen:</em> hemos visto que es posible replicar el informe de conversiones asistidas en BigQuery. De hecho, podemos hacerlo más flexible: por ejemplo, añadir una dimensión de página o ampliar la ventana de conversión retroactiva si hace falta. Puede que ahora mismo no necesites justo esas funciones. Pero BigQuery te da flexibilidad adicional frente a la interfaz de Google Analytics y mejora tu analítica y tus informes y, con ellos, todo el proceso de evaluación del marketing.

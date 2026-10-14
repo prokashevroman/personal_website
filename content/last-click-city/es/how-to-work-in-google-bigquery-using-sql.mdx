@@ -1,0 +1,686 @@
+---
+title: "Cómo trabajar en Google BigQuery con SQL."
+slug: "how-to-work-in-google-bigquery-using-sql"
+date: "2020-03-26"
+description: "Cómo trabajar en Google BigQuery con SQL. Una guía sencilla para empezar a usar Google BigQuery"
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/how-to-work-in-google-bigquery-using-sql.html"
+thumbnail: "/images/last-click-city/For_index_page_18.png"
+excerptLead: "Puede que esta sea tu primera guía de SQL y BigQuery."
+excerpt: "Si es así, genial; y si no, esperamos que nuestra guía te dé explicaciones claras y te ayude a entenderlo mejor. El objetivo es que te familiarices con SQL y BigQuery lo antes posible, para que al terminar puedas escribir consultas sencillas."
+---
+
+## Índice
+
+- [Introducción](#introduction)
+- [¿Qué es Google BigQuery?](#what-is-google-bigquery)
+  - [Terminología](#terminology)
+- [Consultas](#queries)
+  - [¿Qué pasa dentro de la tabla?](#what-is-going-on-in-the-table)
+- [SELECT](#select)
+  - [Lo básico](#basics)
+  - [Consultar dos tablas](#querying-two-tables)
+- [FROM](#from)
+- [WHERE](#where)
+  - [Condiciones simples](#simple-conditions)
+  - [Condiciones más complejas](#more-complex-conditions)
+- [AND / OR](#and-or)
+  - [Más y más condiciones](#more-and-more-conditions)
+- [GROUP BY](#group-by)
+  - [Tipos de datos de la columna: STRING / INTEGER / BOOLEAN / TIMESTAMP](#data-types-in-the-column-string-integer-boolean-timestamp)
+- [TIMESTAMP Y DATE](#timestamp-and-date)
+- [BUSCARV 2.0 o tablas unidas: LEFT-JOIN EACH / RIGHT-JOIN EACH](#vlookup-2-0-or-joined-tables-left-join-each-right-join-each)
+- [CASE WHEN... THEN... END](#case-when-then-end)
+- [SUBCONSULTAS, WITH, PARSEO, SUBSTRING, UNIR DOS COLUMNAS EN UNA](#subqueries-with-parsing-substring-merging-two-columns-in-one)
+  - [SUBSTR](#substr)
+  - [Parseo de columnas](#column-parsing)
+  - [Unir columnas](#merge-columns)
+  - [Que SQL haga los cálculos por ti: funciones analíticas](#make-sql-do-the-calculations-instead-of-you-analytical-functions)
+
+<h2 id="introduction">Introducción</h2>
+
+<strong>¡Hola! Puede que esta sea tu primera guía de SQL y BigQuery. </strong>Si es así, genial; y si no, esperamos que nuestra guía te dé explicaciones claras y te ayude a entenderlo mejor. El objetivo es que te familiarices con SQL y BigQuery lo antes posible, para que al terminar puedas escribir consultas sencillas. Con práctica podrás abordar tareas de análisis de datos difíciles y complejas.
+
+Te recomendamos encarecidamente escribir y ejecutar las consultas de esta guía, porque aprender haciendo es la clave para entender algo. ¡Suerte!
+
+P. D.: escríbenos sin problema con comentarios constructivos. Queremos que esta guía sea lo mejor posible.
+
+<h2 id="what-is-google-bigquery">¿Qué es Google BigQuery?</h2>
+
+[Google BigQuery](https://console.cloud.google.com/bigquery) es un almacén de datos en la nube donde puedes agrupar colecciones de datos de otras bases de datos, como SalesForce, y datos de Google Ads, etc., mediante <em>conjuntos de datos</em> y <em>tablas</em> de BigQuery.
+
+<p id="terminology"><strong>Terminología</strong></p>
+
+- Un «proyecto» no es más que una colección de conjuntos de datos y se crea desde Google Cloud Platform. Si necesitas enviar datos de tu servicio a BigQuery, puedes hacerlo con las credenciales y la API del proyecto.
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/BigQuery-project.png)
+
+- El «conjunto de datos» es una colección de tablas, como una carpeta con archivos.
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/project-dataset-table.png)
+
+- «Tabla»: presenta los datos en columnas y filas. Puedes consultarla, manipularla y extraer datos concretos de ella.
+
+- «Vista»: es una tabla virtual. Puedes pensar en ella casi como en una consulta guardada que, al ejecutarse, te devuelve la tabla real.
+
+A BigQuery llegan muchísimos datos desde los distintos servicios integrados con él. Supongamos que tu negocio es el comercio electrónico. Tienes un sitio web y un CRM: ya son al menos dos servicios que podrías conectar a BQ. El propio BQ puede enviar sus datos a plataformas distintas, como Google Data Studio o Tableau, y a herramientas de visualización.
+
+Resumen:
+
+1\. BigQuery se compone de proyectos (datos de los servicios).
+
+2\. Los proyectos se componen de conjuntos de datos.
+
+3\. Los conjuntos de datos se componen de tablas y vistas (consultas).
+
+4\. Las tablas se componen de filas y columnas (un array bidimensional).
+
+<h2 id="queries">Consultas</h2>
+
+<p id="what-is-going-on-in-the-table"><strong>¿Qué pasa dentro de la tabla?</strong></p>
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/bigquery-table-schema.png)
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/bigquery-table-details.png)
+
+El «esquema» te permite entender las columnas y el tipo de dato de cada una. Los tipos más habituales son:
+
+- STRING: representa texto;
+- INTEGER: números enteros;
+- BOOLEAN: el tipo que tiene uno de dos valores posibles (1 y 0), donde 1 = TRUE y 0 = FALSE;
+- DATA: almacena solo la fecha, sin la parte de la hora;
+- TIMESTAMP: se usa para almacenar datos que contienen fecha y hora;
+- FLOAT: almacena números con parte fraccionaria, como 3,14. Recuerda: ese valor no es exacto; 3,14, por ejemplo, es un patrón muy conocido (pi), pero pi tiene infinitos dígitos tras el separador. Usa este tipo para indicar que un número no es entero;
+- NUMERIC: también almacena números como INTEGER o FLOAT, pero cuando hay que garantizar la precisión.
+
+La sección «Detalles» tiene información sobre la propia tabla:
+
+- Table ID: la ruta (dirección) de la tabla
+- Tamaño de la tabla
+- Número de filas
+- Fecha de creación
+- Última modificación
+- Caducidad: la fecha en que se borra la tabla (normalmente configurada como «Never» = «No borrar»)
+- Ubicación de los datos: la región donde quieres guardarlos (UE o EE. UU.). Acuérdate de lo que exige el RGPD al configurar esto.
+
+<h2 id="select">SELECT</h2>
+
+<p id="basics"><strong>Lo básico</strong></p>
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/select-basics.png)
+
+La «sintaxis» es sencilla y describe cómo quieres que se muestren los resultados: de dónde, con qué condiciones, cómo representar los datos y cuántos. La máquina ejecutará la sintaxis en este orden:
+
+SELECT:
+ 1. FROM
+ 2. WHERE
+ 3. GROUP BY
+ 4. HAVING
+ 5. SELECT
+ 6. ORDER BY
+
+Como ves, ese orden no coincide con el de la consulta que escribes en la interfaz. Se hace así para que la consulta sea más legible y más fácil de mantener. Recuerda solo que la máquina la ejecuta de forma algo distinta.
+
+La sintaxis de todos los dialectos de SQL tiene prácticamente la misma estructura.
+
+<p id="querying-two-tables"><strong>Consultar dos tablas</strong></p>
+
+Si dos tablas tienen un esquema idéntico y los mismos tipos de datos en las columnas, puedes consultarlas a la vez. El resultado serán los datos de cada tabla presentados de forma secuencial: primero los de la tabla 1 y después los de la tabla 2.
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/Querying-two-tables.png)
+
+<h2 id="from">FROM</h2>
+
+Si quieres coger algo, necesitas la dirección o ruta donde está guardado, y la ruta se estructura así: proyecto.conjuntodedatos.tabla.
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/from-structure.png)
+
+A veces una tabla puede tener tablas anidadas, o puede estar particionada por fecha, por marca de tiempo, etc. Son los resultados habituales del envío continuo de datos a BigQuery.
+
+1\. Tabla con tablas anidadas: por ejemplo, el proyecto «bigquery-public-data», con el conjunto de datos «samples», tiene la tabla «Shakespeare», que puede almacenar tablas como «publication15980101» y «sample15980201», etc., donde 1598 es el año.
+
+Si usas SQL estándar (y recomendamos encarecidamente usar solo ese dialecto en BigQuery), debes usar comodines en WHERE para consultarla, así:
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare.publication*`
+WHERE
+  _TABLE_SUFFIX BETWEEN ‘15980101’ AND ‘16000101’
+```
+
+El resultado serán todas las columnas con los datos de todas las publicaciones de Shakespeare entre 1598 y 1600.
+
+2\. Tabla particionada: es como la anterior, pero se trata de una sola tabla dividida en segmentos que contienen todos los datos y pseudocolumnas en el esquema, llamadas por ejemplo _PARTITIONTIME o _PARTITIONDATE, según el método de división. Pongamos que está particionada por fecha.
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  _PARTITIONTIME BETWEEN '1598-01-01' AND '1600-01-01'
+```
+
+<h2 id="where">WHERE</h2>
+
+«WHERE» es el operador principal que debes usar para obtener una tabla solo con los datos que necesitas. Sin él, o bien obtendrás la misma tabla que has consultado, o bien todos los datos de las columnas que elegiste en SELECT.
+
+Poner condiciones no es difícil. Basta con escribir la «columna» y el valor o valores que quieres ver en ella.
+
+<p id="simple-conditions"><strong>Condiciones simples</strong></p>
+
+Las condiciones simples son el valor exacto que quieres sacar de la tabla.
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'LVII'
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/simple-query-results.png)
+
+<p id="more-complex-conditions"><strong>Condiciones más complejas</strong></p>
+
+A WHERE le gusta mucho el comando BETWEEN. Es utilísimo cuando necesitas, por ejemplo, mostrar solo las palabras con un word_count mayor que dos pero menor que cuatro. En otros casos pueden ser datos entre fechas y marcas de tiempo, etc.
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word_count BETWEEN 2 AND 3
+```
+
+<h2 id="and-or">AND / OR</h2>
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'meet' OR word = 'affords'
+```
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'meet' AND corpus = 'sonnets'
+```
+
+«OR» saca todos los datos que tienen este valor o el otro. En este caso serán solo las filas en las que la columna «word» contiene «meet» o «affords».
+
+«AND» toma únicamente los datos que tienen ambos registros en la misma fila. En este caso serán solo las filas en las que la columna «word» contiene únicamente «meet» y, a la vez, la columna «corpus» contiene únicamente «sonnets». ¡Pruébalo tú mismo!
+
+<p id="more-and-more-conditions"><strong>Más y más condiciones</strong></p>
+
+Puedes combinar muchísimas condiciones en WHERE, pero recuerda que tiene que resultar legible para ti y para otros. Usa paréntesis.
+
+```sql
+SELECT
+  *
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'meet'
+  AND (corpus_date=1590 OR corpus_date=1594)
+  AND NOT corpus IN ('sonnets', '1kinghenryvi', 'comedyoferrors')
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/more-conditions-results.png)
+
+Recuerda: si obtienes un resultado cero que te parece raro, revisa la condición del WHERE.
+
+<h2 id="group-by">GROUP BY</h2>
+
+En nuestra opinión, esta es una de las funciones más difíciles de explicar. Primero, se usa cuando empleas funciones de agregación; segundo, agrupa datos. Vamos a usar SUM sobre word_count de la palabra «QUEEN» para ver cuántas veces aparece en total en la poesía de Shakespeare.
+
+```sql
+SELECT
+  word,
+  word_count,
+  corpus,
+  corpus_date,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word,
+  word_count,
+  corpus,
+  corpus_date
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/group-by-results.png)
+
+Pruébalo y verás que no cambia nada. ¿Por qué? Porque cada fila es única y, claro, tras el GROUP BY todas quedan agrupadas: cada fila es un grupo único, ella misma. Así que agrupar por QUEEN da word_count = 76, corpus = 2kinghenryvi, corpus_date = 1590 y, como resultado, sum_word_count = 76.
+
+¿Pero qué pasa si en el SELECT elegimos word y corpus_date?
+
+```sql
+SELECT
+  word,
+  corpus_date,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word,
+  corpus_date
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/group-by-results-2.png)
+
+Fíjate en corpus_date = 1590. Sum_word_count = 150. Ahora mira las dos primeras filas del resultado anterior:
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/group-by-results-3.png)
+
+76 + 74 = 150
+
+Pero todo se pierde si añadimos word_count a las columnas de la consulta:
+
+```sql
+SELECT
+  word,
+  word_count,
+  corpus_date,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word,
+  word_count,
+  corpus_date
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/group-by-results-4.png)
+
+Míralo de cerca: las filas 1 y 2 son únicas por los distintos valores de la columna word_count, así que no puede haber ninguna suma entre ellas, y por eso nuestra agregación no funciona como queremos. Para usar agregación tienes que plantearte si habrá datos repetidos en las columnas por las que quieres agrupar. Si alguna tiene datos casi todos distintos, tu agregación no servirá de nada. Así que, en nuestro caso, basta con quedarnos con la columna «word»:
+
+```sql
+SELECT
+  word,
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+GROUP BY
+  word
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/group-by-results-5.png)
+
+Hay otra situación más (aunque poco frecuente) en la que podríamos prescindir del GROUP BY y quitar sin más la columna «word».
+
+```sql
+SELECT
+  SUM(word_count) AS sum_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = 'QUEEN'
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/group-by-results-6.png)
+
+<p id="data-types-in-the-column-string-integer-boolean-timestamp"><strong>Tipos de datos de la columna: STRING / INTEGER / BOOLEAN / TIMESTAMP</strong></p>
+
+1\. STRING: datos de texto (que hay que poner entre comillas en la consulta)
+ 2. INTEGER: números enteros (se consultan sin comillas)
+ 3. BOOLEAN: TRUE / FALSE o 1 / 0 (se consultan sin comillas)
+ 4. TIMESTAMP: tipo de dato fecha + hora (se escribe como TIMESTAMP)(‘2017-07-23’)
+
+Para cambiar el tipo de dato de una columna, usa las funciones CAST o SAFE_CAST en el SELECT:
+
+```sql
+SELECT
+  CAST(word_count AS STRING) AS word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+```
+
+Ahora la columna «word_count» tiene el tipo STRING en lugar de INTEGER.
+
+<h2 id="timestamp-and-date">TIMESTAMP Y DATE</h2>
+
+1\. «TIMESTAMP»: almacena fecha y hora
+ 2. «DATE»: almacena solo la fecha
+
+Hay un montón de métodos para trabajar con formatos que encontrarás en la documentación oficial. La mayoría son simples conversiones de un formato de fecha a otro.
+
+Queremos detenernos en el caso en que quieres tener una columna de fecha. Aquí es preferible usar TIMESTAMP con horas, minutos, segundos e incluso milisegundos, o bien el tipo INTEGER, que almacena la fecha UNIX (UNIX Epoch). Por ejemplo, para el 1 de enero de 2018 sería <strong>1514764801</strong>. ¿Qué significa ese número? Es la cantidad de segundos transcurridos desde el 1 de enero de 1970. Si ves un número así pero con tres dígitos más (por ejemplo, 1514764801
+
+<em>000</em>), ¡es lo mismo pero en milisegundos!
+
+¿Y por qué es preferible? Porque si recibes datos de tu sitio web puedes tener hits o eventos cada segundo, pero si los guardas como Año-Mes-Día no sabrás si ese hit concreto del 2018-01-01 fue el primero del día, el último o uno intermedio.
+
+Un recurso útil para probar la conversión de segundos a fecha (y al revés) es [epochconverter.com](https://www.epochconverter.com/).
+
+El 1 de enero de 2018 en segundos:
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/january-1-seconds.png)
+
+El 1 de enero de 2018 en milisegundos:
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/january-1-milliseconds.png)
+
+<h2 id="vlookup-2-0-or-joined-tables-left-join-each-right-join-each">BUSCARV 2.0 o tablas unidas: LEFT-JOIN EACH / RIGHT-JOIN EACH</h2>
+
+«BUSCARV» en Excel está muy bien, pero si tienes que unir dos tablas de 700.000 filas cada una, te llevará unas cuantas horas. Con JOIN en SQL, en cambio, tarda unos cinco minutos.
+
+«JOIN» fusiona dos tablas en una usando una columna común. (Hablamos de los datos de la tabla, no de los nombres de las columnas.) Además, puede ser un LEFT, RIGHT, CROSS o INNER JOIN. Por ejemplo, si es un LEFT JOIN, unes todo lo que hay en la parte izquierda de la tabla.
+
+Como ejemplo usaremos otros datos públicos: los del servicio de bicicletas compartidas de San Francisco. Una tabla tiene el id de la estación y el número de bicicletas disponibles. La segunda tiene el nombre público y también el id de la estación. Queremos una tabla con el id de la estación, su nombre público y el número de bicicletas disponibles.
+
+Recuerda:
+
+1\. Las tablas deben tener columnas con datos idénticos. (En el ejemplo de abajo, station_id es station_id en ambas tablas.)
+ 2. Las columnas deben tener el mismo tipo de dato.
+
+```sql
+SELECT
+  t1.station_id,
+  t2.name,
+  t1.num_bikes_available
+FROM
+ (SELECT
+  station_id,
+  num_bikes_available
+FROM
+   --HERE WE DEFINED WHICH TABLE WILL BE ON THE LEFT
+   --ADD ALIAS T1 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER.
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_status`) AS t1
+LEFT JOIN
+ (SELECT
+  station_id,
+  name
+FROM
+   --HERE WE DEFINED WHICH TABLE WILL BE ON THE RIGHT
+   --ADD ALIAS T2 TO MAKE MANUPULATION WITH TABLE'S COLUMNS EASIER.
+  `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`) AS t2
+   --COLUMNS, THAT HAVE IDENTICAL DATA. SOMETIMES, THEY MAY HAVE DIFFERENT NAMES, BUT ONLY DATA WITHIN MATTERS!
+ON t1.station_id = t2.station_id
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/join-results.png)
+
+<h2 id="case-when-then-end">CASE WHEN... THEN... END</h2>
+
+CASE es una especie de magia entre las funciones de SQL, y tiene dos variantes. Veamos la primera:
+
+```sql
+SELECT
+  is_male,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT 100
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/case-results.png)
+
+Está bien, pero queremos «Sí» o «No» en lugar de «true» y «false».
+
+```sql
+SELECT
+CASE
+  WHEN is_male = TRUE THEN 'Yes'
+  WHEN is_male = FALSE THEN 'No'
+END
+  AS is_male,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT
+  100
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/case-results-2.png)
+
+Variante 2
+
+Esto está bien, pero nos piden columnas separadas para «Male» y «Female». No sabemos por qué, pero vale, hagámoslo.
+
+```sql
+SELECT
+CASE
+  WHEN is_male = TRUE THEN 1 ELSE 0
+END AS
+  Male,
+CASE
+  WHEN is_male = FALSE THEN 1 ELSE 0
+END AS
+  Female,
+FROM
+  `bigquery-public-data.samples.natality`
+LIMIT
+  100
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/case-results-3.png)
+
+<h2 id="subqueries-with-parsing-substring-merging-two-columns-in-one">SUBCONSULTAS, WITH, PARSEO, SUBSTRING, UNIR DOS COLUMNAS EN UNA</h2>
+
+LAS SUBCONSULTAS Y LA SENTENCIA «WITH» son otra función mágica de SQL. Recuerda: cada consulta no hace más que crear otra tabla NUEVA, que podemos usar para consultar datos.
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/shakespeare.png)
+
+Esta tabla tiene cuatro columnas: word, word_count, corpus y corpus_date. Aquí nos quedamos solo con «word»:
+
+```sql
+SELECT
+  word
+FROM
+  `bigquery-public-data.samples.shakespeare`
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/word-results.png)
+
+Podemos consultarla libremente. Contemos el número total de palabras.
+
+```sql
+SELECT
+  COUNT(word) AS total_number_of_words
+FROM (
+  SELECT
+    word
+  FROM
+    `bigquery-public-data.samples.shakespeare`)
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/word-results-2.png)
+
+Fíjate en que consultamos esta tabla igual que cualquier otra, con SELECT FROM, y de nuevo podemos subconsultar el resultado. Imagina que queremos sumarle 100.500 a total_number_of_words y llamarlo «madness».
+
+```sql
+SELECT
+  total_number_of_words + 100500 AS madness
+FROM (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM (
+    SELECT
+      word
+    FROM
+      `bigquery-public-data.samples.shakespeare`))
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/word-results-3.png)
+
+La consulta queda escalonada. Algún día te tocará depurar una así pero con muchas subconsultas, así que nuestro consejo es leerla desde su núcleo. En nuestro caso es SELECT word FROM `bigquery-public-data.samples.shakespeare'.
+
+Las subconsultas también se pueden usar en SELECT y en WHERE. En nuestro ejemplo obtuvimos una tabla de 1 x 1 que equivale al valor 265.156, que podría usarse como condición en WHERE, así:
+
+```sql
+SELECT
+…
+FROM
+…
+WHERE
+Expression > (SELECT
+  total_number_of_words + 100500 AS madness
+FROM (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM (
+    SELECT
+      word
+    FROM
+      `bigquery-public-data.samples.shakespeare`)))
+```
+
+Otro consejo es evitar del todo esas consultas escalonadas porque, como ves, cuesta leerlas. Usa en su lugar la sentencia WITH. Hace esencialmente lo mismo, pero es mucho más legible:
+
+```sql
+WITH
+  Core AS (
+  SELECT
+    word
+  FROM
+    `bigquery-public-data.samples.shakespeare`),
+  Count AS (
+  SELECT
+    COUNT(word) AS total_number_of_words
+  FROM
+    Core),
+  Madness AS (
+  SELECT
+    total_number_of_words + 100500 AS mandess
+  FROM
+    Count)
+SELECT
+  *
+FROM
+  Madness
+```
+
+Ahora cada subconsulta se convierte en una tabla aparte (llamada «Core», «Count», «Madness») dentro de la consulta, y unas hacen referencia a otras. Nuestra consulta principal y final empieza en la línea 17. Eso sí, conviene mencionar que WITH solo funciona en SQL estándar.
+
+Con estos métodos (sobre todo el último), el procesamiento de datos se hace sin multiplicar tablas ni vistas.
+
+<h2 id="substr">SUBSTR</h2>
+
+SUBSTR es un método de cadenas que recorta tu texto y te devuelve uno nuevo a partir de él. Vamos a recortar la palabra «QUEEN» para quedarnos solo con la primera letra («Q»).
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/substr.png)
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/substr-result.png)
+
+Como profesional de marketing querrás usarlo si, por ejemplo, necesitas extraer una parte concreta de una URL de los datos que llegan desde tu sitio.
+
+<h2 id="column-parsing">Parseo de columnas</h2>
+
+Esta sección será difícil pero útil. Para poder parsear una columna por un símbolo concreto (o delimitador, como el «Texto en columnas» de Excel) necesitamos usar SPLIT y el método de arrays «OFFSET», dando nombre a las columnas nuevas. Empecemos mirando el resultado de una consulta que nos da una columna con fecha, hora y zona horaria.
+
+```sql
+SELECT
+  created_at
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/column-parsing-results.png)
+
+En este caso nuestro delimitador será el espacio, porque hay uno entre la fecha y la hora, y otro entre la hora y la zona horaria. El siguiente paso es usar SPLIT:
+
+```sql
+SELECT
+  SPLIT(created_at, ' ') AS full_date
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/column-parsing-results-2.png)
+
+El resultado son filas que contienen un array cada una. La primera fila equivale a [2012/03/30, 02:17:15, -0700].
+
+Ahora hay que parsear el array con OFFSET(n). La «n» entre paréntesis corresponde a un elemento del array (su índice), empezando por cero.
+
+```sql
+SELECT
+  full_date[OFFSET(0)] AS date,
+  full_date[OFFSET(1)] AS time,
+  full_date[OFFSET(2)] AS timezone
+FROM
+  (SELECT
+    SPLIT(created_at, ' ') AS full_date
+FROM
+  `bigquery-public-data.samples.github_nested`
+LIMIT
+  10)
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/column-parsing-results-3.png)
+
+Y eso es todo. Recuerda: si el índice se sale del rango, por ejemplo OFFSET(3), generará un error. Una pregunta razonable es por qué no podemos hacerlo con SUBSTR. Podríamos, y quizá en algunos casos sea preferible, pero a menudo se pierde legibilidad.
+
+<h2 id="merge-columns">Unir columnas</h2>
+
+Para unir columnas hay que usar CONCAT, pero esta función solo funciona con el tipo de dato STRING.
+
+```sql
+SELECT
+  CONCAT(word, word_count, corpus, corpus_date)
+FROM
+  `bigquery-public-data.samples.shakespeare`
+LIMIT
+  10
+```
+
+Antes
+
+Después
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/before.png)
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/after.png)
+
+<h2 id="make-sql-do-the-calculations-instead-of-you-analytical-functions">Que SQL haga los cálculos por ti: funciones analíticas</h2>
+
+SQL puede calcular cosas distintas con sus funciones analíticas.
+
+```sql
+SELECT
+  MIN(word_count) AS min_words,
+  MAX(word_count) AS max_words,
+  AVG(word_count) AS average_words
+FROM
+  `bigquery-public-data.samples.shakespeare`
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/analytical-functions-results.png)
+
+Recuerda: si quieres calcular valores para una columna concreta, tienes que usar GROUP BY. Volvamos al ejemplo de la palabra «QUEEN».
+
+```sql
+SELECT
+  word,
+  SUM(word_count) AS total_word_count
+FROM
+  `bigquery-public-data.samples.shakespeare`
+WHERE
+  word = "QUEEN"
+GROUP BY
+  word
+```
+
+![Proyecto de BigQuery](/images/last-click-city/BigQuery_guide/analytical-functions-results.png)

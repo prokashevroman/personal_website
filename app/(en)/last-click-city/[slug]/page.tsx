@@ -19,6 +19,7 @@ import {
   archivePostingSchema,
   breadcrumbSchema,
   canonical,
+  localizedAlternates,
   personSchema,
 } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
@@ -45,7 +46,9 @@ export async function generateMetadata({
     return {
       title,
       description,
-      alternates: canonical(`/last-click-city/${category.slug}`),
+      // Unconditional: category pages derive from shared data, not from
+      // translated files, so both locales always have one.
+      alternates: localizedAlternates(`/last-click-city/${category.slug}`),
       openGraph: {
         type: "website",
         siteName: siteConfig.name,
@@ -62,6 +65,9 @@ export async function generateMetadata({
   if (!post) return { robots: { index: false, follow: false } };
   const { frontmatter } = post;
   const url = absoluteUrl(`/last-click-city/${frontmatter.slug}`);
+  // Only emit the hreflang cluster when the Spanish twin actually exists — an
+  // untranslated post must not point hreflang at a 404.
+  const hasSpanishTwin = getArchivePostBySlug(frontmatter.slug, "es") !== null;
   return {
     title: frontmatter.title,
     description: frontmatter.description,
@@ -75,7 +81,9 @@ export async function generateMetadata({
           }
         : { name: siteConfig.author.name, url: absoluteUrl("/about") },
     ],
-    alternates: canonical(`/last-click-city/${frontmatter.slug}`),
+    alternates: hasSpanishTwin
+      ? localizedAlternates(`/last-click-city/${frontmatter.slug}`)
+      : canonical(`/last-click-city/${frontmatter.slug}`),
     openGraph: {
       type: "article",
       siteName: siteConfig.name,

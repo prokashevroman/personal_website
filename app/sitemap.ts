@@ -8,10 +8,11 @@ import { absoluteUrl } from "@/lib/seo";
  * Only indexable URLs belong here — a noindexed URL in a sitemap surfaces as a
  * "Submitted URL marked noindex" error in Search Console.
  *
- * The Last Click City archive IS indexable, so its 45 URLs are included. This is
- * the one place the live and archive pipelines legitimately meet: they stay
- * separate lists so archive posts can never leak into the homepage, /blog, or the
- * feed (see the header comment in lib/last-click-city.ts).
+ * The Last Click City archive IS indexable, so its 45 English URLs are included,
+ * plus its Spanish mirror (index + 4 categories + however many articles are
+ * translated). This is the one place the live and archive pipelines legitimately
+ * meet: they stay separate lists so archive posts can never leak into the
+ * homepage, /blog, or the feed (see the header comment in lib/last-click-city.ts).
  */
 
 function postDate(post: Post): Date {
@@ -129,33 +130,81 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const newestArchive = archivePosts.length > 0 ? archiveDate(archivePosts[0]!) : new Date(0);
   const bySlug = new Map(archivePosts.map((p) => [p.frontmatter.slug, p]));
 
+  // Spanish archive translations, and the newest date among the members of a
+  // category that actually have one — a category's Spanish lastmod must not
+  // claim a date from an article only the English side has.
+  const esArchivePosts = getArchivePosts("es");
+  const esBySlug = new Map(esArchivePosts.map((p) => [p.frontmatter.slug, p]));
+  const translatedArchiveSlugs = new Set(esArchivePosts.map((p) => p.frontmatter.slug));
+  const newestEsArchive =
+    esArchivePosts.length > 0 ? archiveDate(esArchivePosts[0]!) : newestArchive;
+
+  const categoryDate = (
+    category: (typeof CATEGORIES)[number],
+    source: Map<string, ArchivePost>,
+    fallback: Date,
+  ): Date => {
+    const dates = category.articleSlugs
+      .map((slug) => source.get(slug))
+      .filter((p): p is ArchivePost => Boolean(p))
+      .map(archiveDate);
+    return dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : fallback;
+  };
+
   const archiveRoutes: MetadataRoute.Sitemap = [
     {
       url: absoluteUrl("/last-click-city"),
       lastModified: newestArchive,
       changeFrequency: "never",
       priority: 0.5,
+      alternates: pairedAlternates("/last-click-city"),
     },
     ...archivePosts.map<MetadataRoute.Sitemap[number]>((post) => ({
       url: absoluteUrl(`/last-click-city/${post.frontmatter.slug}`),
       lastModified: archiveDate(post),
       changeFrequency: "never",
       priority: 0.4,
+      // Untranslated posts stay hreflang-free — same guard as the page metadata.
+      alternates: translatedArchiveSlugs.has(post.frontmatter.slug)
+        ? pairedAlternates(`/last-click-city/${post.frontmatter.slug}`)
+        : undefined,
     })),
-    ...CATEGORIES.map<MetadataRoute.Sitemap[number]>((category) => {
-      const dates = category.articleSlugs
-        .map((slug) => bySlug.get(slug))
-        .filter((p): p is ArchivePost => Boolean(p))
-        .map(archiveDate);
-      return {
-        url: absoluteUrl(`/last-click-city/${category.slug}`),
-        lastModified:
-          dates.length > 0 ? new Date(Math.max(...dates.map((d) => d.getTime()))) : newestArchive,
-        changeFrequency: "never",
-        priority: 0.3,
-      };
-    }),
+    ...CATEGORIES.map<MetadataRoute.Sitemap[number]>((category) => ({
+      url: absoluteUrl(`/last-click-city/${category.slug}`),
+      lastModified: categoryDate(category, bySlug, newestArchive),
+      changeFrequency: "never",
+      priority: 0.3,
+      alternates: pairedAlternates(`/last-click-city/${category.slug}`),
+    })),
   ];
 
-  return [...staticRoutes, ...postRoutes, ...esRoutes, ...archiveRoutes];
+  // The Spanish mirror of the archive, one notch below the English ladder for
+  // the same reason /es sits below / — same content, secondary language.
+  const esArchiveRoutes: MetadataRoute.Sitemap = ES_INDEXABLE
+    ? [
+        {
+          url: absoluteUrl("/es/last-click-city"),
+          lastModified: newestEsArchive,
+          changeFrequency: "never",
+          priority: 0.4,
+          alternates: pairedAlternates("/last-click-city"),
+        },
+        ...esArchivePosts.map<MetadataRoute.Sitemap[number]>((post) => ({
+          url: absoluteUrl(`/es/last-click-city/${post.frontmatter.slug}`),
+          lastModified: archiveDate(post),
+          changeFrequency: "never",
+          priority: 0.3,
+          alternates: pairedAlternates(`/last-click-city/${post.frontmatter.slug}`),
+        })),
+        ...CATEGORIES.map<MetadataRoute.Sitemap[number]>((category) => ({
+          url: absoluteUrl(`/es/last-click-city/${category.slug}`),
+          lastModified: categoryDate(category, esBySlug, newestEsArchive),
+          changeFrequency: "never",
+          priority: 0.2,
+          alternates: pairedAlternates(`/last-click-city/${category.slug}`),
+        })),
+      ]
+    : [];
+
+  return [...staticRoutes, ...postRoutes, ...esRoutes, ...archiveRoutes, ...esArchiveRoutes];
 }

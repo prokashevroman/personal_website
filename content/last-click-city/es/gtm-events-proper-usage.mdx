@@ -1,0 +1,44 @@
+---
+title: "Eventos de Google Tag Manager: cómo usarlos bien"
+slug: "gtm-events-proper-usage"
+date: "2019-09-17"
+description: "Al configurar activadores y etiquetas en Google Tag Manager es fundamental entender cuándo se dispararán, para que toda la medición necesaria quede ligada a los eventos correctos."
+originalUrl: "https://lastclick.city/gtm-events-proper-usage.html"
+thumbnail: "/images/last-click-city/For_index_page_12.png"
+excerptLead: "Al configurar activadores y etiquetas en Google Tag Manager,"
+excerpt: "es fundamental entender cuándo se dispararán, para que toda la medición necesaria quede ligada a los eventos correctos. Los tres eventos principales de GTM a los que puedes asociar un activador son:"
+---
+
+<strong>Al configurar activadores y etiquetas en Google Tag Manager, </strong> es fundamental entender cuándo se dispararán, para que toda la medición necesaria quede ligada a los eventos correctos. Los tres eventos principales de GTM a los que puedes asociar un activador son:
+
+1\) Vista de página (gtm.js)
+
+2\) DOM listo (gtm.dom)
+
+3\) Ventana cargada (gtm.load)
+
+![Eventos de Google Tag Manager](/images/last-click-city/GTM_events/GTM_events.png)
+
+Su secuencia es exactamente esta: gtm.js -> gtm.dom -> gtm.load. Veámoslos con más detalle:
+
+<strong>Vista de página:</strong> es el evento más temprano que envía Google Tag Manager. Se dispara en el momento exacto en que se carga el contenedor de Google Tag Manager.
+
+<strong>Cuándo usarlo:</strong> como dice el [artículo de ayuda de GTM](https://support.google.com/tagmanager/answer/7679319?hl=en):
+
+> Usa esta opción si solo necesitas datos generados a partir de las impresiones de página.
+
+Eso sí, recuerda que «impresión de página», en este caso, solo significa que el contenedor de Tag Manager se ha cargado y puede obtener información básica sobre la página (incluidas las variables de la capa de datos que se inicializan por encima del fragmento del contenedor).
+
+<strong>DOM listo:</strong> este evento significa que el navegador ha construido la página completa y que toda la información necesaria se puede extraer del DOM.
+
+El DOM es una representación basada en objetos del documento HTML original, en forma del llamado «árbol de nodos». Hay una descripción excelente del DOM [aquí](https://bitsofco.de/what-exactly-is-the-dom/):
+
+> Se llama así porque puede pensarse como un árbol con un único tronco padre que se ramifica en varias ramas hijas, cada una de las cuales puede tener hojas. En este caso, el «tronco» padre es el elemento raíz &lt;html>, las «ramas» hijas son los elementos anidados y las «hojas» son el contenido dentro de los elementos.
+
+<strong>Cuándo usarlo:</strong> las etiquetas basadas en el evento gtm.dom deben usarse cuando hace falta obtener información importante renderizada en la página. Por ejemplo, si necesitas extraer algún dato de la página, solo podrás hacerlo cuando esté disponible. Si usas un activador que depende de gtm.js, toda esa información podría seguir siendo invisible para GTM.
+
+<strong>Ventana cargada:</strong> este activador se dispara solo después de que todos los elementos de la página se hayan cargado por completo. Ventana cargada es el último evento. El objeto window representa la ventana del navegador. Como todos los objetos, funciones y variables globales de JavaScript forman parte del objeto window, que la ventana esté cargada significa que todo eso ya se ha cargado.
+
+<strong>Cuándo usarlo:</strong> un activador de este tipo resulta útil cuando quieres disparar activadores concretos, pero solo con la página ya cargada. Por ejemplo, puede ser una opción para el software de grabación de pantalla o de mapas de calor. También sirve si piensas usar etiquetas de HTML personalizado y no quieres que interrumpan el proceso de carga de la página.
+
+¡Que lo disfrutes!

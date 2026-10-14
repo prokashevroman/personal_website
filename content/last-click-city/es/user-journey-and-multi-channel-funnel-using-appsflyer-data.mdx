@@ -1,0 +1,1062 @@
+---
+title: "Recorrido del usuario y embudo multicanal de la promoción de apps con datos de AppsFlyer."
+slug: "user-journey-and-multi-channel-funnel-using-appsflyer-data"
+date: "2023-02-21"
+description: "Reparto del presupuesto de marketing mediante programación lineal."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/user-journey-and-multi-channel-funnel-using-appsflyer-data.html"
+thumbnail: "/images/last-click-city/For_index_page_40.png"
+excerptLead: "Hay al menos dos trayectorias para seguir el recorrido del usuario:"
+excerpt: "dentro de un producto, que es el terreno de la analítica de producto, y a través de los canales de tráfico, que es el terreno de la analítica de marketing. A esta última se la llama embudo multicanal. Hoy existen la promoción web y la de apps, así que hay tres embudos multicanal: el de la web, el de las apps y el de la combinación de ambos."
+---
+
+<strong>Antes de empezar, un aviso: </strong>hay menos datos compartidos por culpa del RGPD y de iOS 14.5, así que el resultado no serán datos consistentes.
+
+Hay al menos dos trayectorias para seguir el recorrido del usuario: dentro de un producto, que es el terreno de la analítica de producto, y a través de los canales de tráfico, que es el terreno de la analítica de marketing. A esta última se la llama embudo multicanal. Hoy existen la promoción web y la de apps, así que hay tres embudos multicanal [<sup>1</sup>](#footnote-1): [el de la web](/es/last-click-city/top-conversion-paths-in-ga-and-bigquery), el de las apps y el de la combinación de ambos.
+
+Hoy vamos a construir un recorrido de usuario y un embudo multicanal con datos de AppsFlyer para la captación de instalaciones. El resultado será un embudo de las fuentes de la app, las llamadas `media_sources`, que captaron a los usuarios. Estos son los resultados finales:
+
+1. Recorrido del usuario:
+
+![El resultado final](/images/last-click-city/AppsFlyer/1.png)
+
+1. Embudo multicanal:
+
+![Resultado del embudo multicanal](/images/last-click-city/AppsFlyer/2.png)
+
+El problema es que hacerlo es realmente difícil, por varias complicaciones ligadas a la medición de la promoción de apps.
+
+### Medición en web
+
+Recordemos la medición en web, que es bastante directa:
+
+![Medición en web](/images/last-click-city/AppsFlyer/4.png)
+
+Con un UTM puedes medir casi todas las fuentes online [<sup>2</sup>](#footnote-1).
+
+### Medición en app
+
+La medición en app tiene dos puntos intermedios adicionales:
+
+![Medición en app](/images/last-click-city/AppsFlyer/3.png)
+
+Uno de los problemas es que no puedes obtener información directamente de la App Store. <strong>Los Mobile Measurement Partners (MMP) como AppsFlyer</strong> sí pueden, y tienes que usarlos para medir las fuentes.
+
+¡La disponibilidad de los datos en bruto depende de tu plan de suscripción! Por ejemplo, hay tablas exclusivas de DataLocker [<sup>3</sup>](#footnote-3) y del almacenamiento de informes en bruto de AppsFlyer, disponibles como función premium adicional: `clicks, impressions, clicks retargeting, impressions retargeting, sessions, retargeting sessions, cross-platform engagements.`
+
+Por desgracia, tampoco toda la información está disponible para los MMP, y hay varios límites.
+
+1. AppsFlyer puede guardar el canal que originó la instalación y <em>solo los tres</em> últimos contribuidores a esa instalación en la tabla `install`, pero si uno de los contribuidores era FB (por ejemplo, el contribuidor 1), no obtendrás nada [<sup>4</sup>](#footnote-4) en esa columna.
+2. Hay datos marcados como `restricted` dentro de los datos en bruto [<sup>7</sup>](#footnote-7) de la tabla `install`. Ocurre, por ejemplo, con Facebook. Existe una forma de sortearlo en cierta medida en Android, llamada Google Install Referrer[<sup>8</sup>](#footnote-8). Además, si la media_source es `restricted`, también se borran todos los datos sobre los contribuidores (asistencias) a la instalación. Si el contribuidor está en la lista de fuentes restringidas, el valor del campo es null (es decir, no todos los null en los datos de contribuidores significan que no haya contribuidores).
+3. El propio AppsFlyer tiene problemas con su atribución porque en algunos casos le faltan identificadores del contacto con los partners. Por eso tiene varias maneras de atribuir instalaciones, eventos y fuentes de retargeting a una media_source concreta, <strong>por ejemplo un método probabilístico</strong>. Hablaremos más de esto al ver la tabla `install`.
+4. RGPD, iOS 14.5, Android 12: en cuanto los usuarios rechazan los anuncios personalizados, los ID de app (IDFA en Apple, GAID en Android) se registran como nulos o como una cadena de ceros, lo que imposibilita cruzarlos con la tabla `click`.
+5. Si un usuario de iOS 14.5 no concede el permiso de App Tracking Transparency (ATT), se registrará como `“organic”`.
+6. Que la media_source sea `“organic”` no siempre significa que el usuario abriera Google Play o la App Store, buscara la app y la instalara sin hacer clic en ningún anuncio. AppsFlyer marca todo como `“organic”` <em>siempre que no puede determinar</em> la fuente o si la ventana de atribución de la fuente ha terminado.
+
+Sí, puedes enriquecerlo con datos de la tabla `click`, <strong>pero no habrá datos de SRN como Google, FB, etc.</strong> [<sup>5</sup>](#footnote-5) [<sup>6</sup>](#footnote-6) La buena noticia, según nuestra experiencia, es que la fórmula «un canal, una instalación» funciona la mayor parte del tiempo, y si hay muchos contribuidores a la instalación, puedes estar bastante seguro de tener los datos completos de todos los puntos de contacto previos a la instalación el 95 % de las veces.
+
+En resumen: <strong>incluso unos datos de AppsFlyer bien unidos estarán muy fragmentados</strong>. La pregunta clave es, por seguir con la analogía, si puedes beber de una taza rota que se ha recompuesto con solo la mitad de sus trozos.
+
+1. Las particularidades de la medición del contacto con los canales:
+
+1. La más importante: todos los contactos con canales (media_sources) <strong>se atribuyen a los eventos que las apps envían a AppsFlyer, sobre todo cuando hablamos de campañas de retargeting. No hay un evento por defecto de AppsFlyer, como `install`, cuando intentamos identificar el contacto de las campañas de retargeting</strong>. Imagina que la instalación de tu app vino de la fuente `lastclickcity` y lanzaste una campaña de retargeting en `google` sobre usuarios activos. En la app mides (con tu propio medidor) un único evento: `“registration”`. <em>Si no envías</em> el evento `“registration”` a AppsFlyer y el usuario hizo un `registration`, no verás ninguna fila con la fuente `google`:
+2. Si envías ese evento pero no marcaste la campaña de google (`is_retargeting_true`) como campaña de retargeting dentro de AppsFlyer, `“registration”` <strong>se atribuirá a la fuente de instalación</strong>.
+3. Si no hay ninguna <em>campaña de retargeting</em>, de modo que solo hubo una campaña de instalación, y el usuario dispara un evento `“registration”`, se atribuirá a la fuente de instalación.
+
+| appsflyerid | media_source | event | event_time |
+| --- | --- | --- | --- |
+| 111-111 | lastclickcity | install | 2021-04-08 |
+
+(Sin filas con el evento de login = sin filas con la fuente «google»)
+
+Como contacto = disparo de un evento (= engagement [<sup>9</sup>](#footnote-9)), por defecto no hay medición de la fuente. No lo olvides [<sup>10</sup>](#footnote-10). Sí, en AppsFlyer existe la sesión, <strong>pero no existe la fuente de la sesión, y solo está disponible en DataLocker</strong>. Solo los eventos pueden revelar un contacto: sin evento no hay contacto del canal. Eso sí, no puedes enviar todos (¡sic!) los eventos a AppsFlyer. Hablaremos más de esto después.
+
+| appsflyerid | media_source | event | event_time |
+| --- | --- | --- | --- |
+| 111-111 | lastclickcity | install | 2021-04-08 |
+| 111-111 | <strong>lastclickcity</strong> | registration | 2021-04-09 |
+
+En algunos casos puede ser null.
+
+No olvides marcar una campaña de retargeting como <em>retargeting</em> para conseguir esto:
+
+| appsflyerid | media_source | event | event_time |
+| --- | --- | --- | --- |
+| 111-111 | lastclickcity | install | 2021-04-08 |
+| 111-111 | <strong>google</strong> | registration | 2021-04-09 |
+
+Hay más información sobre la atribución de campañas de retargeting, con ilustraciones, [aquí](https://support.appsflyer.com/hc/en-us/articles/207033786-Retargeting-attribution-guide#example-retargeting-scenarios).
+
+| appsflyerid | media_source | event | event_time |
+| --- | --- | --- | --- |
+| 111-111 | lastclickcity | install | 2021-04-08 |
+| 111-111 | <strong>lastclickcity</strong> | registration | 2021-04-09 |
+
+Nosotros proponemos cambiar esa segunda fila a `direct/none.`
+
+| appsflyerid | media_source | event | event_time |
+| --- | --- | --- | --- |
+| 111-111 | lastclickcity | install | 2021-04-08 |
+| 111-111 | <strong>direct/none</strong> | registration | 2021-04-09 |
+
+1. Quizá te preguntes por qué no enviar a AppsFlyer todos los eventos que mides en tu app. La respuesta es que no siempre es gratis. Y porque AppsFlyer no lo es
+   
+   - Existe un plan de suscripción basado en eventos para el sector de los juegos, y por eso en ese caso solo debes enviar los eventos que de verdad importan para marketing.
+   - En el resto de casos pagas por las instalaciones no orgánicas, las reatribuciones (instalaciones repetidas) y los <strong>re-engagements (muy ligados al retargeting</strong>[<sup>11</sup>](#footnote-11)). Es decir, no deberías saturar AppsFlyer con eventos.
+2. Si quieres combinar los datos de app y de web sobre los usuarios, <strong>haz que la zona no autenticada de tu app sea lo más corta posible</strong>. Empuja a los usuarios a registrarse la primera vez que abren la app. Así podrás darles un ID de usuario (`customer_user_id`), que es la clave para unir los datos de app y de web. No se puede hacer con `appsflyer_id` (el equivalente del client ID de GA, pero para apps) porque esa dimensión no se puede implementar en web; su ámbito es solo la app.
+3. Revisa las ventanas de inclusión en la interfaz de AppsFlyer: son las clásicas ventanas de conversión retroactiva para impresiones y clics.
+4. También tienes que comprobar si hay ventanas de exclusión: tiempo mínimo entre conversiones de re-engagement y periodo mínimo de inactividad.
+   
+   1. Tiempo mínimo entre conversiones de re-engagement: por defecto, la ventana de re-engagement existente se cierra y se registra otro re-engagement; los eventos in-app posteriores se atribuyen al re-engagement más reciente. Para evitarlo, fija el tiempo mínimo entre conversiones de re-engagement. Así, solo cuando haya pasado ese tiempo mínimo podrá registrarse otro re-engagement.
+   2. Periodo mínimo de inactividad: al fijar un tiempo mínimo de inactividad, AppsFlyer no atribuye usuarios activos a campañas de retargeting = todos los eventos se registrarán en la media source de la instalación. Por ejemplo, si el límite mínimo de inactividad es de tres días, los usuarios activos en los 0-3 días previos no se atribuyen.
+
+### Recomendaciones sobre la medición en app si tienes un plan de suscripción basado en eventos
+
+Te sugerimos hacer lo siguiente con AppsFlyer:
+
+1. Piensa muy bien la arquitectura de eventos dentro de AppsFlyer: sigue estas [recomendaciones](https://support.appsflyer.com/hc/en-us/articles/115005544169-Rich-in-app-events-Overview#view-inapp-event-data).
+2. Envíale solo eventos de marketing.
+3. Retargeting:
+   
+   1. Si haces una campaña de retargeting, configúrala como retargeting en AppsFlyer. Si no, los eventos se atribuirán a la fuente o campaña de instalación.
+   2. Si es para <em>usuarios no registrados</em>:
+      
+      - Llévalos a una <em>pantalla no autenticada <strong>que no sea la principal</strong> [<sup>12</sup>](#footnote-12)</em>, creada específicamente para campañas de retargeting de este tipo (para usuarios no registrados).
+      - ¡Asegúrate de que ningún otro usuario pueda llegar a ella desde otras pantallas de la app!
+      - Configura un evento `“open”` de AppsFlyer para identificar el canal.
+   3. Si es para <em>usuarios registrados</em>:
+      
+      - Llévalos a una <em>pantalla autenticada</em> creada específicamente para campañas de retargeting de este tipo (para usuarios no registrados).
+      - ¡Asegúrate de que ningún otro usuario pueda llegar a ella desde otras pantallas de la app!
+      - Configura un evento `“open”` de AppsFlyer para identificar el canal.
+   
+   Si configuras un evento «open» para todas las pantallas, o incluso solo para la principal, dispararás muchísimo el volumen de datos en bruto.
+4. Reduce las zonas autenticadas para obtener el <strong>user_id</strong> cuanto antes.
+5. Enriquece los datos de eventos atribuibles a los canales que registra AppsFlyer usando GA4, unido a AppsFlyer por el <strong>user_id</strong>. [<sup>13</sup>](#footnote-13)
+6. <em>No compartas la dev.key</em> con nadie de fuera de tu empresa: hay riesgo de recibir spam de eventos.
+
+### Tablas de datos en bruto de AppsFlyer
+
+<strong>Insistimos: ¡la disponibilidad de los datos en bruto depende de tu plan de suscripción!</strong>
+
+Puedes obtener los datos en bruto así [<sup>14</sup>](#footnote-14):
+
+- Página de exportación de datos en bruto desde la interfaz
+- Pull API y Push API
+- [DataLocker](https://support.appsflyer.com/hc/en-us/articles/360000877538-Data-Locker-for-advertisers): esto también depende de tu plan. Si es tu caso, verás el flujo de datos configurado hacia BQ desde ahí. No todas las tablas se pueden representar en BQ desde el principio. ![Data Locker](/images/last-click-city/AppsFlyer/DataLocker.png)
+
+Veamos ahora qué obtenemos de AppsFlyer con DataLocker en nuestra base de datos. Con 9 tablas principales [<sup>15</sup>](#footnote-15) basta para construir un recorrido de usuario:
+
+clicks
+
+installs
+
+post-attribution installs
+
+inapps
+
+clicks_retargeting
+
+inapps_retargeting
+
+post-attribution in-apps
+
+organic_uninstalls
+
+uninstalls
+
+Aquí tienes un esquema de cómo se conectan la mayoría de estas tablas que representan el recorrido del usuario:
+
+![Esquema del recorrido del usuario](/images/last-click-city/AppsFlyer/5.png)
+
+- t1, t2, etc., significan «touch» (contacto).
+- c1, c2, etc., significan «contributor» (contribuidor).
+- e1, e2, etc., significan «event» (evento).
+- Una línea de puntos representa la atribución de AppsFlyer.
+- Los datos de SRN solo están en las tablas «installs» e «inapps» + «inapps_retarg».
+
+Hay 4 tablas adicionales:
+
+organic_uninstalls
+
+uninstalls
+
+post-attribution installs
+
+post-attribution in-app events
+
+Las dos últimas son informes de la herramienta Protect360, que ofrece protección contra el fraude.
+
+`post-attribution installs:` Protect puede cambiar la media source de la instalación durante los 7 días posteriores a la instalación (8 días en total) a organic o a uno de la lista de contribuidores [<sup>16</sup>](#footnote-16) a la instalación. La media source correcta estará en la columna `rejected_reason_value` [<sup>17</sup>](#footnote-17). La mayoría de las veces es null u organic.
+
+`post-attribution in-app events:` Protect puede cambiar la media source de los eventos durante los 30 días posteriores a la instalación. La media source correcta estará en la columna `rejected_reason_value`. La mayoría de las veces es null u organic.
+
+Hemos construido nueve tablas de ejemplo con el número de columnas necesario para que reproduzcan los datos tal y como vienen en los datos en bruto reales de AppsFlyer.
+
+### Información sobre los usuarios
+
+Hay seis usuarios con trayectorias distintas, y cada uno tiene su propia particularidad.
+
+`100-200` tiene una media_source de instalación fraudulenta y una campaña de retargeting fraudulenta. Tenemos que cambiar ambas usando las tablas de Protect360.
+
+`111-222` tiene una hora de instalación distinta en las tablas `clicks` e `inapps`. Usaremos la hora de instalación de `inapps` porque es anterior. También hay un contacto duplicado en clicks e installs por la fuente `mobtop`. Lo desduplicaremos con DISTINCT.
+
+`333-444` tiene una reinstalación procedente de la campaña de retargeting.
+
+`777-888` tiene una media_source de instalación fraudulenta y no tiene la media source correcta, así que hay que eliminar a este usuario.
+
+`999-100` tiene una campaña de retargeting fraudulenta y no tiene la media source correcta para ella, así que hay que eliminar la fila de la campaña de retargeting de este usuario.
+
+### Tablas
+
+Hemos intentado usar todos los campos de datos tal cual [<sup>18</sup>](#footnote-18).
+
+### Clicks
+
+Son clics en anuncios <strong>pero sin las SRN</strong>, como Google, Facebook, etc. [<sup>19</sup>](#footnote-19) Recuerda: si un usuario ya ha instalado tu app pero aun así hace clic en tu anuncio, esos clics estarán en la tabla «click». Además, si los usuarios hacen clic en un anuncio pero no abren tu app, también habrá clics en esta tabla.
+
+```sql
+WITH
+ clicks AS (
+   SELECT
+       '2022-03-29 15:03:02 UTC' AS event_time,
+       'click' AS event_name,
+       'cpanetwork1' AS media_source,
+       'aaa111-bbb111' AS advertising_id
+   UNION ALL
+    SELECT '2022-03-30 16:15:24 UTC', 'click', 'cpanetwork2', 'aaa111-bbb111'
+   UNION ALL
+    SELECT '2022-04-01 17:15:00 UTC', 'click', 'cpanetwork3', 'aaa111-bbb111'
+   UNION ALL
+    SELECT '2022-03-31 16:03:47 UTC', 'click', 'mobtop', 'aaa111-bbb111'
+   UNION ALL
+    SELECT '2022-03-28 17:15:23 UTC', 'click', 'cpanetwork1', 'ccc555-ddd555'
+   UNION ALL
+    SELECT '2022-03-30 18:15:32 UTC', 'click', 'cpanetwork2', 'ccc555-ddd555'
+ ),
+
+SELECT
+   *
+FROM clicks
+```
+
+![Clics de AppsFlyer](/images/last-click-city/AppsFlyer/6.png)
+
+### Installs
+
+1. Contiene la fuente de la instalación y las media sources que asistieron. Recuerda: si la aplicación se descarga pero el usuario nunca la abre, AppsFlyer <em>no podrá registrar</em> ninguna instalación.
+2. Si hubo clics desde la SRN de un usuario concreto pero ninguna instalación suya, no habrá datos.
+3. Hay datos de varios partners, ya que Facebook casi siempre aparecerá como restricted.
+4. La ventana de reatribución «es un intervalo de tiempo que empieza la primera vez que un usuario instala la app y dura lo que fije el anunciante (90 días por defecto). Durante la ventana de reatribución, las <em>reinstalaciones de la app no se registran como instalaciones nuevas</em> y no generan un nuevo postback de instalación <em>salvo que procedan de una</em> campaña de <strong>retargeting</strong>».[<sup>20</sup>](#footnote-20)
+
+![Ventana de reatribución](/images/last-click-city/AppsFlyer/7-0.png)
+
+Esto significa que si el usuario desinstala tu app <em>durante</em> la ventana de reatribución y la reinstala desde
+ - otra campaña de captación de usuarios, <em>no habrá atribución</em> (= no hay evento de instalación)
+ o
+ - campañas de retargeting (¡marcadas como retargeting!, por ejemplo retargeting_is_true), en cuyo caso <strong>se registrará</strong> en la tabla <strong>`“inapps_retargeting”` (<strong>no en la</strong> tabla `“install”`) con `retargeting_conversion_type` igual a </strong>`“reattribution”`.
+
+También conviene recordar que «con independencia de la ventana de reatribución, cuando una aplicación <strong>se respalda con iCloud</strong> y después se restaura (en el mismo dispositivo o en otro), AppsFlyer no lo cuenta como una instalación nueva ni como una reinstalación. Un usuario que restaura una app desde iCloud conserva su AppsFlyer ID y sus datos de atribución [<sup>21</sup>](#footnote-21)».
+
+Digamos algo sobre cómo asigna AppsFlyer los contribuidores a una instalación. Cuando el usuario abre tu app por primera vez, se inicializa el SDK de AppsFlyer. AppsFlyer consulta entonces sus bases de datos de clics e impresiones <em>de todos los partners integrados</em> que estén activados en tu cuenta de AppsFlyer. AppsFlyer también envía llamadas de API a las SRN. Cuando recibe respuesta, usa el advertising_id o varios parámetros como el user agent + la IP (para la atribución probabilística) para atribuir, teniendo en cuenta estas prioridades:
+
+1. Tipo de interacción (un clic vale más que una impresión)
+2. Método de atribución (el determinista vale más que el probabilístico)
+3. Ventana de atribución (ventanas de conversión retroactiva por clic o por visualización)
+
+![Prioridades de atribución de AppsFlyer](/images/last-click-city/AppsFlyer/7-1.png)
+
+El ganador se asigna como media_source de la instalación y todos los demás como contribuidores.
+
+<strong>Ahora bien, si el ganador está en la lista de restringidos</strong> = la media_source es `restricted`, se borran todos los datos sobre los contribuidores (asistencias) a la instalación. Si el contribuidor está en la lista de fuentes de datos restringidas, el valor del campo es null. Es decir, no todos los null en los datos de contribuidores significan que no haya contribuidor.
+
+Unas palabras sobre los métodos de atribución determinista y probabilístico:
+
+- El método determinista significa que AppsFlyer envía el advertising_id asociado a la instalación a todas las redes integradas activas y, si una de ellas le responde que ese advertising_id es suyo, asigna la instalación a esa red concreta.
+
+- Hay casos en los que no se encuentran datos de la fuente de instalación mediante ese ID. AppsFlyer dispone de un conjunto de atributos de esa instalación, como device_id, IP, etc., y las redes también pueden compartir esa información. Con los datos de las últimas 24 horas, AppsFlyer compara las coincidencias de cada atributo con los datos de las redes.
+
+Por ejemplo, tenemos los datos de abajo:
+
+Atributos
+
+AppsFlyer
+
+Red-1
+
+Red-2
+
+IP
+
+<strong>111.111</strong>
+
+111.111
+
+222.222
+
+UserAgent
+
+<strong>123</strong>
+
+234
+
+123
+
+plataforma
+
+<strong>iOS</strong>
+
+Android
+
+iOS
+
+La Red-1 coincide con los datos de AppsFlyer en 1 de 3 y la Red-2 en 2 de 3. AppsFlyer atribuye la instalación a la Red-2. Es un método probabilístico muy simple, pero AppsFlyer afirma que acierta la media_source de la instalación con un 93 % de probabilidad.
+
+```sql
+WITH
+ installs AS (
+   SELECT
+     '2022-03-31 18:03:47 UTC' AS install_time,
+     'install' AS event_name,
+     'googleads' AS media_source,
+     '2022-03-31 17:03:47 UTC' AS contributor_1_touch_time,
+     'twitter' AS contributor_1_media_source,
+     '2022-03-31 16:03:47 UTC' AS contributor_2_touch_time,
+     'mobtop' AS contributor_2_media_source,
+     '2022-03-31 15:03:47 UTC' AS contributor_3_touch_time,
+     'organic' AS contributor_3_media_source,
+     '111-222' AS appsflyer_id,
+     'aaa111-bbb111' AS advertising_id
+ UNION ALL
+   SELECT '2022-03-30 18:05:47 UTC', 'install', 'organic', null, null, null, null, null, null, '333-444', 'bbb222-ccc222'
+ UNION ALL
+   SELECT '2022-03-29 17:06:50 UTC', 'install', 'facebook', '2022-03-28 15:06:50 UTC', 'mobtop', null, null, null, null, '555-666', 'ccc555-ddd555'
+ UNION ALL
+ --must be deleted due to fraudulent install
+   SELECT '2022-03-29 17:07:50 UTC', 'install', 'fraudcpa', null, null, null, null, null, null, '777-888', 'eee777-fff777'
+ UNION ALL
+ --media_source will be changed due to fraudulent install on organic
+   SELECT '2022-03-29 17:08:50 UTC', 'install', 'fraudcpa', null, null, null, null, null, null, '999-100', 'ggg999-iii999'
+ UNION ALL
+ --media_source will be changed due to fraudulent install on contributor1
+   SELECT '2022-03-29 18:08:50 UTC', 'install', 'fraudcpa', '2022-03-29 15:00:50 UTC', 'goodcpa', null, null, null, null, '100-200', 'jjj100-kkk100'
+ )
+
+SELECT
+   *
+FROM installs
+```
+
+![Atribución](/images/last-click-city/AppsFlyer/8.png)
+
+### Post-Attribution Installs
+
+Una de las tablas de Protect360 da la media_source correcta cuando considera fraudulenta la actual.
+
+<strong>Recuerda:</strong> «Protect360 realiza la detección posterior a la atribución <strong>durante el mes natural de la instalación y hasta el séptimo día del mes siguiente</strong>. Esto significa, por ejemplo, que para las instalaciones de noviembre Protect360 busca fraude hasta el 7 de diciembre [<sup>22</sup>](#footnote-22)».
+
+```sql
+WITH
+ post_attribution_installs AS (
+   SELECT
+     '777-888' AS appsflyer_id,
+      NULL AS rejected_reason_value
+ UNION ALL
+   SELECT '999-100', 'organic'
+ UNION ALL
+   SELECT '100-200', 'contributor1'
+ )
+
+SELECT
+   *
+FROM post_attribution_installs
+```
+
+![Post-Attribution Installs](/images/last-click-city/AppsFlyer/9.png)
+
+### In-apps (eventos)
+
+<strong>Recuerda:</strong> existe una doble atribución de los eventos de retargeting. Significa que los eventos de las campañas de retargeting también se atribuyen a la campaña de instalación de ese appsflyer_id. El resultado es una duplicación de eventos: uno se guarda en la tabla in-apps (eventos) y otro en inapps_retargeting (eventos). La diferencia es que, en la tabla in-apps, el evento procedente de campañas de retargeting lleva el campo `is_primary_attribution = false` [<sup>23</sup>](#footnote-23). Por eso filtramos los eventos con esos valores.
+
+```sql
+inapps AS (
+   SELECT
+     '2022-03-31 18:02:47 UTC' AS install_time,
+     'content_view' AS event_name,
+     '2022-03-31 18:06:02 UTC' AS event_time,
+     'googleads' AS media_source,
+     TRUE AS is_primary_attribution,
+     '111-222' AS appsflyer_id,
+     null AS customer_user_id
+ UNION ALL
+   SELECT '2022-03-31 18:02:47 UTC', 'registation', '2022-03-31 18:09:47 UTC', 'googleads', TRUE, '111-222', '111'
+ --double_attribution for '111-222'
+ UNION ALL
+   SELECT '2022-03-31 18:02:47 UTC', 'login', '2022-04-01 20:07:02 UTC', 'googleads', FALSE, '111-222', '111'
+ --
+ UNION ALL
+   SELECT '2022-03-30 18:05:47 UTC', 'content_view', '2022-03-30 18:07:47 UTC', 'organic', TRUE, '333-444', '333'
+ UNION ALL
+   SELECT '2022-03-29 17:06:47 UTC', 'content_view', '2022-03-29 17:08:50 UTC', 'facebook', TRUE, '555-666', null),
+
+SELECT
+   *
+FROM inapps
+```
+
+![In-apps (eventos)](/images/last-click-city/AppsFlyer/10.png)
+
+En esta tabla hemos puesto la hora de instalación del appsflyer_id `111-222` antes que en la tabla de instalaciones para el mismo usuario. ¿Por qué?
+
+El primer motivo posible es este:
+
+1. A veces la hora de instalación de la tabla `installs` es distinta de la de la tabla `inapps`. Por eso tenemos que considerar que hay un evento `“install”` antes que todos los demás eventos. Es perfectamente normal. AppsFlyer lo hace por el comportamiento anómalo de la instalación.
+
+Otros motivos posibles:
+
+1. A veces puede haber varias fuentes de instalación para un mismo `appsflyer_id` (por el mismo motivo del punto 1 de arriba).
+2. A veces habrá más de un appsflyer_id para un mismo user_id (`customer_user_id`), porque ese ID de usuario instaló tu app dos veces. <strong>¡Cada instalación inicializa un `appsflyer_id` nuevo!</strong> De nuevo, hay que recordar que una zona no autenticada pequeña es imprescindible para tener datos completos del usuario.
+3. A veces habrá más de un user_id (`customer_user_id`) para un mismo `appsflyer_id`, porque el usuario se ha registrado varias veces.
+
+### Clicks_Retargeting
+
+Son clics en anuncios de retargeting <strong>pero sin las SRN</strong>, como Google, Facebook, etc. Recuerda: si un usuario ya ha vuelto a interactuar con tu app pero aun así hace clic en tu anuncio de retargeting, esos clics estarán en la tabla «click_retargeting». Además, si los usuarios hacen clic en un anuncio de retargeting pero no abren tu app, también habrá clics en esta tabla.
+
+```sql
+WITH
+ clicks_retargeting AS (
+   SELECT
+       '2022-04-01 21:03:02 UTC' AS event_time,
+       'click' AS event_name,
+       'email' AS media_source,
+       'aaa111-bbb111' AS advertising_id
+   UNION ALL
+    SELECT '2022-03-31 08:15:23 UTC', 'click', 'google_retarg', 'bbb222-ccc222'
+ )
+
+SELECT
+   *
+FROM clicks_retargeting
+```
+
+![Clicks_Reatargeting](/images/last-click-city/AppsFlyer/11.png)
+
+### In-apps_Retargeting (eventos)
+
+1. Esta tabla guarda los datos de eventos de las campañas de retargeting, incluidas las SRN. El evento más importante es el de apertura de la app. (En nuestro caso es `“content_view”`.) La campaña de retargeting se atribuye a ese evento. Imagina que a AppsFlyer solo se le envía `“purchase”`. Es poco probable que ese evento ocurra con frecuencia, comparado con otras interacciones posibles dentro de tu app, y si el usuario hace clic en tu anuncio de retargeting, llega a tu app y no compra nada, <strong>no habrá datos</strong> en esta tabla sobre ese contacto.
+2. También puede haber estos eventos de atribución: - <em>Re-engagement</em>: si la app está en el dispositivo del usuario, la media source que le motivó a abrirla recibe el mérito <em>de un re-engagement</em>. - <em>Reatribución:</em> <strong>reinstalación por retargeting</strong>. Lo repetimos: si el usuario desinstala tu app durante la ventana de reatribución y la reinstala a través de campañas de retargeting, todos los eventos in-app de ese usuario se registrarán con `retargeting_conversion_type` igual a `“reattribution”`. Así que puedes convertir en «reinstall» el primer evento de la campaña de retargeting cuando `retargeting_conversion_type` = `“reattribution”`.
+3. Digamos también algo del caso en que hay dos campañas de retargeting para el mismo usuario. Si el usuario interactúa con otra campaña de retargeting durante la ventana de re-engagement de la anterior, y no lo bloquea una ventana de exclusión, <strong>la ventana de re-engagement actual (la de la campaña anterior) termina de inmediato y empieza una nueva</strong>. En inapps_retargeting quedará la última campaña (la segunda) tras interactuar con ella y abrir la aplicación, así que a partir de ahí los eventos irán a la segunda campaña hasta que acabe la nueva ventana de re-engagement.
+4. Recordemos también que existe una doble atribución de los eventos de retargeting. Significa que los eventos de las campañas de retargeting también se atribuyen a la campaña de instalación de ese appsflyer_id. El resultado es una duplicación de eventos: uno se guarda en la tabla in-apps (eventos) y otro en inapps_retargeting (eventos). La diferencia es que, en la tabla in-apps_retargeting, el evento procedente de campañas de retargeting lleva el campo `is_primary_attribution = true`.
+
+```sql
+WITH
+ inapps_retargeting AS (
+   SELECT
+     'email' AS media_source,
+     '2022-04-01 19:06:02 UTC' AS event_time,
+     'content_view' AS event_name,
+     '111-222' AS appsflyer_id,
+     '111' AS customer_user_id,
+     NULL AS retargeting_conversion_type
+ UNION ALL
+   SELECT 'email', '2022-04-01 20:07:02 UTC', 'login', '111-222', '111', NULL
+ UNION ALL
+   SELECT 'google_retarg', '2022-03-31 09:07:00 UTC', 'content_view', '333-444', '333', 'reattribution'
+ UNION ALL
+   SELECT 'google_retarg', '2022-03-31 09:07:02 UTC', 'registration', '333-444', '333', NULL
+ UNION ALL
+   SELECT 'cpanetwork_retarg', '2022-03-31 10:10:10 UTC', 'content_view', '100-200', NULL, NULL
+ UNION ALL
+   SELECT 'cpanetwork_retarg', '2022-03-31 13:15:10 UTC', 'content_view', '999-100', NULL, NULL
+ ),
+
+SELECT
+   *
+FROM inapps_retargeting
+```
+
+![In-apps_Retargeting (eventos)](/images/last-click-city/AppsFlyer/12.png)
+
+### Post-Attribution In-app Events
+
+```sql
+WITH
+post_attribution_in_app_events AS (
+   SELECT
+     '2022-03-31 10:10:10 UTC' AS event_time,
+     'content_view' AS event_name,
+     '100-200' AS appsflyer_id,
+     TRUE AS is_retargeting,
+     'organic' AS rejected_reason_value
+ UNION ALL
+   SELECT '2022-03-31 13:15:10 UTC', 'content_view', '999-100', TRUE, NULL
+ )
+
+SELECT
+   *
+FROM post_attribution_in_app_events
+```
+
+![Post-Attribution In-app Events](/images/last-click-city/AppsFlyer/13.png)
+
+### Organic_Uninstalls
+
+Ten en cuenta que la hora del evento representa el momento en que AppsFlyer determina que se desinstaló la app, <strong>y no la desinstalación en sí</strong> [<sup>24</sup>](#footnote-24).
+
+```sql
+WITH
+ organic_uninstalls AS (
+   SELECT
+     'googleads' AS media_source,
+     '2022-04-01 10:09:47 UTC' AS event_time,
+     '333-444' AS appsflyer_id
+ )
+
+SELECT
+   *
+FROM organic_uninstalls
+```
+
+![Organic_Uninstalls](/images/last-click-city/AppsFlyer/14.png)
+
+### Uninstalls
+
+Ten en cuenta que la hora del evento representa el momento en que AppsFlyer determina que se desinstaló la app, <strong>y no la desinstalación en sí</strong>.
+
+```sql
+WITH
+ uninstalls AS (
+   SELECT
+     'googleads' AS media_source,
+     '2022-04-02 18:09:47 UTC' AS event_time,
+     '111-222' AS appsflyer_id
+ )
+
+SELECT
+   *
+FROM uninstalls
+```
+
+![Uninstalls](/images/last-click-city/AppsFlyer/15.png)
+
+### Raw_Data
+
+Ahora toca combinar los datos uniéndolos sin más y aplicando algunas transformaciones sencillas.
+
+```sql
+raw_data AS
+   (SELECT
+       CASE
+           WHEN true_install_time_by_userid IS NULL THEN true_install_time_by_afid
+           ELSE true_install_time_by_afid
+       END AS true_install_time,
+       *
+    FROM
+       (SELECT
+           FIRST_VALUE(install_time) OVER (PARTITION BY customer_user_id ORDER BY install_time ASC) AS true_install_time_by_userid,
+           FIRST_VALUE(install_time) OVER (PARTITION BY appsflyer_id ORDER BY install_time ASC) AS true_install_time_by_afid,
+           *
+        FROM
+           (SELECT
+             LAST_VALUE(customer_user_id IGNORE NULLS) OVER (PARTITION BY appsflyer_id ORDER BY install_time DESC RANGE BETWEEN UNBOUNDED PRECEDING AND    CURRENT ROW) AS customer_user_id,
+               appsflyer_id,
+               media_source,
+               true_install_source,
+               clicks_media_source,
+               clicks_event_name,
+               clicks_event_time,
+               install_time,
+               contributor_1_media_source,
+               contributor_1_touch_time,
+               contributor_2_media_source,
+               contributor_2_touch_time,
+               contributor_3_media_source,
+               contributor_3_touch_time,
+               clicks_retarg_source,
+               clicks_retarg_event_name,
+               clicks_retarg_event_time,
+               retarg_source,
+               retarg_event_name,
+               retarg_event_time,
+               inapps_media_source,
+               inapps_event_name,
+               inapps_event_time,
+               uninstall_organic_source,
+               uninstall_organic_time,
+               uninstall_nonorg_source,
+               uninstall_nonorg_time
+           FROM
+               (SELECT
+                   DISTINCT
+                   customer_user_id,
+                   --delete fraud installs
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source IS NULL THEN 'delete'
+                       ELSE appsflyer_id
+                   END AS appsflyer_id,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'organic' THEN 'organic'
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor1' THEN contributor_1_media_source
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor2' THEN contributor_2_media_source
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor3' THEN contributor_3_media_source
+                       ELSE media_source
+                   END AS media_source,
+                   true_install_source,
+                   clicks_media_source,
+                   clicks_event_name,
+                   clicks_event_time,
+                   CASE
+                       WHEN install_time_inapp IS NULL THEN install_time_installs
+                       ELSE install_time_inapp
+                   END AS install_time,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor1' THEN NULL
+                       ELSE contributor_1_media_source
+                   END AS contributor_1_media_source,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor1' THEN NULL
+                       ELSE contributor_1_touch_time
+                   END AS contributor_1_touch_time,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor2' THEN NULL
+                       ELSE contributor_2_media_source
+                   END AS contributor_2_media_source,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor2' THEN NULL
+                       ELSE contributor_2_touch_time
+                   END AS contributor_2_touch_time,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor3' THEN NULL
+                       ELSE contributor_3_media_source
+                   END AS contributor_3_media_source,
+                   CASE
+                       WHEN problem_install_afid IS NOT NULL AND true_install_source = 'contributor3' THEN NULL
+                       ELSE contributor_3_touch_time
+                   END AS contributor_3_touch_time,
+                   clicks_retarg_source,
+                   clicks_retarg_event_name,
+                   clicks_retarg_event_time,
+                   --make nulls in retargeting columns if fraud
+                   CASE
+                       WHEN true_retarg_source = 'delete' THEN NULL
+                       WHEN true_retarg_source IS NOT NULL AND true_retarg_source != 'delete' THEN true_retarg_source
+                       ELSE retarg_source
+                   END AS retarg_source,
+                   CASE
+                       WHEN true_retarg_source = 'delete' THEN NULL
+                       ELSE retarg_event_name
+                   END AS retarg_event_name,
+                   CASE
+                       WHEN true_retarg_source = 'delete' THEN NULL
+                       ELSE retarg_event_time
+                   END AS retarg_event_time,
+                   inapps_media_source,
+                   inapps_event_name,
+                   inapps_event_time,
+                   uninstall_organic_source,
+                   uninstall_organic_time,
+                   uninstall_nonorg_source,
+                   uninstall_nonorg_time
+               FROM
+                   (SELECT
+                       inapps.customer_user_id,
+                       installs.appsflyer_id,
+                       installs.media_source,
+                       post_attribution_installs.appsflyer_id AS problem_install_afid,
+                       rejected_reason_value AS true_install_source,
+                       clicks.media_source AS clicks_media_source,
+                       clicks.event_name AS clicks_event_name,
+                       CAST(clicks.event_time AS STRING) AS clicks_event_time,
+                       CAST(installs.install_time AS STRING) AS install_time_installs,
+                       CAST(inapps.install_time AS STRING) AS install_time_inapp,
+                       installs.contributor_1_media_source,
+                       CAST(installs.contributor_1_touch_time AS STRING) AS contributor_1_touch_time,
+                       installs.contributor_2_media_source,
+                       CAST(installs.contributor_2_touch_time AS STRING) AS contributor_2_touch_time,
+                       installs.contributor_3_media_source,
+                       CAST(installs.contributor_3_touch_time AS STRING) AS contributor_3_touch_time,
+                       clicks_retarg.media_source AS clicks_retarg_source,
+                       clicks_retarg.event_name AS clicks_retarg_event_name,
+                       CAST(clicks_retarg.event_time AS STRING) AS clicks_retarg_event_time,
+                       retarg.media_source AS retarg_source,
+                       retarg.event_name AS retarg_event_name,
+                       CAST(retarg.event_time AS STRING) AS retarg_event_time,
+                       fraud_retarg.media_source AS true_retarg_source,
+                       inapps.media_source AS inapps_media_source,
+                       inapps.event_name AS inapps_event_name,
+                       CAST(inapps.event_time AS STRING) AS inapps_event_time,
+                       organic_uninstalls.media_source AS uninstall_organic_source,
+                       CAST(organic_uninstalls.event_time AS STRING) AS uninstall_organic_time,
+                       uninstalls.media_source AS uninstall_nonorg_source,
+                       CAST(uninstalls.event_time AS STRING) AS uninstall_nonorg_time
+                   FROM
+                       (SELECT
+                           appsflyer_id,
+                           advertising_id,
+                           media_source,
+                           install_time,
+                           contributor_1_media_source,
+                           contributor_1_touch_time,
+                           contributor_2_media_source,
+                           contributor_2_touch_time,
+                           contributor_3_media_source,
+                           contributor_3_touch_time
+                       FROM installs
+                       ) AS installs
+                       LEFT JOIN
+                       (SELECT
+                           advertising_id,
+                           media_source,
+                           event_name,
+                           event_time
+                       FROM clicks
+                       ) AS clicks
+                       ON installs.advertising_id = clicks.advertising_id
+                       LEFT JOIN
+                       (SELECT
+                           appsflyer_id,
+                           rejected_reason_value
+                       FROM post_attribution_installs
+                       ) AS post_attribution_installs
+                       ON installs.appsflyer_id = post_attribution_installs.appsflyer_id
+                       LEFT JOIN --add customer_user_id, because all customer_user_id are NULL at installs
+                       (SELECT
+                           FIRST_VALUE (customer_user_id IGNORE NULLS) OVER (PARTITION BY appsflyer_id ORDER BY install_time) AS customer_user_id,
+                           appsflyer_id,
+                           media_source,
+                           install_time,
+                           event_name,
+                           event_time
+                       FROM inapps
+                       WHERE is_primary_attribution = TRUE
+                       ) AS inapps
+                       ON installs.appsflyer_id = inapps.appsflyer_id
+                       LEFT JOIN
+                       (SELECT
+                           advertising_id,
+                           media_source,
+                           event_name,
+                           event_time
+                       FROM clicks_retargeting
+                       ) AS clicks_retarg
+                       ON installs.advertising_id = clicks_retarg.advertising_id
+                       LEFT JOIN --add retarteting campaigns and events name with event_time (as contidition)
+                       (SELECT
+                           customer_user_id,
+                           appsflyer_id,
+                           CONCAT('utm_retargeting=', media_source) AS media_source,
+                           event_time,
+                           CASE
+                             WHEN retargeting_conversion_type = 'reattribution' THEN 'reinstall'
+                             ELSE event_name
+                           END AS event_name
+                       FROM inapps_retargeting
+                       ) AS retarg
+                       ON installs.appsflyer_id = retarg.appsflyer_id
+                       LEFT JOIN
+                       (SELECT
+                           appsflyer_id,
+                           CASE
+                               WHEN rejected_reason_value IS NULL THEN 'delete'
+                               ELSE CONCAT('utm_retargeting=', rejected_reason_value)
+                           END AS media_source,
+                           event_time,
+                           event_name
+                       FROM post_attribution_in_app_events
+                       WHERE is_retargeting IS TRUE
+                       ) AS fraud_retarg
+                       ON retarg.appsflyer_id = fraud_retarg.appsflyer_id
+                       AND retarg.event_time = fraud_retarg.event_time
+                       AND retarg.event_name = fraud_retarg.event_name
+                       LEFT JOIN
+                       (SELECT
+                           appsflyer_id,
+                           IF(media_source IS NULL, 'none', 'none') AS media_source,
+                           event_time
+                       FROM organic_uninstalls
+                       ) AS organic_uninstalls
+                       ON installs.appsflyer_id = organic_uninstalls.appsflyer_id
+                       LEFT JOIN
+                       (SELECT
+                           appsflyer_id,
+                           IF(media_source IS NULL, 'none', 'none') AS media_source,
+                           event_time
+                       FROM uninstalls
+                       ) AS uninstalls
+                       ON installs.appsflyer_id = uninstalls.appsflyer_id
+                   )
+               )
+           )
+           --excluding user with adif = '777-888' AND
+           WHERE (appsflyer_id != 'delete')
+       )
+   )
+
+SELECT
+   *
+FROM raw_data
+```
+
+![Datos en bruto](/images/last-click-city/AppsFlyer/17.png)
+
+(Con contributor_2 y el resto de columnas)
+
+### Channels
+
+Ahora necesitamos guardar los canales en una sola columna. Para eso hay que usar la función UNPIVOT.
+
+```sql
+channels AS
+   (SELECT
+       DISTINCT
+       appsflyer_id,
+       customer_user_id,
+       CASE
+           WHEN channel LIKE '%utm_retargeting%' THEN REGEXP_EXTRACT(channel, 'utm_retargeting=([^&]*)')
+           ELSE channel
+       END AS channel,
+       CASE
+           WHEN channel LIKE '%utm_retargeting%' THEN 1
+           ELSE 0
+       END AS is_retarg,
+       true_install_time,
+       CAST(touch_time AS TIMESTAMP) AS touch_time
+   FROM
+       raw_data
+   UNPIVOT ((channel, touch_time)  FOR  channel_time_pair IN
+           ((clicks_media_source, clicks_event_time),
+           (media_source, install_time),
+           (contributor_1_media_source, contributor_1_touch_time),
+           (contributor_2_media_source, contributor_2_touch_time),
+           (contributor_3_media_source, contributor_3_touch_time),
+           (clicks_retarg_source, clicks_retarg_event_time),
+           (inapps_media_source, inapps_event_time),
+           (retarg_source, retarg_event_time),
+           (uninstall_organic_source, uninstall_organic_time),
+           (uninstall_nonorg_source, uninstall_nonorg_time)
+           ))
+   )
+
+SELECT
+*
+FROM channels
+```
+
+![Canales](/images/last-click-city/AppsFlyer/18.png)
+
+### Events
+
+Hay que hacer lo mismo con los eventos. No podemos usar UNPIVOT a la vez para canales y eventos porque obtendrías un CROSS JOIN de eventos con canales, que generaría filas sin sentido.
+
+```sql
+events AS
+   (SELECT
+       DISTINCT
+       appsflyer_id,
+       customer_user_id,
+       event,
+       CAST(time_of_event AS TIMESTAMP) AS time_of_event
+   FROM
+       raw_data
+   UNPIVOT ((event, time_of_event)  FOR  event_time_pair IN
+           ((clicks_event_name, clicks_event_time),
+           (media_source, install_time),
+           (clicks_retarg_event_name, clicks_retarg_event_time),
+           (inapps_event_name, inapps_event_time),
+           (retarg_event_name, retarg_event_time)
+           ))
+   )
+
+SELECT
+*
+FROM events
+```
+
+![Eventos](/images/last-click-city/AppsFlyer/Picture1.png)
+
+### Recorrido del usuario
+
+El siguiente paso es unirlo todo, creando un `“evento”` de instalación a partir de la marca de tiempo y convirtiendo algunos canales en `“direct/none”`, como proponíamos antes.
+
+```sql
+user_journey AS
+   (SELECT
+       appsflyer_id,
+       customer_user_id,
+       CASE
+           WHEN LAG(channel) OVER (PARTITION BY appsflyer_id, customer_user_id, is_retarg ORDER BY touch_time ASC ) = channel
+               AND event_name = 'install' THEN channel
+           WHEN LAG(channel) OVER (PARTITION BY appsflyer_id, customer_user_id, is_retarg ORDER BY touch_time ASC ) = channel
+               AND event_name IS NOT NULL THEN 'direct/none'
+           ELSE channel
+       END AS channel,
+       touch_time,
+       --or leave it as null if you wish
+       --event_name
+       CASE WHEN
+           event_name IS NULL THEN 'click'
+           ELSE event_name
+       END AS event_name
+       FROM(
+           SELECT
+               appsflyer_id,
+               customer_user_id,
+               channel,
+               is_retarg,
+               touch_time,
+               CASE
+                   --where can not be events before install!
+                   WHEN CAST(true_install_time AS TIMESTAMP) > CAST(touch_time AS TIMESTAMP) THEN NULL
+                   --install event
+                   WHEN CAST(true_install_time AS TIMESTAMP) = touch_time THEN 'install'
+                   WHEN channel = 'none' THEN 'uninstall'
+                   WHEN event = 'click' THEN NULL
+                   ELSE event
+               END AS event_name
+           FROM
+               (SELECT
+                   channels.appsflyer_id,
+                   channels.customer_user_id,
+                   channel,
+                   is_retarg,
+                   true_install_time,
+                   touch_time,
+                   event
+               FROM
+                   (SELECT
+                       *
+                   FROM channels) AS channels
+                   LEFT JOIN
+               (SELECT
+                   *
+           FROM events) AS events
+           ON channels.appsflyer_id = events.appsflyer_id
+           AND channels.customer_user_id = events.customer_user_id
+           AND channels.touch_time = events.time_of_event
+           ORDER BY channels.appsflyer_id, touch_time)
+       )
+   )
+
+SELECT
+*
+FROM user_journey
+ORDER BY appsflyer_id, customer_user_id, touch_time ASC
+```
+
+![Recorrido del usuario](/images/last-click-city/AppsFlyer/19.png)
+
+### Caminos de conversión
+
+Ahora convertimos `“install”` en la conversión (puedes cambiarlo por el registro, por ejemplo):
+
+```sql
+conversion_paths_by_user AS
+   (SELECT
+       appsflyer_id,
+       customer_user_id,
+       channel,
+       event_name
+   FROM
+       (SELECT
+           *,
+           --MIN = first interaction with desired event_name
+           MIN(CASE WHEN event_name = 'install' THEN touch_number END) OVER (PARTITION BY appsflyer_id, customer_user_id) AS conversion
+       FROM
+           (SELECT
+               *,
+               ROW_NUMBER() OVER (PARTITION BY appsflyer_id, customer_user_id) AS touch_number
+           FROM user_journey)
+       )
+   WHERE touch_number <= conversion
+   )
+
+SELECT
+   *
+FROM conversion_paths_by_user
+```
+
+![Caminos de conversión](/images/last-click-city/AppsFlyer/20.png)
+
+Tiene buena pinta, pero como decíamos antes, <strong>¡puede haber canales adicionales que no aparezcan aquí!</strong>
+
+### Embudo multicanal
+
+Este es nuestro resultado final:
+
+```sql
+multi_channel_funnel AS (
+   SELECT
+       multi_channel_funnel,
+       COUNT(multi_channel_funnel) AS count
+   FROM
+       (SELECT
+           ARRAY_TO_STRING(multi_channel_funnel, '->') AS multi_channel_funnel
+       FROM
+           (SELECT
+               appsflyer_id,
+               customer_user_id,
+               ARRAY_AGG(channel) AS multi_channel_funnel
+           FROM conversion_paths_by_user
+           GROUP BY 1, 2)
+       )
+   GROUP BY 1)
+
+SELECT
+   *
+FROM multi_channel_funnel
+```
+
+![Embudo multicanal](/images/last-click-city/AppsFlyer/21.png)
+
+### Consultas
+
+Aquí tienes la [consulta con datos de ejemplo](https://github.com/SergeyMatrosov/AppsFlyer_Multi_Channel_Funnel/blob/main/AppsFlyerMultiFunnel_20221115.md), que puedes reescribir fácilmente para tus datos reales. Cambia el nombre de las tablas si hace falta y elige el intervalo de fechas. Eso es todo. Esperamos que te resulte útil. Escríbenos si quieres una consultoría.
+
+<p id="footnote-1"><sup>1</sup> Que se pueden combinar en uno solo, por supuesto.</p>
+
+<p id="footnote-2"><sup>2</sup> Nota: usando dominios o cupones únicos personalizados también puedes medir algunos anuncios offline.</p>
+
+<p id="footnote-3"><sup>3</sup> [https://support.appsflyer.com/hc/en-us/articles/209680773-Raw-data-reporting-overview#user-journey-report-availability](https://support.appsflyer.com/hc/en-us/articles/209680773-Raw-data-reporting-overview#user-journey-report-availability)</p>
+
+<p id="footnote-4"><sup>4</sup> Usaremos NULL como sinónimo.</p>
+
+<p id="footnote-5"><sup>5</sup> Esto también significa que no puedes comparar los datos en bruto de clics e impresiones con los datos de la cuenta publicitaria de la SRN: solo puedes hacerlo con informes de AppsFlyer como Overview, dentro de su interfaz.</p>
+
+<p id="footnote-6"><sup>6</sup> Lo mismo ocurre con la tabla de impresiones. No la usaremos porque los datos de impresiones también están restringidos para la web.</p>
+
+<p id="footnote-7"><sup>7</sup> [https://support.appsflyer.com/hc/en-us/articles/360006868017-Raw-data-content-restriction-media-source-or-user-identifiers](https://support.appsflyer.com/hc/en-us/articles/360006868017-Raw-data-content-restriction-media-source-or-user-identifiers) – Facebook, TikTok, Twitter, Roku.</p>
+
+<p id="footnote-8"><sup>8</sup> [https://support.appsflyer.com/hc/en-us/articles/4409322107537-Bulletin-Action-required-Get-Facebook-raw-data-using-Google-Install-Referrer](https://support.appsflyer.com/hc/en-us/articles/4409322107537-Bulletin-Action-required-Get-Facebook-raw-data-using-Google-Install-Referrer)</p>
+
+<p id="footnote-9"><sup>9</sup> Nota: los clics y las impresiones también son engagements.</p>
+
+<p id="footnote-10"><sup>10</sup> Si envías un evento de servidor a servidor, acuérdate de añadir el parámetro appsflyer_id para que la atribución sea correcta.</p>
+
+<p id="footnote-11"><sup>11</sup> Se te cobra cuando el usuario abre la app tras hacer clic en la campaña de retargeting. Las aperturas siguientes no se facturan.</p>
+
+<p id="footnote-12"><sup>12</sup> ¡Solo para campañas de instalación!</p>
+
+<p id="footnote-13"><sup>13</sup> No hay otro identificador para hacerlo.</p>
+
+<p id="footnote-14"><sup>14</sup> [https://support.appsflyer.com/hc/en-us/articles/209680773--raw%20data-reports-available-#reporting-tools%E2%80%94characteristics-and-features](https://support.appsflyer.com/hc/en-us/articles/209680773--raw%20data-reports-available-#reporting-tools%E2%80%94characteristics-and-features)</p>
+
+<p id="footnote-15"><sup>15</sup> Si falta alguna tabla, tendrás que mirar tus flujos de datos de [Data Locker](https://support.appsflyer.com/hc/en-us/articles/4410643856657).</p>
+
+<p id="footnote-16"><sup>16</sup> [https://support.appsflyer.com/hc/en-us/articles/207040506-Assisted-Installs#assisted-installs](https://support.appsflyer.com/hc/en-us/articles/207040506-Assisted-Installs#assisted-installs).</p>
+
+<p id="footnote-17"><sup>17</sup> Es difícil saber por qué AppsFlyer lo llama así, pero deberías tratarlo como una `“true_media_source”`.</p>
+
+<p id="footnote-18"><sup>18</sup> [https://support.appsflyer.com/hc/en-us/articles/208387843#data-fields-dictionary](https://support.appsflyer.com/hc/en-us/articles/208387843#data-fields-dictionary)</p>
+
+<p id="footnote-19"><sup>19</sup> ¿Te acuerdas de cómo comprobar las discrepancias entre los clics de Google Ads y las sesiones web? Es fácil, porque tienes un referrer en los datos en bruto de Google Analytics. Con las apps no puedes hacerlo, y no solo porque las tiendas no compartan información contigo: ¡con AppsFlyer pasa lo mismo! Por desgracia, solo queda tener fe.</p>
+
+<p id="footnote-20"><sup>20</sup> [https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained](https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained)</p>
+
+<p id="footnote-21"><sup>21</sup> [https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained#ios-app-restored-from-icloud-backup](https://support.appsflyer.com/hc/en-us/articles/115002587066-Re-attribution-window-explained#ios-app-restored-from-icloud-backup)</p>
+
+<p id="footnote-22"><sup>22</sup> [https://support.appsflyer.com/hc/en-us/articles/360015179337-Protect360-raw-data-reports#raw-data-availability-by-tool-type](https://support.appsflyer.com/hc/en-us/articles/360015179337-Protect360-raw-data-reports#raw-data-availability-by-tool-type)</p>
+
+<p id="footnote-23"><sup>23</sup> [https://support.appsflyer.com/hc/en-us/articles/360016371077-Double-attribution-of-retargeting-events](https://support.appsflyer.com/hc/en-us/articles/360016371077-Double-attribution-of-retargeting-events)</p>
+
+<p id="footnote-24"><sup>24</sup> [https://support.appsflyer.com/hc/en-us/articles/4408933557137#overview%C2%A0](https://support.appsflyer.com/hc/en-us/articles/4408933557137#overview%C2%A0)</p>

@@ -1,0 +1,148 @@
+---
+title: "Reparto del presupuesto de marketing mediante programación lineal."
+slug: "marketing-budget-allocation-via-linear-programming"
+date: "2021-05-28"
+description: "Reparto del presupuesto de marketing mediante programación lineal."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/marketing-budget-allocation-via-linear-programming.html"
+thumbnail: "/images/last-click-city/For_index_page_33.png"
+excerptLead: "El reparto del presupuesto es, sin duda, un auténtico quebradero de cabeza en marketing."
+excerpt: "Primero, por los modelos de atribución, que intentan representar con la mayor exactitud posible la aportación real de cada canal a la conversión de clientes. Segundo, porque el negocio puede exigir que se gaste más (o no menos) de cierta cantidad en un canal que no se considera especialmente rentable."
+---
+
+<strong>El reparto del presupuesto es, sin duda, un auténtico quebradero de cabeza en marketing. </strong>Primero, por los modelos de atribución, que intentan representar con la mayor exactitud posible la aportación real de cada canal a la conversión de clientes. Segundo, porque el negocio puede exigir que se gaste más (o no menos) de cierta cantidad en un canal que no se considera especialmente rentable. Tercero, porque la relación entre coste y conversiones casi nunca es lineal, por los anuncios, las subastas y el volumen de cada canal: cada dólar extra suele aportar menos conversión. Y cuarto, porque siempre hay un margen de error en nuestras expectativas; hay un abanico de resultados posibles y cada uno tiene su propia probabilidad, etc.
+
+Aun así, el objetivo es siempre tomar la decisión óptima aquí y ahora, entendiendo la aportación de cada canal de marketing, usando el modelo de atribución y las restricciones (del entorno y de las circunstancias). Por eso los métodos analíticos avanzados de la investigación operativa pueden resultar útiles. Vamos a mirar de cerca uno de ellos: la programación lineal (el más básico).
+
+La investigación operativa es un método analítico de resolución de problemas que usa matemáticas. La programación lineal es un método básico [[1]](#footnote-1) que consiste en maximizar (o minimizar) determinadas funciones. Hablando del reparto del presupuesto, queremos maximizar la conversión, una función del mix de canales en la que cada canal tiene su propio valor de atribución a la conversión. Algo así: conversiones = coef1\*A + coef2\*B, siendo A y B los canales.
+
+¿Pero es la programación lineal la herramienta adecuada aquí? ¿No es la relación entre coste y conversiones realmente no lineal, bien representada por la función de Gompertz (una modificación de la función sigmoide)? Si alguna vez has usado el Planificador de palabras clave de Google Ads, habrás visto curvas que relacionan clics con conversiones, CPC con clics, etc.
+
+![Planificador de palabras clave de Google Ads](/images/last-click-city/Marketing_budget_Allocation/0.png)
+
+Sí, es la herramienta adecuada, pero hay dos factores:
+
+1. Un presupuesto anual no es algo que crezca de forma espectacular, salvo que seas una startup en pleno éxito.
+2. En un periodo corto (un mes o un trimestre) <em>podemos</em> considerar que el comportamiento de esa relación es lineal.
+
+Veamos un ejemplo sencillo: tienes un presupuesto de 10.000 $ y solo dos canales, Search y Display. No hay embudo multicanal: cada canal aporta una audiencia que no se solapa con la otra. Con un modelo [sencillo](/es/last-click-city/simple-attributions-via-sql-in-bigquery) de atribución al último clic, Search da 125 conversiones con un CAC de 5 $; Display da 200 conversiones con un CAC de 8 $ [[2]](#footnote-2). Te piden que sigas mostrando anuncios en Display todo lo posible (los motivos los veremos al final), pero como vas a probar otra herramienta de segmentación modificada, aceptas gastar no menos de 6.000 $ para obtener resultados significativos. Nuestro objetivo es maximizar las conversiones dentro de un presupuesto dado. Hay que sacar todo lo que se pueda [[3]](#footnote-3).
+
+Un CAC de 5 $ en Search significa que el valor de conversión de cada dólar es ⅕. Cada 5 dólares te dan una conversión. En Display, con su CAC de 8 $, es ⅛.
+
+Así que la tarea consiste en maximizar esta función:
+ ⅕ \* Search + ⅛ \* Display -> máx.
+
+¿Cuáles son las restricciones?
+
+1. Presupuesto: la suma de Search y Display debe ser igual o menor que 10.000 $:
+    Search + Display &lt;= 10.000
+2. Display debe gastar al menos 6.000 $:
+    Display >= 6.000
+3. El presupuesto de Search debe tener valor positivo, pero no más de 10.000:
+    0 &lt;= Search &lt;= 10000
+4. El presupuesto de Display también debe tener valor positivo, pero no más de 10.000:
+    Display >= 10.000 (no olvides que además debe ser mayor que 6.000).
+
+Solución gráfica. Display va en X y Search en Y:
+
+1. De las restricciones —presupuesto máximo en Search o Display y valores positivos— obtenemos esta representación:
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/1.jpg)
+
+1. Segunda restricción: Display >= 6.000. Traza una recta que pase por el punto (6000, 0) y sea perpendicular a OY.
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/2.jpg)
+
+Nos queda un triángulo con un número continuo de soluciones posibles:
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/3.jpg)
+
+Todos los puntos dentro del triángulo, y también los de sus lados, cumplen las restricciones. El objetivo es encontrar entre ellos la solución óptima, la que nos dé el resultado máximo.
+
+1. Toca ahora encontrar el valor máximo de la función que queremos maximizar (en color turquesa). Primero supongamos que vamos a gastar 6.000 $ en Display. Obtenemos 6000/8 = 750 conversiones (valor). Para conseguir exactamente esas conversiones con Search habría que gastar 750\*5 = 3750 $. Así que nuestro primer punto será (6000, 0) y el segundo (3750, 0). Bien, pero nos hemos quedado 250 $ por gastar. Mirando el CAC, intuimos que tendría más sentido gastarlos en Search.
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/4.jpg)
+
+1. Ahora hay que trazar otra recta, igual que cuando ponemos todo el dinero en Display: 10000\*0,125 = 1250 (conversiones). Para conseguir exactamente esa cifra con Search habría que gastar 1250/0.2 = 6250. Los puntos serán (10000, 0) y (0, 6250), y la nueva recta será paralela a la primera. El problema es que incumple nuestra primera restricción, así que es una solución imposible.
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/5.jpg)
+
+1. Llegamos así a nuestro último punto, (6000, 4000), es decir, 4.000 $ para Search y 6.000 $ para Display. Esa proporción del presupuesto nos dará 1550 conversiones. Es el máximo que podemos conseguir teniendo en cuenta todas las restricciones.
+
+Está claro que esta tarea no tiene nada de difícil. Es bastante evidente que Search es el que más aporta. Solo hay una forma de invertir el resto del dinero (4000): reinvertirlo ahí.
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/6.jpg)
+
+Por cierto, la probabilidad de dar por casualidad con la solución óptima se puede expresar como una probabilidad geométrica. Como hemos dicho, el triángulo rojo de la derecha, basado en las restricciones, representa todas las soluciones posibles. El área del triángulo son todas las soluciones o resultados posibles = ½\*4000\*4000 = 8 millones. Pero solo un punto es la solución óptima, así que la probabilidad de acertar por casualidad, a lo «que sea lo que Dios quiera», es de 1/8 millones, es decir, sencillamente imposible. Incluso si tomamos solo la longitud de los lados (= gastamos todo el presupuesto), 4000+4000+5656,85 (la hipotenusa) = 13656, y 1/13656 = 0,00007. Sigue siendo imposible. Por eso no basta con usar restricciones: todo esto hay que calcularlo con métodos de investigación operativa. Sí, calcularlo, porque no todas las tareas son tan fáciles como esta ni todas se pueden expresar gráficamente.
+
+<strong>Solución numérica</strong>
+
+Por simplicidad, en nuestro ejemplo solo había dos canales. Con tres hay que usar el espacio tridimensional y el conjunto de soluciones será un plano. Pero con cuatro pasamos a un espacio de cuatro dimensiones y el conjunto de soluciones será un hiperplano, así que no hay manera de resolverlo gráficamente. Por eso existe también la solución numérica, que calcularemos con Python. Puedes ver el código completo y también la solución gráfica [aquí](https://github.com/SergeyMatrosov/Marketing_Budget_Allocation_via_Linear_Programming/).
+
+<strong>Con SciPy Optimize</strong>
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/7.jpg)
+
+<strong>Con GEKKO</strong>
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/8.jpg)
+
+En mi opinión, GEKKO es mucho más legible que SciPy y encaja perfectamente con objetivos que requieren programación lineal. Además, da la sensación de que lidiar con problemas de programación no lineal resulta menos frustrante que con SciPy. Pero la elección es tuya.
+
+No ha sido difícil, ¿verdad? Cierto, podrías haberlo hecho solo con un bolígrafo. Lo que pasa es que puede haber muchísimas restricciones.
+
+Intentemos complicar un poco la tarea. Supongamos que Search tiene un límite de capacidad, así que su presupuesto efectivo no puede pasar de 1.000 $. Hay además dos canales más: Paid Social, que da una conversión por cada 6 $, y Video, una por cada 10 $. Los responsables de esos canales dicen que necesitan no menos de 1.000 $ cada uno, así que:
+
+⅕ \* Search + ⅛ \* Display + ⅙ \*Paid Social + 1/10\* Video-> máx.
+
+Restricciones adicionales:
+
+1. Search &lt;= 1000$
+2. Paid Social >= 1000$
+3. Video >= 1000$
+
+Como ya hemos dicho, por la dimensión no hay solución gráfica. Esta es la solución numérica:
+
+![Reparto del presupuesto de marketing](/images/last-click-city/Marketing_budget_Allocation/9.jpg)
+
+Tampoco ha sido tan difícil. Estos ejemplos dejan claro que, en nuestro caso, todo gira en torno a las restricciones, porque sin ellas todo el dinero se va al canal con el coeficiente más alto. Y, en segundo lugar, los coeficientes los da el modelo de atribución. Modelos distintos pueden repartir el mérito de forma distinta, algo que hay que tener en cuenta si usas varios modelos para evaluar tus resultados. Entonces, ¿qué pasa con las restricciones en términos de marketing?
+
+<strong>Restricciones</strong>
+
+Lo primero es la capacidad del canal. Cada dólar adicional suele aportar menos valor. Lo segundo es que la compra de medios no va solo del número de conversiones, sino de su calidad y de su retorno. En nuestro ejemplo, Search puede darnos el mayor número de conversiones posible, pero Display, aun siendo caro, devuelve mucho más por cada conversión, porque la segmentación es sencillamente mejor. Por eso nos piden invertir ahí el 60 % del presupuesto, tratando de equilibrar dos objetivos: número de conversiones y retorno.
+
+Lo tercero es que, a diferencia de nuestro ejemplo, hoy el marketing suele tener un embudo multicanal y usa modelos de atribución personalizados (como decíamos antes: Markov, Shapley, etc.) que intentan evaluar la aportación a las conversiones. Pero saber cuál es el canal que más aporta no significa que haya que destinarle todo el presupuesto. Si excluyes los demás canales, el resultado de marketing puede ser el contrario del esperado.
+
+Imagina que vendes coches. Tienes una valla publicitaria y un comercial. El anuncio te trae posibles clientes con cierto interés y el comercial consigue que compren tus coches. La aportación del anuncio a la venta es de 0,1 (solo atrae) y 0,9 viene del comercial (suma = 1 coche vendido). Respetamos el trabajo del segundo, pero si infravaloramos la función del anuncio («¡Hola! Aquí vendemos coches. Sí, justo aquí. ¿Lo sabías?») y prescindimos de él, nos quedaremos sin ningún flujo de clientes. Por eso conviene recordar que no todos los canales pueden convertir, pero sí pueden ayudar a hacerlo.
+
+Así que hace falta entender la dinámica de los coeficientes según el presupuesto, y también la influencia de cada canal sobre los demás. Imagina este conjunto de datos:
+
+|   | Inversión/Canal | Search | Display |
+| --- | --- | --- | --- |
+| 1 | Baja (2019) | 0.7 (prueba) | 0.3 (prueba) |
+
+Primera fila:
+
+Probamos un presupuesto pequeño en Search y en Display. Resultó que el peso, la aportación a la conversión, del primero es 0,7 y la del segundo 0,3 (suma = 1). Eso no significa que haya que gastarlo todo en Search, porque Display puede tener un papel importante en la captación de usuarios.
+
+|   | Inversión/Canal | Search | Display |
+| --- | --- | --- | --- |
+| 1 | Baja (2019) | 0.7 (prueba) | 0.3 (prueba) |
+| 1 | Alta (2020) | 0.6 (↓) | 0.4 (↑) |
+
+Segunda fila:
+
+Con los datos de la primera fila decidimos asignar[[4]](#footnote-1) más presupuesto (que además había crecido) a Search. Sorprendentemente, su peso bajó.
+
+Si quieres servir tus anuncios de forma óptima, tienes que captar la dinámica del mix de canales, probar y extraer datos de ello, prestando atención a cada canal en sus propios términos. Eso sí que te da la clave de las restricciones que hay que tener en cuenta al repartir un presupuesto.
+
+Te recomendamos encarecidamente evaluar tus propios límites e intentar calcular los valores con programación lineal. Esperamos que nuestro ejemplo te ayude. ¡Suerte!
+
+<p id="footnote-1">[1] conviene usar métodos personalizados si de verdad quieres más precisión. Pero todo tiene su precio: la dificultad de los cálculos aumenta mucho.</p>
+
+<p id="footnote-2">[2] Aunque dedicamos poco tiempo a esta cuestión (para centrarnos en la programación lineal), debes saber que cada atribución parte de supuestos distintos sobre el mérito de cada canal, así que tienes que asegurarte de que el modelo elegido refleja la interacción del usuario con el mix de canales. Además, es importante entender que los modelos de atribución sofisticados, como el [valor de Shapley](/es/last-click-city/the-shapley-value-in-data-driven-attribution) o las [cadenas de Markov](/es/last-click-city/markov-chain-attribution-model), dan un valor de aportación a la conversión, y por eso la suma de sus coeficientes debe ser igual a 1: un canal es responsable del 70 % del trabajo de convertir y otro del 30 % = 100 % = 1; en nuestro caso, con una atribución simple, no es así.</p>
+
+<p id="footnote-2">[3] Por supuesto, no siempre se trata de conversiones, sino más bien de dinero. Al evaluar resultados hay que fijarse en cosas distintas. Pero, por el bien del ejemplo, nuestro objetivo serán las conversiones máximas.</p>
+
+<p id="footnote-2">[4] Nota: la proporción del reparto no equivale al peso del canal, por las posibles restricciones.</p>

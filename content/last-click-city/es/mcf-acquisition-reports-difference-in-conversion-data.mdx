@@ -1,0 +1,40 @@
+---
+title: "Embudos multicanal e informes de adquisición: por qué no coinciden los datos de conversión"
+slug: "mcf-acquisition-reports-difference-in-conversion-data"
+date: "2019-01-09"
+description: "Embudos multicanal e informes de adquisición: por qué no coinciden los datos de conversión. Google Analytics usa por defecto el modelo de atribución de último clic indirecto en todos los informes salvo en los de embudos multicanal."
+originalUrl: "https://lastclick.city/mcf-acquisition-reports-difference-in-conversion-data.html"
+thumbnail: "/images/last-click-city/Assisted_for_index_page.png"
+excerptLead: "En nuestro trabajo usamos bastante a menudo distintos"
+excerpt: "informes de Google Analytics para evaluar el rendimiento de los canales y de las campañas. La mayoría de los informes estándar son un sitio perfecto para revisar las métricas por encima y obtener información básica, mientras que los informes de embudos multicanal se usan cuando hace falta un análisis algo más elaborado."
+---
+
+<strong>En nuestro trabajo usamos bastante a menudo distintos </strong> informes de Google Analytics para evaluar el rendimiento de los canales y de las campañas. La mayoría de los informes estándar son un sitio perfecto para revisar las métricas por encima y obtener información básica, mientras que los informes de embudos multicanal (MCF) se usan cuando hace falta un análisis algo más elaborado; por ejemplo, cuando necesitas saber cuántas conversiones se atribuyeron a un canal, una campaña, etc., no de inmediato, sino pasado un tiempo desde el clic, que es justo lo que ocurre en muchas empresas donde la compra no llega enseguida.
+
+Y el informe de conversiones asistidas es un sitio estupendo para encontrar esa cifra. Eso sí, es fácil hacerse un lío si intentas comparar el número (o el valor) de las conversiones de último clic de uno de los informes de adquisición con esa misma métrica en el informe de conversiones asistidas.
+
+Por ejemplo, revisemos las conversiones de último clic y las asistidas de una de las campañas de búsqueda de pago:
+
+![Informe de adquisición](/images/last-click-city/Assisted1.png)
+
+Muy bien, vemos una transacción de último clic de 999 $ en el informe de adquisición. Veamos ahora el informe de conversiones asistidas de esa misma campaña (para comprobar si podemos atribuirle algún valor adicional):
+
+![Informe de adquisición](/images/last-click-city/Assisted2.png)
+
+El informe tiene una pinta rara: vemos una conversión asistida por el mismo importe, pero ¿dónde se ha ido la conversión de último clic? ¿Hay que sumar las conversiones de los distintos informes? ¿Hay que contar esta compra una sola vez? ¿O es que los datos de Google Analytics son un desastre? La diferencia entre los datos de conversión de los informes de adquisición y los de embudos multicanal puede desconcertar.
+
+La explicación es bastante sencilla y quizá merecería estar más al principio de todo el centro de ayuda de Google Analytics. Dice así ([artículo de ayuda de Google Analytics](https://support.google.com/analytics/answer/1665189?hl=en&ref_topic=3205717)):
+
+> «El modelo de último clic indirecto es el modelo predeterminado en los informes que no son de embudos multicanal.»
+
+Así que Google usa modelos de atribución distintos en secciones distintas. En todas salvo en los informes de MCF es el de último clic indirecto, lo que significa que las conversiones directas se atribuirán a la interacción no directa anterior. En los informes de MCF se usa otro modelo que no tiene un nombre concreto, pero creo que no pasa nada por llamarlo multicanal o asistido.
+
+De este modo, una misma transacción puede atribuirse como de último clic en el informe de adquisición y como asistida en el de MCF. Para entenderlo mejor, imaginemos un recorrido de usuario sencillo:
+
+![Recorrido del usuario](/images/last-click-city/Userpath.png)
+
+En todos los informes de Google Analytics salvo los de MCF veremos esta compra atribuida al anuncio de búsqueda de pago. Pero en el informe de MCF la veremos atribuida a Directo como último clic y al anuncio de búsqueda de pago como asistencia:
+
+![Recorrido del usuario](/images/last-click-city/Userpath2.png)
+
+<em>En resumen:</em> no te desconciertes si las cifras de los informes de MCF y de los que no lo son no cuadran exactamente. Ten presente que Google Analytics usa por defecto el modelo de atribución de último clic indirecto en todos los informes salvo en los de MCF. Así que lo más probable es que, en el informe de conversiones asistidas, parte del valor se haya atribuido sin más a las interacciones directas.

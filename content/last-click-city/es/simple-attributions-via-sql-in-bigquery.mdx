@@ -1,0 +1,305 @@
+---
+title: "Modelos de atribución sencillos con SQL en BigQuery."
+slug: "simple-attributions-via-sql-in-bigquery"
+date: "2020-05-31"
+description: "Modelos de atribución sencillos con SQL en BigQuery."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/simple-attributions-via-sql-in-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_25.png"
+excerptLead: "Una de las razones principales de que este blog lleve el nombre de la vieja atribución «último clic»"
+excerpt: "es que mi copresentador y yo empezamos nuestra carrera en marketing cuando esa atribución —igual que otras clásicas, como el «primer clic»— era la única que podíamos usar."
+---
+
+<strong>Una de las razones principales de que este blog lleve el nombre de la vieja atribución «último clic» </strong>es que mi copresentador y yo empezamos nuestra carrera en marketing cuando esa atribución —igual que otras clásicas, como el «primer clic»— era la única que podíamos usar. Así que el nombre es una especie de homenaje a aquellos tiempos.
+
+Pero no todos los métodos de antaño se pueden usar hoy. Estas atribuciones son como unas gafas rotas: cuesta usarlas, pero a veces no queda más remedio. Puede ser porque tus canales son muy particulares o porque quieres mirar tu actividad de marketing desde distintos ángulos. Hoy muchos profesionales de marketing trabajan en BigQuery, así que si tu objetivo es montar informes allí con atribuciones clásicas, puede que este sea el punto donde te atasques. ¡Vamos a resolverlo!
+
+Antes de empezar, recuerda que aquí no usamos ventana de conversión retroactiva (lookback window). Si la necesitas, por ejemplo en el último clic (último punto de contacto) y es de 7 días, tienes que añadir lo siguiente a las funciones CASE-WHEN: fecha del primer contacto - fecha de la conversión &lt; 7 días en segundos (604800).
+
+Bien, creo que ya podemos empezar. La consulta SQL completa está [aquí](https://github.com/SergeyMatrosov/Simple_Attributions_via_SQL_in_BigQuery)
+
+1\. El primer paso es crear una tabla con el flujo de eventos por usuario
+
+![Tabla](/images/last-click-city/Simple_Attribution_Models/Table.png)
+
+```sql
+WITH
+  WebsiteUserStreaming AS (
+  SELECT "11111" AS userid, "2020-01-01" AS time, "blog" AS source, "zero" AS event UNION ALL
+  SELECT "11111", "2020-01-02", "organic", "CONVERSION" UNION ALL
+  SELECT "22222", "2020-01-01", "ppc", "zero" UNION ALL
+  SELECT "22222", "2020-01-02", "blog", "zero" UNION ALL
+  SELECT "22222", "2020-01-03", "organic", "zero" UNION ALL
+  SELECT "22222", "2020-01-04", "ppc", "zero" UNION ALL
+  SELECT "22222", "2020-01-05", "organic", "zero" UNION ALL
+  SELECT "22222", "2020-01-06", "direct", "zero" UNION ALL
+  SELECT "22222", "2020-01-07", "direct", "CONVERSION" UNION ALL
+  SELECT "66666", "2020-01-01", "ppc", "CONVERSION" UNION ALL
+  SELECT "66666", "2020-01-02", "blog", "zero" UNION ALL
+  SELECT "66666", "2020-01-03", "ppc", "zero"),
+```
+
+2\. Después hay que dar formato a la consulta:
+
+```sql
+FormatedStreaming AS (
+  SELECT
+    userid,
+    UNIX_SECONDS(TIMESTAMP(time)) AS date_in_sec,
+    source,
+    CASE
+      WHEN event = 'zero' THEN 0
+      WHEN event = 'CONVERSION' THEN 1
+  END
+    AS event
+  FROM
+    WebsiteUserStreaming)
+```
+
+3\. A continuación, la comprobamos:
+
+```sql
+SELECT
+  *
+FROM
+  FormatedStreaming
+```
+
+![Tabla](/images/last-click-city/Simple_Attribution_Models/Table2.png)
+
+Normalmente los datos de eventos por usuario vienen sin ordenar. Pero como usamos funciones de ventana (WINDOW), no hace falta ordenarlos. Y si lo haces, tampoco pasa nada: puedes usar el operador ORDER BY userid, date_in_sec.
+
+Los usuarios pueden visitar tu sitio más de una vez al día. Por eso las tablas de eventos de usuario suelen contener fechas en formato TIMESTAMP y por eso convertimos las fechas a segundos: para entender el orden del flujo de eventos de un usuario dentro de un mismo día, por ejemplo:
+
+1. 10:00 - el usuario encuentra nuestro sitio de forma orgánica
+2. 15:00 - ese mismo usuario llega al sitio desde anuncios de display
+3. 20:00 - ese mismo usuario llega al sitio desde un correo
+
+4\. Por fin podemos escribir nuestras consultas.
+
+Empecemos por la atribución de último contacto (Last Touch). Para evitar malentendidos, recuerda que la atribución en sí es la regla o el conjunto de reglas que determina cómo se asignan las conversiones a los puntos de contacto del camino hacia la conversión. El último contacto da todo el mérito al último punto.
+
+```sql
+--LAST_TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN event > 0 AND date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS last_touch_attribution,
+FROM
+  FormatedStreaming
+```
+
+![Último contacto](/images/last-click-city/Simple_Attribution_Models/Last_touch.png)
+
+El último contacto indirecto (Last Non-Direct Touch) también da todo el mérito al último punto de contacto, pero si ese último es «direct», se lo da al canal anterior a «direct».
+
+```sql
+--LAST_TOUCH_NON_DIRECT
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event = 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN 'null'
+    WHEN event = 0 AND LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN 'null'
+    WHEN SUM(event) OVER (PARTITION BY userid) > 0 AND date_in_sec < LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+    AND LEAD(source) OVER (PARTITION BY userid ORDER BY date_in_sec) = 'direct' AND source != 'direct' THEN '1'
+    WHEN event > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AND source != 'direct' THEN '1'
+  ELSE
+  'null'
+END
+  AS last_non_direct,
+FROM
+  FormatedStreaming
+```
+
+![Último contacto indirecto](/images/last-click-city/Simple_Attribution_Models/Last_non_direct.png)
+
+Pero espera, ¿y el userid «66666»? ¿Por qué se lleva el mérito «ppc»? Sí, no es el último del recorrido del usuario, pero sí es el último del camino hasta la conversión. ¡Mira la primera tabla de arriba!
+
+El primer contacto (First Touch) también es bastante simple: todo el mérito va al primer canal.
+
+```sql
+--FIRST_TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS first_touch_attribution
+FROM
+  FormatedStreaming
+```
+
+![Primer contacto](/images/last-click-city/Simple_Attribution_Models/First_touch.png)
+
+La atribución a cualquier contacto (Any Touch) es poco habitual, pero a veces hace falta para medir un canal dentro del mix, o el mix entero, sin conocer su impacto exacto pero sabiendo que es clave en tu camino hacia la conversión. Por ejemplo, si tu ciclo de compra es largo, pongamos unos 90 días, y tus clientes leen las entradas de tu blog del día 1 al día 90, das el 100 % del mérito a cada interacción con el blog. Sí, en el ejemplo de abajo el resto de canales también tendrán el 100 % del mérito, pero en el informe puedes filtrar y quedarte solo con el blog para ver su impacto. Creo que conviene aclararlo: un modelo de atribución no sirve para medir conversiones, sino para valorar el esfuerzo de marketing. Por eso puedes ver x10 o x100 «conversiones» en un informe de cualquier contacto; pero no son conversiones, es mérito atribuido.
+
+```sql
+--ANY TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 THEN '1'
+  ELSE
+  'null'
+END
+  AS any_touch_attribution
+FROM
+  FormatedStreaming
+```
+
+![Cualquier contacto](/images/last-click-city/Simple_Attribution_Models/Any_touch.png)
+
+Si tu objetivo es dar mérito solo a cada contacto con el blog cuando hay conversión, basta con cambiar las reglas del CASE WHEN:
+
+```sql
+--ALL CREDIT TO BLOG ONLY
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND source = 'blog' THEN '1'
+  ELSE
+  'null'
+END
+  AS blog_only
+FROM
+  FormatedStreaming
+```
+
+![Todo el mérito al blog](/images/last-click-city/Simple_Attribution_Models/All_credit_to_blog.png)
+
+También puedes combinar varias reglas: último contacto + mérito al blog siempre que haya estado en el camino de la conversión.
+
+```sql
+--BLOG + LAST TOUCH
+SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN MAX(event) OVER (PARTITION BY userid) = 1 AND source = 'blog' THEN '1'
+    WHEN event > 0 AND date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+    WHEN event > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) THEN '1'
+  ELSE
+  'null'
+END
+  AS blog_and_last
+FROM
+  FormatedStreaming
+```
+
+![Blog y último contacto](/images/last-click-city/Simple_Attribution_Models/Blog_and_last.png)
+
+Vamos ahora con la atribución de deterioro temporal (time decay). Es una de las atribuciones que pueden llamarse multicontacto. Su esencia es que reparte un porcentaje del mérito entre todos los canales del camino a la conversión: cuanto más atrás en el tiempo se produjo la interacción con el canal, menos mérito recibe (se va deteriorando). Por ejemplo, imagina que tu cliente interactuó con el blog, luego con «organic» y después con «ppc» antes de convertir. El canal «ppc» fue el último y se llevará el mayor mérito (porcentaje), «organic» menos y el blog el valor más bajo.
+
+```sql
+--TIME_DECAY
+SELECT
+userid,
+date_in_sec,
+source,
+ROUND(IF(SAFE_CAST(weights AS FLOAT64)=0 OR SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)=0, 0, SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)), 2) AS time_decay,
+FROM
+(SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(1.1-ROW_NUMBER() OVER (PARTITION BY userid) AS STRING)
+    WHEN date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROUND(1.1-1/ROW_NUMBER() OVER (PARTITION BY userid), 2) AS STRING)
+  ELSE
+  'null'
+END
+  AS weights
+FROM
+  FormatedStreaming)
+```
+
+![Deterioro temporal](/images/last-click-city/Simple_Attribution_Models/Time_decay.png)
+
+Si lo que necesitas es la versión inversa, el primer canal se lleva el mayor mérito y el resto valores más bajos cuanto más tarde llegan. Aquí tienes el código:
+
+```sql
+--TIME_DECAY_REVERSED
+SELECT
+userid,
+date_in_sec,
+source,
+ROUND(IF(SAFE_CAST(weights AS FLOAT64)=0 OR SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)=0, 0, SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid)), 2) AS time_decay_reversed,
+FROM
+(SELECT
+  userid,
+  date_in_sec,
+  source,
+  CASE
+    WHEN date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROW_NUMBER() OVER (PARTITION BY userid) AS STRING)
+    WHEN date_in_sec > LAG(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND MAX(event) OVER (PARTITION BY userid) = 1 THEN SAFE_CAST(ROUND(1/ROW_NUMBER() OVER (PARTITION BY userid), 2) AS STRING)
+  ELSE
+  'null'
+END
+  AS weights
+FROM
+  FormatedStreaming)
+```
+
+![Deterioro temporal inverso](/images/last-click-city/Simple_Attribution_Models/Time_decay_reversed.png)
+
+La última es la atribución según la posición. Igual que el deterioro temporal, es una especie de atribución multicontacto. Reparte un porcentaje del mérito según cuándo se produjo el contacto (primero, último, intermedio). En nuestro ejemplo, el primero y el último se llevan un 40 % cada uno (= el 80 % del mérito) y los intermedios se reparten el 20 % restante. Para tener datos precisos usamos la función ROUND con dos decimales, pero si el camino de tus canales hasta la conversión suele ser largo, usa más decimales. Si no, al sumar todo el mérito del recorrido del usuario de canal en canal podrías acabar con una suma > 1.
+
+```sql
+--POSITION BASED
+SELECT
+userid,
+date_in_sec,
+source,
+CASE
+WHEN SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid) > 1 THEN SAFE_CAST(ROUND(SAFE_CAST(weights AS FLOAT64)/SUM(SAFE_CAST(weights AS FLOAT64)) OVER (PARTITION BY userid), 2) AS STRING)
+ELSE weights
+END AS position_based
+FROM
+(
+SELECT
+  userid,
+  date_in_sec,
+  source,
+
+  CASE
+  --one channel and instant conversion
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND COUNT(userid) OVER (PARTITION BY userid) = 1 THEN '1'
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) > 2
+  THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.4, 3) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) = 2 THEN '0.5'
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec != FIRST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND date_in_sec != LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+  AND COUNT(userid) OVER (PARTITION BY userid) > 2 THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.2, 1) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) > 2
+  THEN SAFE_CAST(ROUND(COUNT(userid) OVER (PARTITION BY userid)*0.4, 1) AS STRING)
+
+  WHEN MAX(event) OVER (PARTITION BY userid) > 0 AND date_in_sec = LAST_VALUE(date_in_sec) OVER (PARTITION BY userid ORDER BY date_in_sec) AND COUNT(userid) OVER (PARTITION BY userid) = 2 THEN '0.5'
+  ELSE '0'
+  END AS weights
+FROM
+  FormatedStreaming)
+```
+
+![Atribución según la posición](/images/last-click-city/Simple_Attribution_Models/Position_based.png)

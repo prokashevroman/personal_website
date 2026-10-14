@@ -1,0 +1,63 @@
+---
+title: "Predicción de los resultados de una campaña con Python."
+slug: "prediction-of-campaign-results-using-python"
+date: "2020-06-14"
+description: "Predicción de los resultados de una campaña con Python."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/prediction-of-campaign-results-using-python.html"
+thumbnail: "/images/last-click-city/For_index_page_26.png"
+excerptLead: "Entre los retos a los que se enfrenta el marketing online están los resultados esperados de las campañas de pago."
+excerpt: "La respuesta a ese reto suele ser un plan de medios basado en la experiencia, el criterio y un análisis rápido y superficial del sector. Está bien, pero no basta, porque no ofrece el abanico de expectativas en un sentido concreto."
+---
+
+<strong>Entre los retos a los que se enfrenta el marketing online están los resultados esperados de las campañas de pago. </strong>La respuesta a ese reto suele ser un plan de medios basado en la experiencia, el criterio y un análisis rápido y superficial del sector. Está bien, pero no basta, porque no ofrece el abanico de expectativas en un sentido concreto.
+
+La verdad es que los planes de medios suelen darte una única opción de resultados futuros, basada en el CTR y el CR medios. Los más avanzados intentan evaluar el peor y el mejor escenario, pero sigue sin ser suficiente. Es más importante tener resultados basados en cada valor del rango de esas métricas, es decir, en el intervalo. Otra consideración: el marketing digital, poniendo el énfasis en la palabra «digital», tiene que ver sobre todo con una actividad guiada por los datos. Además, tenemos que expresar nuestra experiencia y nuestro conocimiento en cifras exactas, y por eso hoy el marketing online necesita matemáticas más complicadas y Python. En este artículo me centraré en la parte matemática, porque el código en sí es muy sencillo pero los cálculos que hay debajo no lo son.
+
+Imagina que tienes un recorrido de cliente simple en tu sitio: visita -> registro -> pago/pedido. Sabes (por tus datos o por los benchmarks de tu representante de Google) cómo se comporta el tipo de campaña de GDN para este producto; por ejemplo, el CPC ronda 1,5 $ ± 1 $, pero el CTR está entre el 0,3 % y el 1,5 %, con una media del 0,6 %. También conocemos el rango del CR a registro y del CR a pago desde el registro. Sí, lo simplificamos a propósito para que te centres en lo esencial, y así te ayudamos aún más.
+
+Hay que empezar respondiendo a la pregunta que define nuestra estrategia: cuánto presupuesto tenemos. A partir de ahí podemos estimar el volumen de búsqueda (o de impresiones, si hablamos de display) que podríamos alcanzar.
+
+Por ejemplo, tenemos presupuesto para campañas de display. Con nuestra configuración de segmentación hemos determinado que podemos esperar un volumen de 1.000.000 de impresiones. Conviene mencionar que cuanto más volumen tengamos, más precisas serán nuestras predicciones: la vieja historia del tamaño de la muestra. 1.000.000 no es mal punto de partida.
+
+Resumamos los datos previos para que estemos todos en la misma página:
+
+- Volumen de impresiones: 1.000.000
+- El CPC medio es de 1,5 $. Los intervalos van de 1 $ a 3 $.
+- El CTR medio es del 0,6 %. Los intervalos van del 0,3 % al 1,5 %.
+- El CR medio a registros es del 5 %. Los intervalos van del 2 % al 7 %.
+- El CR medio a pagos es del 9 %. Los intervalos van del 6 % al 12 %.
+
+Vamos con el código (aquí tienes la [versión completa](https://github.com/SergeyMatrosov/Forecast_Advertising_Campaigns_Results/blob/master/Forecast_Advertising_Campaigns_Results.ipynb)):
+
+![Distribución del CTR](/images/last-click-city/Prediction_using_python/CTR_distribution_1.png)
+
+Veamos de cerca lo que hemos programado. Primero, hemos usado librerías bastante conocidas como SciPy y Numpy para crear distribuciones de métricas como el CTR, el CPC, el CR a registro y el CR a pago. ¿Qué es una distribución? Es una relación que muestra todos los valores posibles de los datos y con qué frecuencia aparecen. Pueden tener formas distintas; en nuestro caso usamos distribuciones uniforme, beta y normal. Las distribuciones son utilísimas por cómo describen unos datos dados. Por ejemplo, la distribución exponencial (el análogo continuo de la geométrica) puede mostrar cómo decae día a día el atractivo (la probabilidad de atractivo) de un anuncio tras lanzar un creativo nuevo:
+
+![Atractivo de los anuncios](/images/last-click-city/Prediction_using_python/Ads_attractivenes_2.png)
+
+En nuestro código, la distribución beta nos ayuda a obtener un array de datos de CTR en el que la mayoría se acerca al 5 %, con un límite inferior en torno al 3 % y uno superior en torno al 7 %. Se basa en los datos previos.
+
+![Distribución del CTR](/images/last-click-city/Prediction_using_python/CTR_distribution_3.jpg)
+
+Cuando no existen esos datos, podríamos decir que es probable que nuestro CTR esté entre el 0 % y el 0,20 %, y ahí nos ayuda la distribución uniforme:
+
+![Distribución del CTR](/images/last-click-city/Prediction_using_python/CTR_distribution_4.jpg)
+
+Dicho de otro modo, las distribuciones son modelos desarrollados por las matemáticas y la estadística para describir procesos o situaciones del mundo real. Es muy probable que el conjunto de procesos relacionados con tu trabajo se pueda describir con ellas. Si conoces las distribuciones, ya puedes simular cosas como campañas en marcha y sus resultados. La simulación se basa en un conjunto de pruebas que nos dan la distribución de visitantes, registrados y usuarios de pago.
+
+Las imágenes de abajo muestran que el cálculo de cada métrica es casi idéntico, salvo en dos puntos:
+
+- El CPC, porque aquí usamos una distribución normal para reflejar que está entre 5 y 10.
+- Los usuarios de pago. Recuerda que contamos el CR a pago sobre los usuarios registrados: solo el 5 % de ellos, de media, compra tu producto.
+
+![Distribución del CPC](/images/last-click-city/Prediction_using_python/CPC_distribution_5.png) ![Distribución de visitantes](/images/last-click-city/Prediction_using_python/Visitors_distribution_6.png)
+
+Con ese CTR y a partir de 100 pruebas, solemos obtener unos ~7000 visitantes al mes, con un coste total medio de unos ~9610 $. Puedes cambiar la variable «trials» al principio del cuaderno a 1000 para conseguir datos más precisos, pero recuerda que evaluar la nueva prueba llevará más tiempo.
+
+Tras calcular los visitantes, no hace falta nada distinto para calcular registros y compras: el proceso es exactamente el mismo.
+
+![Distribución del CR a registro](/images/last-click-city/Prediction_using_python/CR_to_reg_distribution_7.png) ![Distribución de usuarios registrados](/images/last-click-city/Prediction_using_python/RegUsers_distribution_8.png) ![Distribución del CR a pago](/images/last-click-city/Prediction_using_python/CR_to_pay_distribution_9.png) ![Número de usuarios de pago](/images/last-click-city/Prediction_using_python/Number_of_p_users_10.png)
+
+Y estos son nuestros resultados. Es importante señalar que esta pseudopredicción se basa solo en una pequeña actividad de marketing dirigida a nuestros usuarios: no tiene en cuenta ningún esfuerzo adicional, como anuncios de display, remarketing, etc., ni las particularidades de la propia fuente. Aquí es donde empieza el verdadero camino hacia las predicciones: calcular la influencia de otros canales y de factores internos y externos sobre esta actividad de marketing, y un modelo de atribución personalizado para entender las distintas vías de crecimiento, etc. ¡Suerte!

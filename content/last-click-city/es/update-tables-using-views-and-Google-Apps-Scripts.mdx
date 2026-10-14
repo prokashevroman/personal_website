@@ -1,0 +1,65 @@
+---
+title: "BigQuery: cómo actualizar tablas con vistas y Google Apps Scripts."
+slug: "update-tables-using-views-and-Google-Apps-Scripts"
+date: "2019-06-21"
+description: "BigQuery: cómo actualizar tablas con vistas y Google Apps Scripts."
+author: "Sergey Matrosov"
+authorUrl: "https://www.linkedin.com/in/sergey-matrosov/"
+originalUrl: "https://lastclick.city/update-tables-using-views-and-Google-Apps-Scripts.html"
+thumbnail: "/images/last-click-city/For_index_page_7.png"
+excerptLead: "Supongamos que tienes una tabla grande"
+excerpt: "con datos en bruto, por ejemplo de Google Analytics. Haces una consulta para procesarlos y obtienes una tabla más informativa. La pregunta es cómo actualizarla a diario y añadirle los datos nuevos de la tabla principal."
+---
+
+<strong>Supongamos que tienes una tabla grande </strong>con datos en bruto, por ejemplo de Google Analytics. Haces una consulta para procesarlos y obtienes una tabla más informativa. La pregunta es cómo actualizarla a diario y añadirle los datos nuevos de la tabla principal. Está claro que puedes programar una consulta desde el menú «Schedule Query» si usas SQL estándar, pero ¿y si tu consulta usa SQL antiguo?
+
+Lo primero es guardar tu consulta como vista. Mi consejo es ponerle el mismo nombre que a la tabla añadiendo «_SQL»: por ejemplo, tabla «my_table», vista «my_table_SQL». Así quedará ordenada junto a su tabla.
+
+Después tienes que consultar la vista con Google Scripts. Aquí va un pequeño fragmento de código que usa la API de BigQuery:
+
+```javascript
+function UpdateMyTable() {
+
+//put name of your project, where is your table, here
+var projectId = 'you-project';
+
+//put name of dataset, where is your table, here
+var datasetId = 'you_dataset';
+
+//setting destination table name
+var tableId = 'you_table_name';
+var job = {
+configuration: {
+query: {
+//in parenthesis put your dataset name and view
+query: 'SELECT * FROM [you_dataset.you_table_name_SQL]',
+
+destinationTable: {
+    projectId: projectId,
+    datasetId: datasetId,
+    tableId: tableId
+    },
+writeDisposition: "WRITE_APPEND"
+    }
+  }
+};
+
+var queryResults = BigQuery.Jobs.insert(job, projectId);
+var jobId = queryResults.jobReference.jobId;
+
+}
+```
+
+Luego solo hay que añadirle a esta función un activador diario. Haz clic en «Current project's triggers»:
+
+![Seleccionar los activadores del proyecto](/images/last-click-city/Update_the_table/Select_triggers.jpg)
+
+Después pulsa el botón «Add Trigger»:
+
+![Añadir el activador](/images/last-click-city/Update_the_table/Add_trigger.jpg)
+
+Y configúralo:
+
+![Configurar el activador](/images/last-click-city/Update_the_table/Trigger_configuration.jpg)
+
+¡A disfrutarlo!

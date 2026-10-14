@@ -8,7 +8,7 @@ import {
   absoluteUrl,
   archiveBlogSchema,
   breadcrumbSchema,
-  canonical,
+  localizedAlternates,
   personSchema,
 } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
@@ -22,7 +22,9 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: canonical("/last-click-city"),
+  // Unconditional: the Spanish index exists whatever share of the articles has
+  // been translated, so the hreflang pair can never dangle here.
+  alternates: localizedAlternates("/last-click-city"),
   openGraph: {
     type: "website",
     siteName: siteConfig.name,

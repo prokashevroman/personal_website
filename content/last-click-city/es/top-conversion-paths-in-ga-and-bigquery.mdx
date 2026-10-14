@@ -1,0 +1,135 @@
+---
+title: "Principales rutas de conversión en Google Analytics y BigQuery."
+slug: "top-conversion-paths-in-ga-and-bigquery"
+date: "2019-02-05"
+description: "Principales rutas de conversión en Google Analytics y BigQuery"
+originalUrl: "https://lastclick.city/top-conversion-paths-in-ga-and-bigquery.html"
+thumbnail: "/images/last-click-city/For_index_page_4.png"
+excerptLead: "Entender las principales rutas de conversión"
+excerpt: "puede ser una parte decisiva del análisis del recorrido del cliente y un paso importante para comprender mejor cómo colaboran los canales de marketing. Conocer las rutas principales hacia la conversión resulta especialmente útil al planificar los presupuestos de marketing y publicidad."
+---
+
+<strong>Entender las principales rutas de conversión puede ser una parte decisiva </strong>del análisis del recorrido del cliente y un paso importante para comprender mejor cómo colaboran los canales de marketing. Conocer las rutas principales hacia la conversión resulta especialmente útil al planificar los presupuestos de marketing y publicidad. No saber cómo se cruzan los canales puede llevar tanto a sobrestimar como a infravalorar distintos canales de marketing, lo que se traduce en dinero desperdiciado u oportunidades perdidas. Por suerte hay varias formas de analizar las principales rutas de conversión, y hoy hablaremos de dos.
+
+<strong>1) El informe de principales rutas de conversión de Google Analytics</strong>
+
+El informe de principales rutas de conversión está en la sección Conversiones -> Embudos multicanal. Hay varias opciones para representar las interacciones de la ruta: por defecto son los canales de MCF, pero se pueden cambiar por fuentes, medios y canales del grupo de canales predeterminado y, por supuesto, por las interacciones de las plataformas publicitarias de Google (Google Ads, Display & Video 360 y otras).
+
+![Principales rutas de conversión](/images/last-click-city/Top_conversion_paths/Top_Conversion_Paths.png)
+
+Como conversión puedes elegir transacciones, objetivos o Floodlights si tienes alguno configurado. El inconveniente es que solo hay 20 objetivos (incluso en GA360).
+
+Los segmentos de conversión son una función estupenda para acotar el subconjunto de conversiones o de rutas que analizas. Hay más información sobre el segmento de conversión en este [enlace](https://support.google.com/analytics/answer/1329505?hl=en).
+
+Muy bien, pasemos ahora a lo interesante y veamos cómo reproducir este informe en BigQuery.
+
+<strong>2) El informe de principales rutas de conversión en BigQuery</strong>
+
+Esta es la consulta para exportar un equivalente básico del informe de principales rutas de conversión:
+
+```sql
+SELECT
+    REGEXP_REPLACE(touchpointPath, 'Conversion >.*', 'Conversion') as touchpointPath, COUNT(touchpointPath) AS TOP
+FROM (SELECT
+    GROUP_CONCAT(touchpoint,' > ') AS touchpointPath
+FROM (SELECT
+    *
+FROM (SELECT
+    fullVisitorId,
+    'Conversion' AS touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-10-01'), TIMESTAMP('2018-10-05'))
+WHERE
+    hits.eventInfo.eventAction="Email Submission success")
+    ,
+    (SELECT
+    fullVisitorId,
+    CONCAT(trafficSource.source,'/',trafficSource.medium) AS touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-10-01'), TIMESTAMP('2018-10-05'))
+WHERE
+    hits.hitNumber=1)
+ORDER BY
+    timestamp)
+GROUP BY
+    fullVisitorId
+HAVING
+    touchpointPath LIKE '%Conversion%')
+GROUP BY
+    touchpointPath
+ORDER BY
+    TOP DESC
+```
+
+En este ejemplo concreto intentamos replicar un informe de principales rutas de conversión en el que las interacciones de la ruta se representan con la combinación de fuente y medio (ruta de fuente/medio) y la conversión es un objetivo basado en eventos. Como en BigQuery no hay objetivos, tenemos que recrear la condición del objetivo dentro del cuerpo de la consulta: hits.eventInfo.eventAction="Email Submission success".
+
+Empezamos con dos subconsultas: en la primera seleccionamos las conversiones y en la segunda las combinaciones de fuente y medio que representarán los pasos del camino hasta la conversión elegida.
+
+Después usamos la función GROUP_CONCAT para encadenar los puntos de contacto, de modo que formen rutas de usuario estructuradas, y seleccionamos solo las rutas que contienen esa conversión concreta: `HAVING touchpointPath LIKE '%Conversion%'.`
+
+Y el último detalle: excluimos los pasos que ocurren después de la conversión (porque nuestro objetivo ahora es evaluar solo las rutas hasta la conversión); podemos hacerlo con la función REGEXP_REPLACE, eliminando sin más todo lo que haya detrás de la subcadena «Conversion >». Así tratamos igual las rutas con y sin pasos posteriores a la conversión.
+
+Veamos algunas cosas interesantes que BigQuery permite y la interfaz de Google Analytics no.
+
+Lo primero, hay más flexibilidad con los pasos: en la interfaz de Google Analytics solo puedes elegir los pasos que propone Google, mientras que en BigQuery puedes usar muchos más tipos de eventos, interacciones o dimensiones. La primera opción es cambiar `CONCAT(trafficSource.source,'/',trafficSource.medium)` por otra cosa, por ejemplo trafficSource.campaign o device.browser (sí, una «ruta de navegadores» suena algo rara, pero muestra lo mucho más flexibles que se vuelven los datos de GA cuando se acceden desde BigQuery). La desventaja de este enfoque básico es que no lo puedes usar con las filas de «hits» y sus campos anidados. Mira la consulta que crea las rutas usando los campos de «hits»:
+
+```sql
+SELECT
+    REGEXP_REPLACE(touchpointPath, 'Conversion >.*', 'Conversion') as touchpointPath, COUNT(touchpointPath) AS TOP
+FROM (SELECT
+    GROUP_CONCAT(touchpoint,' > ') AS touchpointPath
+FROM (SELECT
+    fullVisitorId,
+    touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM (SELECT
+    fullVisitorId,
+    'Conversion_submit' AS touchpoint,
+    visitStartTime, hits.time
+FROM
+    ([pro-tracker-id.ga_sessions_])
+WHERE
+    hits.eventInfo.eventAction="Email Submission success")
+    ,
+    (SELECT
+    fullVisitorId,
+    hits.page.pagePath as touchpoint,
+    visitStartTime, hits.time
+FROM
+    (FLATTEN([pro-tracker-id.ga_sessions_],hits))
+WHERE
+    hits.hitNumber=1)
+ORDER BY
+    timestamp)
+GROUP BY
+    fullVisitorId
+HAVING
+    touchpointPath LIKE '%Conversion_submit%')
+GROUP BY
+    touchpointPath
+ORDER BY
+    TOP DESC
+```
+
+En esta consulta usamos el valor del campo hits.page.pagePath como pasos del camino hacia la conversión, pero solo es posible si aplanamos los datos de la fila de hits. Hay más información sobre la función flatten [aquí](https://cloud.google.com/bigquery/docs/legacy-nested-repeated). Fíjate también en que, en este caso, la definición del timestamp sube un nivel en la jerarquía de la consulta.
+
+Otra gran ventaja es poder añadir más de una conversión o interacción a la ruta. Por ejemplo, puede que quieras ver las rutas hasta las conversiones y además saber si esas rutas contenían algún otro evento concreto antes o después de la conversión. Algo así:
+
+![Ruta de conversión avanzada](/images/last-click-city/Top_conversion_paths/Advanced_Conversion_Path.png)
+
+Para conseguirlo, añade otra subconsulta de punto de contacto separada por comas y cambia la condición del WHERE:
+
+```sql
+SELECT
+    fullVisitorId,
+    'Conversion' AS touchpoint,
+    (visitStartTime+hits.time) AS timestamp
+FROM
+    TABLE_DATE_RANGE([pro-tracker-id.ga_sessions_], TIMESTAMP('2018-10-01'), TIMESTAMP('2018-10-05'))
+WHERE
+    hits.eventInfo.eventAction="Email Submission success"
+```
+
+¡Espero que algo de esto te resulte útil!

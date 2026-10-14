@@ -71,7 +71,10 @@ ${essays || "- No essays published yet."}${esSection}
   analytics, Google Analytics, BigQuery SQL, and attribution modelling, originally published at
   lastclick.city (2019–2024). Preserved as written; not maintained. Some posts are by guest
   authors — the byline on each page is authoritative, so attribute to the named author, not to
-  ${siteConfig.author.name}.
+  ${siteConfig.author.name}. The archive is mirrored in Spanish at
+  [${absoluteUrl("/es/last-click-city")}](${absoluteUrl("/es/last-click-city")}), where each page
+  is a translation of the English post at the same slug — not a distinct work, and with the same
+  byline.
 
 ## Profiles
 
