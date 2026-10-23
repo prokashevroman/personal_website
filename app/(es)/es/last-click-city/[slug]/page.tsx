@@ -19,7 +19,7 @@ import {
   archiveCollectionSchema,
   archivePostingSchema,
   breadcrumbSchema,
-  esRobots,
+  localeRobots,
   localizedAlternates,
   personSchema,
 } from "@/lib/seo";
@@ -50,7 +50,7 @@ export async function generateMetadata({
       title,
       description,
       alternates: localizedAlternates(`/last-click-city/${category.slug}`, "es"),
-      robots: esRobots,
+      robots: localeRobots("es"),
       openGraph: {
         type: "website",
         siteName: siteConfig.name,
@@ -85,7 +85,7 @@ export async function generateMetadata({
     // Slug identity with the English twin is the URL-mirror invariant, enforced
     // at parse time by lib/last-click-city.ts.
     alternates: localizedAlternates(`/last-click-city/${frontmatter.slug}`, "es"),
-    robots: esRobots,
+    robots: localeRobots("es"),
     openGraph: {
       type: "article",
       siteName: siteConfig.name,

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   creator: siteConfig.author.name,
   publisher: siteConfig.author.name,
   // No `robots` here, same reasoning as the English layout: pages opt in via
-  // `esRobots` from lib/seo.tsx (which is also where the ES_INDEXABLE flip
+  // `localeRobots("es")` from lib/seo.tsx (which is also where the indexability
   // lands), and the 404 keeps Next's automatic noindex uncontradicted.
   openGraph: {
     type: "website",

@@ -5,7 +5,7 @@ import {
   JsonLd,
   absoluteUrl,
   breadcrumbSchema,
-  esRobots,
+  localeRobots,
   localizedAlternates,
   personSchema,
   profilePageSchema,
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: localizedAlternates("/about", "es"),
-  robots: esRobots,
+  robots: localeRobots("es"),
   openGraph: {
     type: "profile",
     siteName: siteConfig.name,

@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n";
 const DATE_LOCALES: Record<Locale, string> = {
   en: "en-US",
   es: "es-ES",
+  nl: "nl-NL",
 };
 
 /**

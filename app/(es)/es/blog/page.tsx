@@ -7,7 +7,7 @@ import {
   absoluteUrl,
   blogSchema,
   breadcrumbSchema,
-  esRobots,
+  localeRobots,
   localizedAlternates,
   personSchema,
 } from "@/lib/seo";
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: localizedAlternates("/blog", "es"),
-  robots: esRobots,
+  robots: localeRobots("es"),
   // Set explicitly and in full: a page-level `openGraph` replaces the Spanish
   // layout's instead of merging with it.
   openGraph: {

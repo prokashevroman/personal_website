@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import type { Locale } from "@/lib/i18n";
+import { LOCALES, type Locale } from "@/lib/i18n";
 import { postFrontmatterSchema, type PostFrontmatter } from "@/lib/validation";
 import { readingTime } from "@/lib/reading-time";
 
@@ -73,4 +73,15 @@ export function getPostBySlug(slug: string, locale: Locale = "en"): Post | null 
   if (!found) return null;
   if (isProd() && !found.frontmatter.published) return null;
   return found;
+}
+
+/**
+ * Which locales a post is published in. This is the per-file answer the
+ * hreflang cluster needs: a post translated into Spanish but not Dutch must
+ * advertise en+es and nothing more, or Dutch hreflang would point at a 404.
+ * Draft-filtering applies per locale, so an unpublished translation drops out
+ * in prod exactly as it drops out of the listings.
+ */
+export function getPostLocales(slug: string): Locale[] {
+  return LOCALES.filter((locale) => getPostBySlug(slug, locale) !== null);
 }

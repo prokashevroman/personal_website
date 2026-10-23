@@ -9,7 +9,7 @@ import {
   absoluteUrl,
   archiveBlogSchema,
   breadcrumbSchema,
-  esRobots,
+  localeRobots,
   localizedAlternates,
   personSchema,
 } from "@/lib/seo";
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   // Unconditional, unlike the per-post pages: the index exists in both locales
   // regardless of how many articles are translated.
   alternates: localizedAlternates("/last-click-city", "es"),
-  robots: esRobots,
+  robots: localeRobots("es"),
   // Set explicitly and in full: a page-level `openGraph` replaces the Spanish
   // layout's instead of merging with it.
   openGraph: {

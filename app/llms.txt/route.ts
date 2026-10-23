@@ -1,3 +1,4 @@
+import { MIRROR_LOCALES, localePath } from "@/lib/i18n";
 import { getAllPosts } from "@/lib/posts";
 import { absoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
@@ -24,26 +25,36 @@ export function GET() {
     )
     .join("\n");
 
-  // Spanish mirror — same pipeline, content/posts/es/. Listed separately and
-  // explicitly marked as translations so agents don't cite them as distinct works.
-  const esPosts = getAllPosts("es").filter((p) => p.frontmatter.published);
-  const esSection =
-    esPosts.length > 0
-      ? `
+  // Translated mirrors — same pipeline, content/posts/<locale>/. Each is listed
+  // separately and explicitly marked as translations so agents don't cite them
+  // as distinct works. The heading is in the mirror's own language, which is the
+  // clearest signal to an agent about what follows.
+  const MIRROR_SECTIONS: Record<(typeof MIRROR_LOCALES)[number], { heading: string; name: string }> =
+    {
+      es: { heading: "En español", name: "Spanish" },
+      nl: { heading: "In het Nederlands", name: "Dutch" },
+    };
 
-## En español
+  const mirrorSections = MIRROR_LOCALES.map((locale) => {
+    const localePosts = getAllPosts(locale).filter((p) => p.frontmatter.published);
+    if (localePosts.length === 0) return "";
+    const { heading, name } = MIRROR_SECTIONS[locale];
+    const home = absoluteUrl(localePath("/", locale));
+    return `
 
-The site is mirrored in Spanish at [${absoluteUrl("/es")}](${absoluteUrl("/es")}). The following
-essays are Spanish translations of the English originals above (same slug under /es/blog/):
+## ${heading}
 
-${esPosts
+The site is mirrored in ${name} at [${home}](${home}). The following
+essays are ${name} translations of the English originals above (same slug under ${localePath("/blog/", locale)}):
+
+${localePosts
   .map(
     (post) =>
-      `- [${post.frontmatter.title}](${absoluteUrl(`/es/blog/${post.frontmatter.slug}`)}) — ` +
+      `- [${post.frontmatter.title}](${absoluteUrl(localePath(`/blog/${post.frontmatter.slug}`, locale))}) — ` +
       `${post.frontmatter.description}`,
   )
-  .join("\n")}`
-      : "";
+  .join("\n")}`;
+  }).join("");
 
   const body = `# ${siteConfig.name}
 
@@ -61,7 +72,7 @@ holds the essays and the details of the consulting work.
 
 ## Essays
 
-${essays || "- No essays published yet."}${esSection}
+${essays || "- No essays published yet."}${mirrorSections}
 
 ## Optional
 
@@ -74,7 +85,8 @@ ${essays || "- No essays published yet."}${esSection}
   ${siteConfig.author.name}. The archive is mirrored in Spanish at
   [${absoluteUrl("/es/last-click-city")}](${absoluteUrl("/es/last-click-city")}), where each page
   is a translation of the English post at the same slug — not a distinct work, and with the same
-  byline.
+  byline. The archive exists in English and Spanish only: unlike the essays above, it has no Dutch
+  mirror, so there are no /nl/last-click-city URLs to fetch.
 
 ## Profiles
 

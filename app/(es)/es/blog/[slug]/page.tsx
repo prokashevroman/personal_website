@@ -4,13 +4,13 @@ import { ArticleLayout } from "@/components/ArticleLayout";
 import { Comments } from "@/components/Comments";
 import { ogLocale } from "@/lib/i18n";
 import { RenderMdx } from "@/lib/mdx";
-import { getPostBySlug, getPublishedSlugs } from "@/lib/posts";
+import { getPostBySlug, getPostLocales, getPublishedSlugs } from "@/lib/posts";
 import {
   JsonLd,
   absoluteUrl,
   blogPostingSchema,
   breadcrumbSchema,
-  esRobots,
+  localeRobots,
   localizedAlternates,
   personSchema,
 } from "@/lib/seo";
@@ -40,9 +40,14 @@ export async function generateMetadata({
     keywords: [...frontmatter.tags],
     authors: [{ name: siteConfig.author.name, url: absoluteUrl("/es/about") }],
     // Slug identity with the English twin is the URL-mirror invariant, so the
-    // English path is just the slug path without the /es prefix.
-    alternates: localizedAlternates(`/blog/${frontmatter.slug}`, "es"),
-    robots: esRobots,
+    // English path is just the slug path without the /es prefix. The cluster
+    // lists every locale the post exists in, same as on the English side.
+    alternates: localizedAlternates(
+      `/blog/${frontmatter.slug}`,
+      "es",
+      getPostLocales(frontmatter.slug),
+    ),
+    robots: localeRobots("es"),
     openGraph: {
       type: "article",
       siteName: siteConfig.name,

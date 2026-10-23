@@ -4,14 +4,14 @@ import Link from "next/link";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { SubscribeForm } from "@/components/SubscribeForm";
 import { getAllPosts } from "@/lib/posts";
-import { JsonLd, esRobots, localizedAlternates, personSchema, webSiteSchema } from "@/lib/seo";
+import { JsonLd, localeRobots, localizedAlternates, personSchema, webSiteSchema } from "@/lib/seo";
 
 // No page-level `openGraph`: like the English homepage, it inherits the
 // (Spanish) root layout's — which also keeps the layout-level
 // opengraph-image at app/(es)/es/opengraph-image.tsx attached.
 export const metadata: Metadata = {
   alternates: localizedAlternates("/", "es"),
-  robots: esRobots,
+  robots: localeRobots("es"),
 };
 
 export default function HomePage() {

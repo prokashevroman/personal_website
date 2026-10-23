@@ -3,13 +3,12 @@ import { notFound } from "next/navigation";
 import { ArticleLayout } from "@/components/ArticleLayout";
 import { Comments } from "@/components/Comments";
 import { RenderMdx } from "@/lib/mdx";
-import { getPostBySlug, getPublishedSlugs } from "@/lib/posts";
+import { getPostBySlug, getPostLocales, getPublishedSlugs } from "@/lib/posts";
 import {
   JsonLd,
   absoluteUrl,
   blogPostingSchema,
   breadcrumbSchema,
-  canonical,
   indexable,
   localizedAlternates,
   personSchema,
@@ -34,17 +33,16 @@ export async function generateMetadata({
   if (!post) return { robots: { index: false, follow: false } };
   const { frontmatter } = post;
   const url = absoluteUrl(`/blog/${frontmatter.slug}`);
-  // Only emit the hreflang cluster when the Spanish twin actually exists —
-  // a future untranslated post must not point hreflang at a 404.
-  const hasSpanishTwin = getPostBySlug(frontmatter.slug, "es") !== null;
+  // The cluster lists exactly the locales this post is published in — an
+  // untranslated locale must not have hreflang pointing at its 404. With only
+  // English present, `localizedAlternates` emits a bare self-canonical.
+  const locales = getPostLocales(frontmatter.slug);
   return {
     title: frontmatter.title,
     description: frontmatter.description,
     keywords: [...frontmatter.tags],
     authors: [{ name: siteConfig.author.name, url: absoluteUrl("/about") }],
-    alternates: hasSpanishTwin
-      ? localizedAlternates(`/blog/${frontmatter.slug}`)
-      : canonical(`/blog/${frontmatter.slug}`),
+    alternates: localizedAlternates(`/blog/${frontmatter.slug}`, "en", locales),
     robots: indexable,
     openGraph: {
       type: "article",

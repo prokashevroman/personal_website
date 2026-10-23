@@ -12,7 +12,13 @@ import { fillMetadataSegment } from "next/dist/lib/metadata/get-metadata-route";
 // erased at compile time, so the archive pipeline is never pulled into the
 // homepage or /blog bundle.
 import type { ArchivePost } from "@/lib/last-click-city";
-import { ES_INDEXABLE, archiveCategoryTitle, localePath, type Locale } from "@/lib/i18n";
+import {
+  LOCALE_INDEXABLE,
+  archiveCategoryTitle,
+  localePath,
+  localesForPath,
+  type Locale,
+} from "@/lib/i18n";
 import type { Post } from "@/lib/posts";
 import { siteConfig } from "@/lib/site-config";
 
@@ -42,6 +48,17 @@ export function absoluteUrl(pathname: string): string {
 function ogImageUrl(segment: string, params: Record<string, string>): string {
   return absoluteUrl(fillMetadataSegment(segment, params, "opengraph-image"));
 }
+
+/**
+ * The app-dir prefix each locale's pages live under, route group included.
+ * `ogImageUrl` segments are built from these, so they must track the real
+ * folder names — rename a route group and the JSON-LD image URLs 404 silently.
+ */
+const SEGMENT_ROOT: Record<Locale, string> = {
+  en: "/(en)",
+  es: "/(es)/es",
+  nl: "/(nl)/nl",
+};
 
 /**
  * `robots` for a page that should be indexed. Applied per page rather than on the
@@ -76,27 +93,54 @@ export function canonical(pathname: string): NonNullable<Metadata["alternates"]>
 }
 
 /**
- * `alternates` for a page that exists in both locales. `enPath` is always the
- * English path — the Spanish variant is derived, which is what keeps the two
- * sides of the hreflang pair symmetrical. The canonical is self-referential per
- * locale; the `languages` cluster (en + es + x-default→en) is emitted on both
- * sides, gated by ES_INDEXABLE so a noindexed /es never receives hreflang.
+ * The `hreflang` cluster for an English path: every locale the page actually
+ * exists in, plus `x-default` pointing at English. Returns `undefined` when
+ * fewer than two locales qualify — a cluster of one says nothing, and emitting
+ * it would only invite Search Console to complain about a self-referential set.
  *
- * Callers on the es side may assume the English twin exists (true by workflow:
- * Spanish posts are authored as translations of published English ones). The EN
- * side guards: app/(en)/blog/[slug]/page.tsx falls back to `canonical()` when
- * no Spanish twin exists, so future untranslated posts don't emit dangling
- * hreflang.
+ * `available` defaults to the locales the *route* exists in
+ * (`localesForPath`, which knows the archive lags behind). Pages whose content
+ * is translated per file — posts — pass the set they found on disk instead, so
+ * a post translated into Spanish but not Dutch never points hreflang at a 404.
+ *
+ * Exported because app/sitemap.ts needs the identical set for its `xhtml:link`
+ * alternates: the sitemap and the page must agree, so there is one builder.
+ */
+export function hreflangCluster(
+  enPath: string,
+  available: readonly Locale[] = localesForPath(enPath),
+): Record<string, string> | undefined {
+  const locales = available.filter((locale) => LOCALE_INDEXABLE[locale]);
+  if (locales.length < 2) return undefined;
+  const languages: Record<string, string> = {};
+  for (const locale of locales) {
+    languages[locale] = absoluteUrl(localePath(enPath, locale));
+  }
+  languages["x-default"] = absoluteUrl(enPath);
+  return languages;
+}
+
+/**
+ * `alternates` for a page that exists in more than one locale. `enPath` is
+ * always the English path — every other variant is derived from it, which is
+ * what keeps all sides of the cluster symmetrical. The canonical is
+ * self-referential per locale; the `languages` cluster is identical on every
+ * side (that is the requirement: each page in a set lists the whole set).
+ *
+ * With `available` omitted this covers structural pages — the homepage, /blog,
+ * /about, the archive index and its category listings — which exist in a locale
+ * whenever the route does. Post pages pass their own set; when that set is just
+ * `["en"]` the output is exactly `canonical()`.
  */
 export function localizedAlternates(
   enPath: string,
   locale: Locale = "en",
+  available: readonly Locale[] = localesForPath(enPath),
 ): NonNullable<Metadata["alternates"]> {
-  const enUrl = absoluteUrl(enPath);
-  const esUrl = absoluteUrl(localePath(enPath, "es"));
+  const languages = hreflangCluster(enPath, available);
   return {
-    canonical: locale === "en" ? enUrl : esUrl,
-    ...(ES_INDEXABLE ? { languages: { en: enUrl, es: esUrl, "x-default": enUrl } } : {}),
+    canonical: absoluteUrl(localePath(enPath, locale)),
+    ...(languages ? { languages } : {}),
     types: {
       "application/rss+xml": [{ url: siteConfig.rssPath, title: `${siteConfig.name} RSS` }],
     },
@@ -104,14 +148,15 @@ export function localizedAlternates(
 }
 
 /**
- * `robots` for every /es page. While ES_INDEXABLE is on this is the same as
- * `indexable`; flipping the flag noindexes the whole Spanish tree (follow stays
- * on so link equity still flows) — together with the hreflang/sitemap gating in
- * `localizedAlternates` and app/sitemap.ts, that one flag is the complete switch.
+ * `robots` for a page in a mirror locale. While that locale's `LOCALE_INDEXABLE`
+ * flag is on this is the same as `indexable`; flipping the flag noindexes the
+ * whole tree (follow stays on so link equity still flows) — together with the
+ * hreflang/sitemap gating in `localizedAlternates` and app/sitemap.ts, that one
+ * flag is the complete switch.
  */
-export const esRobots: NonNullable<Metadata["robots"]> = ES_INDEXABLE
-  ? indexable
-  : { index: false, follow: true };
+export function localeRobots(locale: Locale): NonNullable<Metadata["robots"]> {
+  return LOCALE_INDEXABLE[locale] ? indexable : { index: false, follow: true };
+}
 
 // ---------------------------------------------------------------------------
 // JSON-LD
@@ -157,21 +202,24 @@ export function webSiteSchema(): Schema {
   };
 }
 
-// Cross-surface Spanish strings ("Ensayos") match the /es/blog page and its OG
-// card — keep them in sync when either changes.
+// Cross-surface translated strings ("Ensayos", "Essays") match the /es/blog and
+// /nl/blog pages and their OG cards — keep them in sync when either changes.
 const BLOG_NAME: Record<Locale, string> = {
   en: `${siteConfig.name} — Essays`,
   es: `${siteConfig.name} — Ensayos`,
+  nl: `${siteConfig.name} — Essays`,
 };
 
 const BLOG_DESCRIPTION: Record<Locale, string> = {
   en: "Essays on marketing, leadership, and technology.",
   es: "Ensayos sobre marketing, liderazgo y tecnología.",
+  nl: "Essays over marketing, leiderschap en technologie.",
 };
 
 const PROFILE_NAME: Record<Locale, string> = {
   en: `About ${siteConfig.author.name}`,
   es: `Sobre ${siteConfig.author.name}`,
+  nl: `Over ${siteConfig.author.name}`,
 };
 
 function blogId(locale: Locale): string {
@@ -231,7 +279,7 @@ export function blogPostingSchema(post: Post, locale: Locale = "en"): Schema {
     timeRequired: `PT${readingMinutes}M`,
     image: {
       "@type": "ImageObject",
-      url: ogImageUrl(locale === "en" ? "/(en)/blog/[slug]" : "/(es)/es/blog/[slug]", {
+      url: ogImageUrl(`${SEGMENT_ROOT[locale]}/blog/[slug]`, {
         slug: frontmatter.slug,
       }),
       width: 1200,
@@ -242,7 +290,7 @@ export function blogPostingSchema(post: Post, locale: Locale = "en"): Schema {
     isPartOf: { "@id": blogId(locale) },
     // A translated post declares its English original, which ties the two
     // articles together for search engines without a shared @id.
-    ...(locale === "es"
+    ...(locale !== "en"
       ? {
           translationOfWork: { "@type": "BlogPosting", "@id": `${enUrl}#article` },
           translator: TRANSLATOR,
@@ -275,6 +323,9 @@ export function profilePageSchema(locale: Locale = "en"): Schema {
 const ARCHIVE_BLOG_DESCRIPTION: Record<Locale, string> = {
   en: "Archive of the Last Click City blog: digital analytics, Google Analytics, BigQuery, and attribution modelling, originally published at lastclick.city.",
   es: "Archivo del blog Last Click City: analítica digital, Google Analytics, BigQuery y modelos de atribución, publicado originalmente en lastclick.city.",
+  // Unused while the archive is en+es only (see ARCHIVE_LOCALES); present so the
+  // builder stays total and the day it's translated nothing silently falls back.
+  nl: "Archief van de blog Last Click City: digitale analytics, Google Analytics, BigQuery en attributiemodellen, oorspronkelijk gepubliceerd op lastclick.city.",
 };
 
 function archiveBlogId(locale: Locale): string {
@@ -327,17 +378,16 @@ export function archivePostingSchema(post: ArchivePost, locale: Locale = "en"): 
     timeRequired: `PT${readingMinutes}M`,
     image: {
       "@type": "ImageObject",
-      url: ogImageUrl(
-        locale === "en" ? "/(en)/last-click-city/[slug]" : "/(es)/es/last-click-city/[slug]",
-        { slug: frontmatter.slug },
-      ),
+      url: ogImageUrl(`${SEGMENT_ROOT[locale]}/last-click-city/[slug]`, {
+        slug: frontmatter.slug,
+      }),
       width: 1200,
       height: 630,
     },
     author: archiveAuthor(post),
     publisher: { "@id": PERSON_ID },
     isPartOf: { "@id": archiveBlogId(locale) },
-    ...(locale === "es"
+    ...(locale !== "en"
       ? {
           translationOfWork: { "@type": "BlogPosting", "@id": `${enUrl}#article` },
           translator: TRANSLATOR,
