@@ -1,4 +1,4 @@
-import { Fraunces, Inter } from "next/font/google";
+import { Commissioner, Fraunces } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { t, type Locale } from "@/lib/i18n";
@@ -11,10 +11,13 @@ import "@/app/globals.css";
  * render the identical shell — only `lang` and the chrome strings differ.
  */
 
-const inter = Inter({
+// Commissioner has no italic face on Google Fonts; the slnt axis is what
+// browsers use to render `font-style: italic` without synthesizing a slant.
+const commissioner = Commissioner({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-commissioner",
+  axes: ["slnt"],
 });
 
 const fraunces = Fraunces({
@@ -26,7 +29,7 @@ const fraunces = Fraunces({
 
 export function RootShell({ locale, children }: { locale: Locale; children: React.ReactNode }) {
   return (
-    <html lang={locale} className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang={locale} className={`${commissioner.variable} ${fraunces.variable}`}>
       <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <a
           href="#main"

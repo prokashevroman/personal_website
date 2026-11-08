@@ -87,7 +87,7 @@ Share cards are generated at build time by `next/og` via the file convention. `a
 
 **Hash-suffixed URLs:** because pages sit inside route groups, Next serves these images under hash-suffixed paths (`/blog/<slug>/opengraph-image-g58prh`). The `og:image`/`twitter:image` meta tags resolve automatically; the JSON-LD `image` URLs are built with Next's own `fillMetadataSegment` (private `next/dist` import in `lib/seo.tsx`) so they can't drift from what's actually served. The `segment` strings passed to it must match the real app-dir folders (group prefix included); they're assembled from `SEGMENT_ROOT` in `lib/seo.tsx`, which is the one place those folder names are written down. Re-verify after any Next upgrade, since it's a private API.
 
-`renderOgImage()` uses next/og's built-in font rather than fetching Fraunces/Inter, keeping `next build` free of network calls. Colors mirror the Tailwind palette.
+`renderOgImage()` uses next/og's built-in font rather than fetching Fraunces/Commissioner, keeping `next build` free of network calls. Colors mirror the Tailwind palette.
 
 ### Crawlability
 
@@ -121,7 +121,7 @@ Three things to preserve when touching it:
 
 - **Adding a post**: always go through `pnpm new:post "Title"`. It slugifies, creates the MDX skeleton with `published: false`, and pre-creates `public/images/posts/<slug>/`. Images in posts are referenced with absolute paths (`/images/posts/<slug>/file.png`). The script creates the **English post only** — translated twins in `content/posts/<locale>/` are authored manually when (and if) the post is translated; a post with no translations simply has no hreflang cluster.
 - **Revising a published post**: add an optional `updated: "YYYY-MM-DD"` to the frontmatter. It feeds `og:modified_time`, schema.org `dateModified`, and the sitemap's `lastmod`, signalling a re-crawl. Use it for substantive rewrites, not typo fixes.
-- **Tailwind theme**: custom palette (`paper`, `ink`, `rule`, `accent`) and two font CSS variables (`--font-inter` sans, `--font-fraunces` display) defined in `tailwind.config.ts` and wired in `components/RootShell.tsx`. The `@tailwindcss/typography` plugin is themed there too — long-form post styling lives in the `typography` extend, not in component classes.
+- **Tailwind theme**: custom palette (`paper`, `ink`, `rule`, `accent`) and two font CSS variables (`--font-commissioner` sans, `--font-fraunces` display) defined in `tailwind.config.ts` and wired in `components/RootShell.tsx`. The `@tailwindcss/typography` plugin is themed there too — long-form post styling lives in the `typography` extend, not in component classes.
 - **Prettier**: `printWidth: 100`, double quotes, semicolons, trailing commas. `prettier-plugin-tailwindcss` is on, so class order is auto-sorted.
 - **No client components unless necessary**: `Comments`, `SubscribeForm`, `ContactForm`, and `LanguageSwitcher` are the only `"use client"` files — everything else is RSC. Keep new code on the server side by default.
 - **UI strings**: any string rendered by a shared component belongs in the `t` dictionary in `lib/i18n.ts` (both locales — the type enforces parity), not hardcoded. Keep cross-surface Spanish terms consistent: "Ensayos", "min de lectura" are used identically in the dictionary, pages, OG cards, and JSON-LD.
